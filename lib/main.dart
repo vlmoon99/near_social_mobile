@@ -9,9 +9,9 @@ import 'package:near_social_mobile/assets/localizations/localizations_strings.da
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/app_module.dart';
 import 'package:near_social_mobile/routes/routes.dart';
-import 'package:near_social_mobile/utils/utils.dart';
 
 import 'config/constants.dart';
+import 'config/setup.dart';
 
 void main() {
   runZonedGuarded(() async {

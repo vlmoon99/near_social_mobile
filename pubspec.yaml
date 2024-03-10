@@ -29,15 +29,15 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   cupertino_icons: ^1.0.2
-  dio: ^5.4.1
-  easy_localization: ^3.0.5
+  dio: 5.4.1
+  easy_localization: 3.0.5
   flutter:
     sdk: flutter
-  flutter_modular: ^6.3.2
-  flutter_screenutil: ^5.9.0
-  flutter_secure_storage: ^9.0.0
-  mockito: ^5.4.4
-  rxdart: ^0.27.7
+  flutter_modular: 6.3.2
+  flutter_screenutil: 5.9.0
+  flutter_secure_storage: 9.0.0
+  mockito: 5.4.4
+  rxdart: 0.27.7
 
 dev_dependencies:
   build_runner: ^2.4.8
