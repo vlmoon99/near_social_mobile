@@ -36,7 +36,9 @@ dependencies:
   flutter_modular: 6.3.2
   flutter_screenutil: 5.9.0
   flutter_secure_storage: 9.0.0
+  flutterchain: 1.0.0-beta.14
   mockito: 5.4.4
+  qr_code_scanner: 1.0.1
   rxdart: 0.27.7
 
 dev_dependencies:

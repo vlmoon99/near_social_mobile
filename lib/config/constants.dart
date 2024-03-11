@@ -6,4 +6,5 @@ class SecureStorageKeys {
 class AppErrorCodes {
   static const errorFromZone = 0;
   static const errorFromFlutter = 1;
+  static const invalidQRCodeFormat = 2;
 }

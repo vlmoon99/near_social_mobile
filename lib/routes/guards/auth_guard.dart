@@ -13,7 +13,7 @@ class AuthGuard extends RouteGuard {
       return Future.value(true);
     } else {
       //TODO: temporary true
-      return Future.value(true);
+      return Future.value(false);
     }
   }
 }
