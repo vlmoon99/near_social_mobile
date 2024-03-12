@@ -24,8 +24,7 @@ class _LoginPageState extends State<LoginPage> {
       body: Center(
         child: ElevatedButton(
           onPressed: () {
-            Modular.to
-                .pushNamed(Routes.auth.getRoute(Routes.auth.qrReader));
+            Modular.to.pushNamed(Routes.auth.getRoute(Routes.auth.qrReader));
           },
           child: const Text("Login with QR code"),
         ),

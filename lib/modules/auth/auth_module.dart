@@ -1,4 +1,5 @@
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:near_social_mobile/modules/auth/pages/encryption_screen.dart';
 import 'package:near_social_mobile/modules/auth/pages/login_page.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 
@@ -14,6 +15,12 @@ class AuthModule extends Module {
     r.child(
       Routes.auth.qrReader,
       child: (context) => const QRReaderScreen(),
+    );
+    r.child(
+      Routes.auth.encryptData,
+      child: (context) => EncryptionScreen(
+        qrAuthInfo: r.args.data,
+      ),
     );
   }
 }

@@ -1,12 +1,6 @@
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
-
-class QRAuthInfo {
-  final String accountId;
-  final String secretKey;
-
-  QRAuthInfo(this.accountId, this.secretKey);
-}
+import 'package:near_social_mobile/formatters/models/qr_auth_info.dart';
 
 class QRFormatter {
   static QRAuthInfo convertURLToQRAuthInfo(String url) {
