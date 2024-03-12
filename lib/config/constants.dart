@@ -11,4 +11,5 @@ class AppErrorCodes {
   static const cryptoError = 3;
   static const storageError = 4;
   static const flutterchainError = 5;
+  static const localAuthError = 6;
 }
