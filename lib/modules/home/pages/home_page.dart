@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -41,6 +41,25 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final jailBreakedDevice = await FlutterJailbreakDetection.jailbroken;
+      if (jailBreakedDevice) {
+        showDialog(
+          builder: (context) => AlertDialog(
+            title: const Text('Error'),
+            content: Text(
+                "This device is jailbroken. The security of the data in this application is not guaranteed."),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+          context: Modular.routerDelegate.navigatorKey.currentContext!,
+        );
+      }
+    });
     return Scaffold(
       body: StreamBuilder<AuthInfo>(
         stream: authController.stream,
