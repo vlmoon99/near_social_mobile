@@ -9,6 +9,8 @@ class _Auth extends RouteClass {
   @override
   String module = '/auth';
   String login = '/';
+  String qrReader = '/qr_reader';
+  String encryptData = '/encrypt_data';
 }
 
 class _Home extends RouteClass {
