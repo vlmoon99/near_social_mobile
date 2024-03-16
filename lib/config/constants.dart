@@ -2,6 +2,7 @@ class SecureStorageKeys {
   static const exceptions = 'exceptions';
   static const authInfo = 'auth_info';
   static const cryptographicKey = 'cryptographic_key';
+  static const networkType = 'network_type';
 }
 
 class AppErrorCodes {
@@ -12,4 +13,5 @@ class AppErrorCodes {
   static const storageError = 4;
   static const flutterchainError = 5;
   static const localAuthError = 6;
+  static const testnetError = 7;
 }

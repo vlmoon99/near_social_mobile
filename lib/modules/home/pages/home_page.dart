@@ -6,6 +6,7 @@ import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutterchain/flutterchain_lib/constants/chains/near_blockchain_network_urls.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
@@ -38,6 +39,24 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+    final networkType = await Modular.get<FlutterSecureStorage>().read(
+      key: SecureStorageKeys.networkType,
+    );
+
+    if (networkType == "mainnet") {
+      await Modular.get<NearBlockChainService>().setBlockchainNetworkEnvironment(
+        newUrl: NearBlockChainNetworkUrls.listOfUrls.elementAt(1),
+      );
+    } else {
+      await Modular.get<NearBlockChainService>().setBlockchainNetworkEnvironment(
+        newUrl: NearBlockChainNetworkUrls.listOfUrls.first,
+      );
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();

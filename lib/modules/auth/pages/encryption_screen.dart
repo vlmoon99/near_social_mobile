@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/formatters/models/qr_auth_info.dart';
@@ -31,6 +32,19 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
       cryptographicKey: cryptographicKey,
       storageKey: SecureStorageKeys.authInfo,
       data: jsonEncode(widget.qrAuthInfo),
+    );
+    await Modular.get<NearBlockChainService>()
+        .getBlockchainNetworkEnvironment()
+        .then(
+      (networkUrl) async {
+        if (networkUrl.contains("mainnet")) {
+          await Modular.get<FlutterSecureStorage>()
+              .write(key: SecureStorageKeys.networkType, value: "mainnet");
+        } else {
+          await Modular.get<FlutterSecureStorage>()
+              .write(key: SecureStorageKeys.networkType, value: "testnet");
+        }
+      },
     );
     final authController = Modular.get<AuthController>();
     await authController.login(
