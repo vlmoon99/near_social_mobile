@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutterchain/flutterchain_lib/constants/chains/near_blockchain_network_urls.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
@@ -14,6 +14,7 @@ import 'package:near_social_mobile/modules/vms/core/models/auth_info.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/services/crypto_storage_service.dart';
 import 'package:near_social_mobile/services/local_auth_service.dart';
+import 'package:near_social_mobile/utils/check_for_jailbreak.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -39,27 +40,29 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+    checkForJailbreak();
+    final networkType = await Modular.get<FlutterSecureStorage>().read(
+      key: SecureStorageKeys.networkType,
+    );
+
+    if (networkType == "mainnet") {
+      await Modular.get<NearBlockChainService>()
+          .setBlockchainNetworkEnvironment(
+        newUrl: NearBlockChainNetworkUrls.listOfUrls.elementAt(1),
+      );
+    } else {
+      await Modular.get<NearBlockChainService>()
+          .setBlockchainNetworkEnvironment(
+        newUrl: NearBlockChainNetworkUrls.listOfUrls.first,
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final jailBreakedDevice = await FlutterJailbreakDetection.jailbroken;
-      if (jailBreakedDevice) {
-        showDialog(
-          builder: (context) => AlertDialog(
-            title: const Text('Error'),
-            content: Text(
-                "This device is jailbroken. The security of the data in this application is not guaranteed."),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-          context: Modular.routerDelegate.navigatorKey.currentContext!,
-        );
-      }
-    });
     return Scaffold(
       body: StreamBuilder<AuthInfo>(
         stream: authController.stream,

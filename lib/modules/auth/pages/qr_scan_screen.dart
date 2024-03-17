@@ -41,7 +41,6 @@ class _QRReaderScreenState extends State<QRReaderScreen> {
         if (scanData.code == null) return;
         final qrAuthInfo = QRFormatter.convertURLToQRAuthInfo(scanData.code!);
         controller.stopCamera();
-        // Modular.to.pop(qrAuthInfo);
         Modular.to.pushReplacementNamed(
           Routes.auth.getRoute(Routes.auth.encryptData),
           arguments: qrAuthInfo,
