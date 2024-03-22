@@ -37,7 +37,6 @@ class PostPage extends StatelessWidget {
                     element.blockHeight == blockHeight &&
                     element.authorInfo.accountId == accountId,
               );
-              // log(post.)
               return ListView(
                 padding: REdgeInsets.all(15),
                 children: [
@@ -59,7 +58,6 @@ class PostPage extends StatelessWidget {
                               fit: BoxFit.cover,
                             );
                           },
-                          
                         ),
                       ),
                       SizedBox(width: 10.w),
@@ -74,6 +72,16 @@ class PostPage extends StatelessWidget {
                   Text(
                     post.postBody.text.trim(),
                   ),
+                  if (post.postBody.mediaLink != null) ...[
+                    Image.network(
+                      post.postBody.mediaLink!,
+                      headers: const {"Referer": "https://near.social/"},
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const CircularProgressIndicator();
+                      },
+                    ),
+                  ],
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -116,30 +124,6 @@ class PostPage extends StatelessWidget {
                       child: CircularProgressIndicator(),
                     )
                   ],
-                  // FutureBuilder(
-                  //   future: postsController.loadCommentsOfPost(
-                  //     accountId: post.authorInfo.accountId,
-                  //     blockHeight: post.blockHeight,
-                  //   ),
-                  //   builder: (context, snapshot) {
-                  //     if (snapshot.connectionState == ConnectionState.done) {
-                  //       return Column(
-                  //         children: [
-                  //           ...post.commentList!.map((e) => Text(e.text)).toList()
-                  //         ],
-                  //       );
-                  //     } else {
-                  //       return const ;
-                  //     }
-                  //     // if (snapshot.connectionState == ConnectionState.waiting) {
-
-                  //     // } else {
-
-                  //     // }
-                  //   },
-                  // ),
-                  // FutureBuilder(future: , builder: builder),
-                  // ...post.commentList.map((e) => Text(e.text)).toList(),
                 ],
               );
             }),
@@ -147,3 +131,12 @@ class PostPage extends StatelessWidget {
     );
   }
 }
+
+// class CommentCard extends StatelessWidget {
+//   const CommentCard({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return const Placeholder();
+//   }
+// }

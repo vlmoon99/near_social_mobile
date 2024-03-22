@@ -129,7 +129,6 @@ class _HomePageState extends State<HomePage> {
                           onTap: () {
                             Modular.to.pushNamed(
                               ".${Routes.home.postPage}?accountId=${post.authorInfo.accountId}&blockHeight=${post.blockHeight}",
-                              // arguments: post,
                             );
                           },
                           child: Card(
@@ -190,9 +189,31 @@ class _HomePageState extends State<HomePage> {
                                           ),
                                         ),
                                         SizedBox(width: 10.w),
-                                        Flexible(
-                                          child: Text(
-                                            post.postBody.text.trim(),
+                                        Expanded(
+                                          child: ListView(
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            shrinkWrap: true,
+                                            children: [
+                                              Text(
+                                                post.postBody.text.trim(),
+                                              ),
+                                              if (post.postBody.mediaLink !=
+                                                  null) ...[
+                                                Image.network(
+                                                  post.postBody.mediaLink!,
+                                                  headers: const {
+                                                    "Referer":
+                                                        "https://near.social/"
+                                                  },
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error,
+                                                      stackTrace) {
+                                                    return const CircularProgressIndicator();
+                                                  },
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                         ),
                                       ],
