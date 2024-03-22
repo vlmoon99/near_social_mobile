@@ -13,18 +13,17 @@ import 'package:near_social_mobile/routes/routes.dart';
 import 'config/constants.dart';
 import 'config/setup.dart';
 
-void main() {
-  runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
+void main() async {
+WidgetsFlutterBinding.ensureInitialized();
     await initOfApp();
-    FlutterError.onError = (FlutterErrorDetails details) {
-      final catcher = Modular.get<Catcher>();
-      catcher.exceptionsHandler.add(AppExceptions(
-        messageForUser: details.exceptionAsString(),
-        messageForDev: details.exception.runtimeType.toString(),
-        statusCode: AppErrorCodes.errorFromFlutter,
-      ));
-    };
+    // FlutterError.onError = (FlutterErrorDetails details) {
+    //   final catcher = Modular.get<Catcher>();
+    //   catcher.exceptionsHandler.add(AppExceptions(
+    //     messageForUser: details.exceptionAsString(),
+    //     messageForDev: details.exception.runtimeType.toString(),
+    //     statusCode: AppErrorCodes.errorFromFlutter,
+    //   ));
+    // };
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -44,18 +43,49 @@ void main() {
         ),
       );
     });
-  }, (error, stack) {
-    final catcher = Modular.get<Catcher>();
-    final appException = AppExceptions(
-      messageForUser:
-          ErrorMessageHandler.getErrorMessageForNotFlutterExceptions(error),
-      messageForDev: error.toString(),
-      statusCode: AppErrorCodes.errorFromZone,
-    );
-    catcher.exceptionsHandler.add(
-      appException,
-    );
-  });
+  // runZonedGuarded(() async {
+  //   WidgetsFlutterBinding.ensureInitialized();
+  //   await initOfApp();
+  //   FlutterError.onError = (FlutterErrorDetails details) {
+  //     final catcher = Modular.get<Catcher>();
+  //     catcher.exceptionsHandler.add(AppExceptions(
+  //       messageForUser: details.exceptionAsString(),
+  //       messageForDev: details.exception.runtimeType.toString(),
+  //       statusCode: AppErrorCodes.errorFromFlutter,
+  //     ));
+  //   };
+  //   SystemChrome.setPreferredOrientations([
+  //     DeviceOrientation.portraitUp,
+  //     DeviceOrientation.portraitDown,
+  //   ]).then((_) {
+  //     runApp(
+  //       EasyLocalization(
+  //         supportedLocales: const [
+  //           Locale('en'),
+  //         ],
+  //         path: LocalizationsStrings.localizationPath,
+  //         fallbackLocale: const Locale('en'),
+  //         saveLocale: false,
+  //         child: ModularApp(
+  //           module: AppModule(),
+  //           child: const AppWidget(),
+  //         ),
+  //       ),
+  //     );
+  //   });
+  // }, (error, stack) {
+  //   final catcher = Modular.get<Catcher>();
+  //   final appException = AppExceptions(
+  //     messageForUser:
+  //         ErrorMessageHandler.getErrorMessageForNotFlutterExceptions(error),
+  //     messageForDev: error.toString(),
+  //     statusCode: AppErrorCodes.errorFromZone,
+  //   );
+  //   catcher.exceptionsHandler.add(
+  //     appException,
+  //   );
+  // });
+
 }
 
 class AppWidget extends StatelessWidget {
