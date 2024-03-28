@@ -1,7 +1,10 @@
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
+import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
+import 'package:near_social_mobile/modules/home/apis/models/like.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
+import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -81,18 +84,33 @@ class PostsController {
 
   Future<void> loadCommentsOfPost(
       {required String accountId, required int blockHeight}) async {
-    final int indexOfPost = state.posts.indexWhere((element) {
-      return element.blockHeight == blockHeight &&
-          element.authorInfo.accountId == accountId;
-    });
+    try {
+      final int indexOfPost = state.posts.indexWhere((element) {
+        return element.blockHeight == blockHeight &&
+            element.authorInfo.accountId == accountId;
+      });
 
-    if (state.posts[indexOfPost].commentList != null) {
-      nearSocialApi
-          .getCommentsOfPost(
-        accountId: accountId,
-        blockHeight: blockHeight,
-      )
-          .then((commentsOfPost) {
+      if (state.posts[indexOfPost].commentList != null) {
+        nearSocialApi
+            .getCommentsOfPost(
+          accountId: accountId,
+          blockHeight: blockHeight,
+        )
+            .then((commentsOfPost) {
+          _streamController.add(
+            state.copyWith(
+              posts: List.of(state.posts)
+                ..[indexOfPost] = state.posts[indexOfPost]
+                    .copyWith(commentList: commentsOfPost),
+            ),
+          );
+        });
+      } else {
+        final commentsOfPost = await nearSocialApi.getCommentsOfPost(
+          accountId: accountId,
+          blockHeight: blockHeight,
+        );
+
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -100,20 +118,9 @@ class PostsController {
                   .copyWith(commentList: commentsOfPost),
           ),
         );
-      });
-    } else {
-      final commentsOfPost = await nearSocialApi.getCommentsOfPost(
-        accountId: accountId,
-        blockHeight: blockHeight,
-      );
-
-      _streamController.add(
-        state.copyWith(
-          posts: List.of(state.posts)
-            ..[indexOfPost] =
-                state.posts[indexOfPost].copyWith(commentList: commentsOfPost),
-        ),
-      );
+      }
+    } catch (err) {
+      rethrow;
     }
   }
 
@@ -204,12 +211,251 @@ class PostsController {
         .getRepostsOfPost(
             accountId: post.authorInfo.accountId, blockHeight: post.blockHeight)
         .then((reposts) {
-      _streamController.add(state.copyWith(
-        posts: state.posts,
-      ));
+      _streamController.add(
+        state.copyWith(
+          posts: List.of(state.posts)
+            ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+              repostList: reposts,
+            ),
+        ),
+      );
     });
   }
 
+  Future<void> likePost({
+    required Post post,
+    required String accountId,
+    required String publicKey,
+    required String privateKey,
+  }) async {
+    final isLiked =
+        post.likeList.any((element) => element.accountId == accountId);
+    final indexOfPost = state.posts.indexWhere(
+      (element) =>
+          element.blockHeight == post.blockHeight &&
+          element.authorInfo.accountId == post.authorInfo.accountId &&
+          element.reposterInfo == post.reposterInfo,
+    );
+    try {
+      if (isLiked) {
+        _streamController.add(
+          state.copyWith(
+            posts: List.of(state.posts)
+              ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+                likeList: Set.of(post.likeList)
+                  ..removeWhere((element) => element.accountId == accountId),
+              ),
+          ),
+        );
+        await nearSocialApi.unlikePost(
+          accountIdOfPost: post.authorInfo.accountId,
+          accountId: accountId,
+          blockHeight: post.blockHeight,
+          publicKey: publicKey,
+          privateKey: privateKey,
+        );
+      } else {
+        _streamController.add(
+          state.copyWith(
+            posts: List.of(state.posts)
+              ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+                likeList: Set.of(post.likeList)
+                  ..add(
+                    Like(accountId: accountId),
+                  ),
+              ),
+          ),
+        );
+        await nearSocialApi.likePost(
+          accountIdOfPost: post.authorInfo.accountId,
+          accountId: accountId,
+          blockHeight: post.blockHeight,
+          publicKey: publicKey,
+          privateKey: privateKey,
+        );
+      }
+    } catch (err) {
+      if (isLiked) {
+        _streamController.add(
+          state.copyWith(
+            posts: List.of(state.posts)
+              ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+                likeList: Set.of(post.likeList)
+                  ..add(
+                    Like(accountId: accountId),
+                  ),
+              ),
+          ),
+        );
+      } else {
+        _streamController.add(
+          state.copyWith(
+            posts: List.of(state.posts)
+              ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+                likeList: Set.of(post.likeList)
+                  ..removeWhere((element) => element.accountId == accountId),
+              ),
+          ),
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> likeComment({
+    required Post post,
+    required Comment comment,
+    required String accountId,
+    required String publicKey,
+    required String privateKey,
+  }) async {
+    final indexOfPost = state.posts.indexWhere(
+      (element) =>
+          element.blockHeight == post.blockHeight &&
+          element.authorInfo.accountId == post.authorInfo.accountId &&
+          element.reposterInfo == post.reposterInfo,
+    );
+    final indexOfComment = post.commentList!.indexWhere(
+      (element) =>
+          element.blockHeight == comment.blockHeight &&
+          element.authorInfo.accountId == comment.authorInfo.accountId,
+    );
+    final isLiked = post.commentList![indexOfComment].likeList
+        .any((element) => element.accountId == accountId);
+
+    try {
+      if (isLiked) {
+        _streamController.add(
+          state.copyWith(
+            posts: List.of(state.posts)
+              ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+                commentList: List.from(state.posts[indexOfPost].commentList!)
+                  ..[indexOfComment] = comment.copyWith(
+                    likeList: comment.likeList
+                      ..removeWhere(
+                        (element) => element.accountId == accountId,
+                      ),
+                  ),
+              ),
+          ),
+        );
+        await nearSocialApi.unlikeComment(
+          accountIdOfPost: comment.authorInfo.accountId,
+          accountId: accountId,
+          blockHeight: comment.blockHeight,
+          publicKey: publicKey,
+          privateKey: privateKey,
+        );
+      } else {
+        _streamController.add(
+          state.copyWith(
+            posts: List.of(state.posts)
+              ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+                commentList: List.from(state.posts[indexOfPost].commentList!)
+                  ..[indexOfComment] = comment.copyWith(
+                    likeList: comment.likeList
+                      ..add(
+                        Like(
+                          accountId: accountId,
+                        ),
+                      ),
+                  ),
+              ),
+          ),
+        );
+        await nearSocialApi.likeComment(
+          accountIdOfPost: comment.authorInfo.accountId,
+          accountId: accountId,
+          blockHeight: comment.blockHeight,
+          publicKey: publicKey,
+          privateKey: privateKey,
+        );
+      }
+    } catch (err) {
+      if (isLiked) {
+        _streamController.add(
+          state.copyWith(
+            posts: List.of(state.posts)
+              ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+                commentList: List.from(state.posts[indexOfPost].commentList!)
+                  ..[indexOfComment] = comment.copyWith(
+                    likeList: comment.likeList
+                      ..add(
+                        Like(
+                          accountId: accountId,
+                        ),
+                      ),
+                  ),
+              ),
+          ),
+        );
+      } else {
+        _streamController.add(
+          state.copyWith(
+            posts: List.of(state.posts)
+              ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+                commentList: List.from(state.posts[indexOfPost].commentList!)
+                  ..[indexOfComment] = comment.copyWith(
+                    likeList: comment.likeList
+                      ..removeWhere(
+                        (element) => element.accountId == accountId,
+                      ),
+                  ),
+              ),
+          ),
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> repostPost({
+    required Post post,
+    required String accountId,
+    required String publicKey,
+    required String privateKey,
+  }) async {
+    if (post.repostList.any((element) => element.accountId == accountId)) {
+      return;
+    }
+    final indexOfPost = state.posts.indexWhere(
+      (element) =>
+          element.blockHeight == post.blockHeight &&
+          element.authorInfo.accountId == post.authorInfo.accountId &&
+          element.reposterInfo == post.reposterInfo,
+    );
+    try {
+      _streamController.add(
+        state.copyWith(
+          posts: List.of(state.posts)
+            ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+              repostList: Set.of(post.repostList)
+                ..add(
+                  Reposter(accountId: accountId),
+                ),
+            ),
+        ),
+      );
+      await nearSocialApi.repostPost(
+        accountIdOfPost: post.authorInfo.accountId,
+        accountId: accountId,
+        blockHeight: post.blockHeight,
+        publicKey: publicKey,
+        privateKey: privateKey,
+      );
+    } catch (err) {
+      _streamController.add(
+        state.copyWith(
+          posts: List.of(state.posts)
+            ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+              repostList: Set.of(post.repostList)
+                ..removeWhere((element) => element.accountId == accountId),
+            ),
+        ),
+      );
+      rethrow;
+    }
+  }
 }
 
 enum PostLoadingStatus {

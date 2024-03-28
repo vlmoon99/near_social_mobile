@@ -5,17 +5,17 @@ import 'package:flutter_svg/flutter_svg.dart';
 class IconButtonWithCounter extends StatelessWidget {
   const IconButtonWithCounter({
     super.key,
-    this.icon,
-    this.iconPath,
+    required this.iconPath,
+    this.iconActivatedPath,
     required this.onPressed,
     this.count = 0,
     this.activated = false,
     this.size = 20,
     this.activatedColor = Colors.red,
-  }) : assert(icon != null || iconPath != null);
+  });
 
-  final IconData? icon;
-  final String? iconPath;
+  final String iconPath;
+  final String? iconActivatedPath;
   final Function() onPressed;
   final int count;
   final bool activated;
@@ -28,15 +28,16 @@ class IconButtonWithCounter extends StatelessWidget {
       children: [
         IconButton(
           onPressed: onPressed,
-          icon: icon != null
-              ? Icon(
-                  icon,
-                  size: size.w,
-                  color: Colors.grey,
+          icon: iconActivatedPath != null && activated
+              ? SvgPicture.asset(
+                  iconActivatedPath!,
+                  width: size.w,
+                  height: size.w,
+                  color: activatedColor,
                 )
               : SvgPicture.asset(
-                  iconPath!,
-                  color: Colors.grey,
+                  iconPath,
+                  color: activated ? activatedColor : Colors.grey,
                   width: size.w,
                   height: size.w,
                 ),

@@ -40,7 +40,8 @@ dependencies:
   flutter_secure_storage: 9.0.0
   flutter_svg: 2.0.10+1
   flutterchain: 1.0.0-beta.14
-  html: ^0.15.4
+  html: 0.15.4
+  image_picker: 1.0.7
   intl: 0.18.1
   json_annotation: ^4.8.1
   local_auth: 2.2.0
