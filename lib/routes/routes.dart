@@ -17,6 +17,9 @@ class _Home extends RouteClass {
   @override
   String module = '/home';
   String startPage = '/';
+  String postPage = '/post';
+  String postsFeed = '/posts_feed';
+  String accountPage = '/account';
 }
 
 abstract class RouteClass {

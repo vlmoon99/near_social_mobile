@@ -13,7 +13,7 @@ import 'package:near_social_mobile/routes/routes.dart';
 import 'config/constants.dart';
 import 'config/setup.dart';
 
-void main() {
+void main() async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
     await initOfApp();
@@ -72,6 +72,13 @@ class AppWidget extends StatelessWidget {
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
+      theme: ThemeData.light(useMaterial3: true).copyWith(
+        appBarTheme: const AppBarTheme(
+          surfaceTintColor: Colors.white,
+          elevation: 1,
+          shadowColor: Colors.black,
+        ),
+      ),
     );
   }
 }

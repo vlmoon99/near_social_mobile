@@ -12,7 +12,6 @@ class AuthGuard extends RouteGuard {
     if (value?.isNotEmpty ?? false) {
       return Future.value(true);
     } else {
-      //TODO: temporary true
       return Future.value(false);
     }
   }
