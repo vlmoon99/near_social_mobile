@@ -20,7 +20,9 @@ class PostsController {
 
   Future<void> loadPosts() async {
     try {
-      state.copyWith(status: PostLoadingStatus.loading);
+      _streamController.add(
+        state.copyWith(status: PostLoadingStatus.loading),
+      );
 
       final posts = await nearSocialApi.getPosts();
 
@@ -329,7 +331,7 @@ class PostsController {
           state.copyWith(
             posts: List.of(state.posts)
               ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-                commentList: List.from(state.posts[indexOfPost].commentList!)
+                commentList: List.from(state.posts[indexOfPost].commentList ?? [])
                   ..[indexOfComment] = comment.copyWith(
                     likeList: comment.likeList
                       ..removeWhere(
@@ -351,7 +353,7 @@ class PostsController {
           state.copyWith(
             posts: List.of(state.posts)
               ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-                commentList: List.from(state.posts[indexOfPost].commentList!)
+                commentList: List.from(state.posts[indexOfPost].commentList ?? [])
                   ..[indexOfComment] = comment.copyWith(
                     likeList: comment.likeList
                       ..add(
@@ -377,7 +379,7 @@ class PostsController {
           state.copyWith(
             posts: List.of(state.posts)
               ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-                commentList: List.from(state.posts[indexOfPost].commentList!)
+                commentList: List.from(state.posts[indexOfPost].commentList ?? [])
                   ..[indexOfComment] = comment.copyWith(
                     likeList: comment.likeList
                       ..add(
@@ -394,7 +396,7 @@ class PostsController {
           state.copyWith(
             posts: List.of(state.posts)
               ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-                commentList: List.from(state.posts[indexOfPost].commentList!)
+                commentList: List.from(state.posts[indexOfPost].commentList ?? [])
                   ..[indexOfComment] = comment.copyWith(
                     likeList: comment.likeList
                       ..removeWhere(

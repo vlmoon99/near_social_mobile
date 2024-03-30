@@ -10,6 +10,7 @@ import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/shared_widgets/icon_button_with_counter.dart';
+import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 
 class CommentCard extends StatelessWidget {
   const CommentCard({super.key, required this.comment, required this.post});
@@ -51,7 +52,7 @@ class CommentCard extends StatelessWidget {
                     comment.authorInfo.profileImageLink,
                     errorBuilder: (context, error, stackTrace) {
                       return Image.asset(
-                        "assets/media/images/standart_avatar.png",
+                        NearAssets.standartAvatar,
                         fit: BoxFit.cover,
                       );
                     },
@@ -70,20 +71,15 @@ class CommentCard extends StatelessWidget {
               comment.commentBody.text.trim(),
             ),
             if (comment.commentBody.mediaLink != null) ...[
-              Image.network(
-                comment.commentBody.mediaLink!,
-                headers: const {"Referer": "https://near.social/"},
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const CircularProgressIndicator();
-                },
+              NearNetworkImage(
+                imageUrl: comment.commentBody.mediaLink!,
               ),
             ],
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 IconButtonWithCounter(
-                  iconPath: "assets/media/icons/comment_icon.svg",
+                  iconPath: NearAssets.commentIcon,
                   onPressed: () {
                     showDialog(
                       context: context,
@@ -113,8 +109,8 @@ class CommentCard extends StatelessWidget {
                   },
                 ),
                 IconButtonWithCounter(
-                  iconPath: "assets/media/icons/like_icon.svg",
-                  iconActivatedPath: "assets/media/icons/like_activated.svg",
+                  iconPath: NearAssets.likeIcon,
+                  iconActivatedPath: NearAssets.activatedLikeIcon,
                   count: comment.likeList.length,
                   activated: comment.likeList.any(
                     (element) =>

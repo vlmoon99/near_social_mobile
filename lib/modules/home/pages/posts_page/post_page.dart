@@ -12,6 +12,7 @@ import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/shared_widgets/icon_button_with_counter.dart';
+import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 
 class PostPage extends StatelessWidget {
   const PostPage(
@@ -70,7 +71,7 @@ class PostPage extends StatelessWidget {
                           post.authorInfo.profileImageLink,
                           errorBuilder: (context, error, stackTrace) {
                             return Image.asset(
-                              "assets/media/images/standart_avatar.png",
+                              NearAssets.standartAvatar,
                               fit: BoxFit.cover,
                             );
                           },
@@ -89,20 +90,13 @@ class PostPage extends StatelessWidget {
                     post.postBody.text.trim(),
                   ),
                   if (post.postBody.mediaLink != null) ...[
-                    Image.network(
-                      post.postBody.mediaLink!,
-                      headers: const {"Referer": "https://near.social/"},
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const CircularProgressIndicator();
-                      },
-                    ),
+                    NearNetworkImage(imageUrl: post.postBody.mediaLink!),
                   ],
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       IconButtonWithCounter(
-                        iconPath: "assets/media/icons/comment_icon.svg",
+                        iconPath: NearAssets.commentIcon,
                         onPressed: () async {
                           showDialog(
                             context: context,
@@ -130,9 +124,8 @@ class PostPage extends StatelessWidget {
                         },
                       ),
                       IconButtonWithCounter(
-                        iconPath: "assets/media/icons/like_icon.svg",
-                        iconActivatedPath:
-                            "assets/media/icons/like_activated.svg",
+                        iconPath: NearAssets.likeIcon,
+                        iconActivatedPath: NearAssets.activatedLikeIcon,
                         count: post.likeList.length,
                         activated: post.likeList.any(
                           (element) =>
@@ -164,7 +157,7 @@ class PostPage extends StatelessWidget {
                         },
                       ),
                       IconButtonWithCounter(
-                        iconPath: "assets/media/icons/repost_icon.svg",
+                        iconPath: NearAssets.repostIcon,
                         count: post.repostList.length,
                         activated: post.repostList.any(
                           (element) =>
@@ -236,7 +229,7 @@ class PostPage extends StatelessWidget {
                         },
                       ),
                       IconButtonWithCounter(
-                        iconPath: "assets/media/icons/share_icon.svg",
+                        iconPath: NearAssets.shareIcon,
                         onPressed: () async {
                           final nearSocialApi = Modular.get<NearSocialApi>();
                           final urlOfPost = nearSocialApi.getUrlOfPost(
@@ -275,3 +268,4 @@ class PostPage extends StatelessWidget {
     );
   }
 }
+
