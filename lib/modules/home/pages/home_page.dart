@@ -63,12 +63,8 @@ class _HomePageState extends State<HomePage> {
           ),
           body: const RouterOutlet(),
           bottomNavigationBar: BottomAppBar(
-            height: 60.w,
+            height: 60.w,       
             padding: EdgeInsets.zero,
-            elevation: 5,
-            surfaceTintColor: Colors.transparent,
-            shadowColor: Colors.black,
-            color: Colors.white,
             child: NavigationListener(builder: (context, _) {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
