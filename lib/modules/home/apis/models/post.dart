@@ -1,14 +1,14 @@
 // ignore_for_file: hash_and_equals
 
 import 'package:flutter/foundation.dart';
-import 'package:near_social_mobile/modules/home/apis/models/author_info.dart';
+import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
 import 'package:near_social_mobile/modules/home/apis/models/like.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
 
 class Post {
-  final AuthorInfo authorInfo;
+  final GeneralAccountInfo authorInfo;
   final int blockHeight;
   final DateTime date;
   final PostBody postBody;
@@ -29,7 +29,7 @@ class Post {
   });
 
   Post copyWith({
-    AuthorInfo? authorInfo,
+    GeneralAccountInfo? authorInfo,
     int? blockHeight,
     DateTime? date,
     PostBody? postBody,
@@ -101,7 +101,6 @@ class PostCreationInfo {
   }
 }
 
-
 class PostBody {
   String text;
   String? mediaLink;
@@ -120,5 +119,3 @@ class PostBody {
     return 'PostBody(text: $text, mediaLink: $mediaLink)';
   }
 }
-
-

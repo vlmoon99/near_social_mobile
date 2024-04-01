@@ -18,14 +18,14 @@ void main() async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
     await initOfApp();
-    FlutterError.onError = (FlutterErrorDetails details) {
-      final catcher = Modular.get<Catcher>();
-      catcher.exceptionsHandler.add(AppExceptions(
-        messageForUser: details.exceptionAsString(),
-        messageForDev: details.exception.runtimeType.toString(),
-        statusCode: AppErrorCodes.errorFromFlutter,
-      ));
-    };
+    // FlutterError.onError = (FlutterErrorDetails details) {
+    //   final catcher = Modular.get<Catcher>();
+    //   catcher.exceptionsHandler.add(AppExceptions(
+    //     messageForUser: details.exceptionAsString(),
+    //     messageForDev: details.exception.runtimeType.toString(),
+    //     statusCode: AppErrorCodes.errorFromFlutter,
+    //   ));
+    // };
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,

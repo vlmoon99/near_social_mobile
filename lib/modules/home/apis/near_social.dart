@@ -5,11 +5,10 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_smart_contract_arguments.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
-import 'package:near_social_mobile/modules/home/apis/models/author_info.dart';
+import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
 import 'package:near_social_mobile/modules/home/apis/models/like.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
-import 'package:html/parser.dart' as htmlParser;
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
 
@@ -19,6 +18,8 @@ class NearSocialApi {
 
   NearSocialApi({required NearBlockChainService nearBlockChainService})
       : _nearBlockChainService = nearBlockChainService;
+
+  final _ipfsMediaHosting = "https://ipfs.near.social/ipfs/";
 
   Future<List<Post>> getPosts({
     int? lastBlockHeightIndexOfPosts,
@@ -58,11 +59,16 @@ class NearSocialApi {
       final List<Post> posts = [];
 
       for (final info in fullpostsCreationInfo) {
-        final authorInfo = AuthorInfo(
+        final authorInfo = GeneralAccountInfo(
           accountId: info.postCreationInfo.accountId,
           profileImageLink: "",
+          name: "",
+          description: "",
+          backgroundImageLink: "",
+          linktree: {},
+          tags: [],
         );
-        //     await getAuthorInfo(
+        //     await getGeneralAccountInfo(
         //   accountId: info.postCreationInfo.accountId,
         // );
 
@@ -75,12 +81,12 @@ class NearSocialApi {
 
         ReposterInfo? reposterInfo;
         if (info.reposterPostCreationInfo != null) {
-          // final reposterAuthorInfo = await getAuthorInfo(
+          // final reposterGeneralAccountInfo = await getGeneralAccountInfo(
           //   accountId: info.reposterPostCreationInfo!.accountId,
           // );
           reposterInfo = ReposterInfo(
             accountId: info.reposterPostCreationInfo!.accountId,
-            // name: reposterAuthorInfo.name,
+            // name: reposterGeneralAccountInfo.name,
             blockHeight: info.reposterPostCreationInfo!.blockHeight,
           );
           // date = await getDateOfBlockHeight(
@@ -238,12 +244,11 @@ class NearSocialApi {
         return PostBody(text: "", mediaLink: null);
       }
       final postInfo = jsonDecode(response.data[accountId]["post"]["main"]);
-      const urlTemplateForImage = "https://ipfs.near.social/ipfs/";
       return PostBody(
         text: postInfo["text"] ?? "",
         mediaLink: postInfo["image"] != null
             ? postInfo["image"]["ipfs_cid"] != null
-                ? urlTemplateForImage + postInfo["image"]["ipfs_cid"]
+                ? _ipfsMediaHosting + postInfo["image"]["ipfs_cid"]
                 : postInfo["image"]["url"]
             : null,
       );
@@ -354,7 +359,7 @@ class NearSocialApi {
           blockHeight: info.blockHeight,
         );
 
-        final authorInfo = await getAuthorInfo(
+        final authorInfo = await getGeneralAccountInfo(
           accountId: info.accountId,
         );
 
@@ -438,12 +443,11 @@ class NearSocialApi {
       );
       final commentInfo =
           jsonDecode(response.data[accountId]["post"]["comment"]);
-      const urlTemplateForImage = "https://ipfs.near.social/ipfs/";
       return CommentBody(
         text: commentInfo["text"],
         mediaLink: commentInfo["image"] != null
             ? commentInfo["image"]["ipfs_cid"] != null
-                ? urlTemplateForImage + commentInfo["image"]["ipfs_cid"]
+                ? _ipfsMediaHosting + commentInfo["image"]["ipfs_cid"]
                 : commentInfo["image"]["url"]
             : null,
       );
@@ -481,41 +485,41 @@ class NearSocialApi {
     }
   }
 
-  Future<AuthorInfo> getAuthorInfo({required String accountId}) async {
+  Future<GeneralAccountInfo> getGeneralAccountInfo(
+      {required String accountId}) async {
     try {
+      var headers = {'Content-Type': 'application/json'};
+      final data = json.encode({
+        "keys": ["$accountId/profile/**"]
+      });
       final response = await _dio.request(
-        'https://near.social/mob.near/widget/ProfilePage?accountId=$accountId',
+        'https://api.near.social/get',
         options: Options(
-          method: 'GET',
+          method: 'POST',
+          headers: headers,
         ),
+        data: data,
       );
-      final htmlResponse = response.data;
-      // Parse the HTML response
-      final document = htmlParser.parse(htmlResponse);
 
-      // Extract the title tag contents which contains the name
-      final titleElement = document.querySelector('title');
-      final titleText = titleElement!.text;
+      final profileInfo = (response.data as Map<String, dynamic>).isNotEmpty
+          ? (response.data[accountId]["profile"] ?? {}) as Map<String, dynamic>
+          : {};
 
-      // Extract the name from the title text
-      final int endOfUserName = titleText.indexOf('(');
-
-      late String? name;
-      if (endOfUserName == -1) {
-        name = null;
-      } else {
-        name = titleText.substring(0, endOfUserName).trim();
-      }
-
-      // Extract the og:image meta tag content which contains the picture URL
-      final ogImageElement =
-          document.querySelector('meta[property="og:image"]');
-      final pictureUrl = ogImageElement!.attributes['content']!;
-
-      return AuthorInfo(
+      return GeneralAccountInfo(
         accountId: accountId,
-        name: name,
-        profileImageLink: pictureUrl,
+        name: profileInfo["name"] ?? "",
+        description: profileInfo["description"] ?? "",
+        linktree: profileInfo["linktree"] ?? {},
+        tags: profileInfo["tags"] != null
+            ? (profileInfo["tags"] as Map<String, dynamic>).keys.toList()
+            : [],
+        profileImageLink: "https://i.near.social/magic/large/https://near.social/magic/img/account/$accountId",
+        //TODO: load nft image for profile background
+        backgroundImageLink: profileInfo["backgroundImage"] != null
+            ? profileInfo["backgroundImage"]["ipfs_cid"] != null
+                ? _ipfsMediaHosting + profileInfo["backgroundImage"]["ipfs_cid"]
+                : profileInfo["backgroundImage"]["url"] ?? ""
+            : "",
       );
     } catch (err) {
       rethrow;

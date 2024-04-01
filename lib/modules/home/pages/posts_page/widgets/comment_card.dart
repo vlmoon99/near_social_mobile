@@ -47,21 +47,18 @@ class CommentCard extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: Image.network(
-                    fit: BoxFit.cover,
-                    comment.authorInfo.profileImageLink,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.asset(
-                        NearAssets.standartAvatar,
-                        fit: BoxFit.cover,
-                      );
-                    },
+                  child: NearNetworkImage(
+                    imageUrl: comment.authorInfo.profileImageLink,
+                    placeholder: Image.asset(
+                      NearAssets.standartAvatar,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
-                    "${comment.authorInfo.name ?? ""} @${comment.authorInfo.accountId}",
+                    "${comment.authorInfo.name} @${comment.authorInfo.accountId}",
                   ),
                 ),
               ],

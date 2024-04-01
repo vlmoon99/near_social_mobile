@@ -119,7 +119,7 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 10),
                                   child: Text(
-                                      "${post.authorInfo.name ?? ""} @${post.authorInfo.accountId}"),
+                                      "${post.authorInfo.name} @${post.authorInfo.accountId}"),
                                 ),
                                 ConstrainedBox(
                                   constraints: BoxConstraints(
@@ -136,16 +136,13 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
                                           shape: BoxShape.circle,
                                         ),
                                         clipBehavior: Clip.antiAlias,
-                                        child: Image.network(
-                                          fit: BoxFit.cover,
-                                          post.authorInfo.profileImageLink,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                            return Image.asset(
-                                              NearAssets.standartAvatar,
-                                              fit: BoxFit.cover,
-                                            );
-                                          },
+                                        child: NearNetworkImage(
+                                          imageUrl:
+                                              post.authorInfo.profileImageLink,
+                                          placeholder: Image.asset(
+                                            NearAssets.standartAvatar,
+                                            fit: BoxFit.cover,
+                                          ),
                                         ),
                                       ),
                                       SizedBox(width: 10.w),

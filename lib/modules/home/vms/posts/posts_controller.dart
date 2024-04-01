@@ -147,7 +147,7 @@ class PostsController {
     );
 
     nearSocialApi
-        .getAuthorInfo(accountId: post.authorInfo.accountId)
+        .getGeneralAccountInfo(accountId: post.authorInfo.accountId)
         .then((authorInfo) {
       _streamController.add(
         state.copyWith(
@@ -159,7 +159,7 @@ class PostsController {
     });
     if (post.reposterInfo != null) {
       nearSocialApi
-          .getAuthorInfo(accountId: post.reposterInfo!.accountId)
+          .getGeneralAccountInfo(accountId: post.reposterInfo!.accountId)
           .then((authorInfo) {
         _streamController.add(
           state.copyWith(
@@ -331,13 +331,14 @@ class PostsController {
           state.copyWith(
             posts: List.of(state.posts)
               ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-                commentList: List.from(state.posts[indexOfPost].commentList ?? [])
-                  ..[indexOfComment] = comment.copyWith(
-                    likeList: comment.likeList
-                      ..removeWhere(
-                        (element) => element.accountId == accountId,
+                commentList:
+                    List.from(state.posts[indexOfPost].commentList ?? [])
+                      ..[indexOfComment] = comment.copyWith(
+                        likeList: comment.likeList
+                          ..removeWhere(
+                            (element) => element.accountId == accountId,
+                          ),
                       ),
-                  ),
               ),
           ),
         );
@@ -353,15 +354,16 @@ class PostsController {
           state.copyWith(
             posts: List.of(state.posts)
               ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-                commentList: List.from(state.posts[indexOfPost].commentList ?? [])
-                  ..[indexOfComment] = comment.copyWith(
-                    likeList: comment.likeList
-                      ..add(
-                        Like(
-                          accountId: accountId,
-                        ),
+                commentList:
+                    List.from(state.posts[indexOfPost].commentList ?? [])
+                      ..[indexOfComment] = comment.copyWith(
+                        likeList: comment.likeList
+                          ..add(
+                            Like(
+                              accountId: accountId,
+                            ),
+                          ),
                       ),
-                  ),
               ),
           ),
         );
@@ -379,15 +381,16 @@ class PostsController {
           state.copyWith(
             posts: List.of(state.posts)
               ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-                commentList: List.from(state.posts[indexOfPost].commentList ?? [])
-                  ..[indexOfComment] = comment.copyWith(
-                    likeList: comment.likeList
-                      ..add(
-                        Like(
-                          accountId: accountId,
-                        ),
+                commentList:
+                    List.from(state.posts[indexOfPost].commentList ?? [])
+                      ..[indexOfComment] = comment.copyWith(
+                        likeList: comment.likeList
+                          ..add(
+                            Like(
+                              accountId: accountId,
+                            ),
+                          ),
                       ),
-                  ),
               ),
           ),
         );
@@ -396,13 +399,14 @@ class PostsController {
           state.copyWith(
             posts: List.of(state.posts)
               ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-                commentList: List.from(state.posts[indexOfPost].commentList ?? [])
-                  ..[indexOfComment] = comment.copyWith(
-                    likeList: comment.likeList
-                      ..removeWhere(
-                        (element) => element.accountId == accountId,
+                commentList:
+                    List.from(state.posts[indexOfPost].commentList ?? [])
+                      ..[indexOfComment] = comment.copyWith(
+                        likeList: comment.likeList
+                          ..removeWhere(
+                            (element) => element.accountId == accountId,
+                          ),
                       ),
-                  ),
               ),
           ),
         );

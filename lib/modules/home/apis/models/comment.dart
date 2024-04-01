@@ -1,9 +1,11 @@
+// ignore_for_file: hash_and_equals
+
 import 'package:flutter/foundation.dart';
-import 'package:near_social_mobile/modules/home/apis/models/author_info.dart';
+import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/like.dart';
 
 class Comment {
-  final AuthorInfo authorInfo;
+  final GeneralAccountInfo authorInfo;
   final int blockHeight;
   final DateTime date;
   final CommentBody commentBody;
@@ -18,7 +20,7 @@ class Comment {
   });
 
   Comment copyWith({
-    AuthorInfo? authorInfo,
+    GeneralAccountInfo? authorInfo,
     int? blockHeight,
     DateTime? date,
     CommentBody? commentBody,

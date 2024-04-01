@@ -66,21 +66,18 @@ class PostPage extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: Image.network(
-                          fit: BoxFit.cover,
-                          post.authorInfo.profileImageLink,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              NearAssets.standartAvatar,
-                              fit: BoxFit.cover,
-                            );
-                          },
+                        child: NearNetworkImage(
+                          imageUrl: post.authorInfo.profileImageLink,
+                          placeholder: Image.asset(
+                            NearAssets.standartAvatar,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                       SizedBox(width: 10.w),
                       Expanded(
                         child: Text(
-                          "${post.authorInfo.name ?? ""} @${post.authorInfo.accountId}",
+                          "${post.authorInfo.name} @${post.authorInfo.accountId}",
                         ),
                       ),
                     ],
@@ -268,4 +265,3 @@ class PostPage extends StatelessWidget {
     );
   }
 }
-
