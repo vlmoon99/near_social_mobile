@@ -24,4 +24,5 @@ class NearAssets {
   static const repostIcon = "assets/media/icons/repost_icon.svg";
   static const shareIcon = "assets/media/icons/share_icon.svg";
   static const standartAvatar = "assets/media/images/standart_avatar.png";
+  static const widgetPlaceholder = "assets/media/images/widget_placeholder.png";
 }

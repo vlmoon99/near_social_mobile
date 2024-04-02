@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  bos_gateway_viewer: 0.0.1
   cupertino_icons: ^1.0.2
   dio: 5.4.1
   easy_localization: 3.0.5
@@ -48,6 +49,7 @@ dependencies:
   mockito: 5.4.4
   qr_code_scanner: 1.0.1
   rxdart: 0.27.7
+  visibility_detector: 0.4.0+2
 
 dev_dependencies:
   build_runner: ^2.4.8

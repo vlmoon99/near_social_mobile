@@ -3,14 +3,16 @@ import 'package:near_social_mobile/modules/core_module.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/pages/account_info_page.dart';
 import 'package:near_social_mobile/modules/home/pages/home_page.dart';
+import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_app_page.dart';
+import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_list_page.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/posts_feed_page.dart';
+import 'package:near_social_mobile/modules/home/vms/near_widgets/near_widgets_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 
 import 'pages/posts_page/post_page.dart';
 
 class HomeModule extends Module {
-  
   @override
   List<Module> get imports => [
         CoreModule(),
@@ -20,6 +22,7 @@ class HomeModule extends Module {
   void binds(Injector i) {
     i.add(NearSocialApi.new);
     i.addSingleton(PostsController.new);
+    i.addSingleton(NearWidgetsController.new);
   }
 
   @override
@@ -35,6 +38,10 @@ class HomeModule extends Module {
           ChildRoute(
             Routes.home.accountPage,
             child: (context) => const AccountInfoPage(),
+          ),
+          ChildRoute(
+            Routes.home.widgetsListPage,
+            child: (context) => const NearWidgetListPage(),
           )
         ]);
     r.child(
@@ -43,6 +50,10 @@ class HomeModule extends Module {
         accountId: r.args.queryParams['accountId'] as String,
         blockHeight: int.parse(r.args.queryParams['blockHeight'] as String),
       ),
+    );
+    r.child(
+      Routes.home.widgetPage,
+      child: (context) => NearWidget(nearWidgetSetupCredentials: r.args.data),
     );
   }
 }

@@ -488,7 +488,7 @@ class NearSocialApi {
   Future<GeneralAccountInfo> getGeneralAccountInfo(
       {required String accountId}) async {
     try {
-      var headers = {'Content-Type': 'application/json'};
+      final headers = {'Content-Type': 'application/json'};
       final data = json.encode({
         "keys": ["$accountId/profile/**"]
       });
@@ -513,7 +513,8 @@ class NearSocialApi {
         tags: profileInfo["tags"] != null
             ? (profileInfo["tags"] as Map<String, dynamic>).keys.toList()
             : [],
-        profileImageLink: "https://i.near.social/magic/large/https://near.social/magic/img/account/$accountId",
+        profileImageLink:
+            "https://i.near.social/magic/large/https://near.social/magic/img/account/$accountId",
         //TODO: load nft image for profile background
         backgroundImageLink: profileInfo["backgroundImage"] != null
             ? profileInfo["backgroundImage"]["ipfs_cid"] != null
@@ -727,9 +728,9 @@ class NearSocialApi {
   Future<String> uploadFileToNearFileHosting({required String filepath}) async {
     try {
       final file = File(filepath);
-      var headers = {'Content-Type': 'image/jpeg'};
+      final headers = {'Content-Type': 'image/jpeg'};
 
-      var response = await _dio.request(
+      final response = await _dio.request(
         'https://ipfs.near.social/add',
         options: Options(
           method: 'POST',
@@ -833,5 +834,119 @@ class NearSocialApi {
     } catch (err) {
       rethrow;
     }
+  }
+
+  Future<List<NearWidgetInfo>> getWidgetsList() async {
+    try {
+      final headers = {'Content-Type': 'application/json'};
+      final responseOfWidgetsList = await _dio.request(
+        'https://api.near.social/get',
+        options: Options(
+          method: 'POST',
+          headers: headers,
+        ),
+        data: {
+          "keys": ["*/widget/*/metadata/**"]
+        },
+      );
+
+      List<String> listOfWidgetPaths = [];
+
+      (responseOfWidgetsList.data as Map<String, dynamic>)
+          .forEach((accountId, value) {
+        final listOfWidgetNames = value["widget"] as Map<String, dynamic>;
+        listOfWidgetPaths.addAll(listOfWidgetNames.keys
+            .map((widgetUrlName) => "$accountId/widget/$widgetUrlName"));
+      });
+
+      final responseOfWidgetsBlockHeight = await _dio.request(
+        'https://api.near.social/keys',
+        options: Options(
+          method: 'POST',
+          headers: headers,
+        ),
+        data: {
+          "keys": [...listOfWidgetPaths],
+          "options": {"return_type": "BlockHeight"}
+        },
+      );
+
+      final List<NearWidgetInfo> widgets = [];
+      (responseOfWidgetsList.data as Map<String, dynamic>).forEach(
+        (key, value) {
+          final accountId = key;
+          final listOfWidgetNames = value["widget"] as Map<String, dynamic>;
+          listOfWidgetNames.forEach(
+            (key, value) {
+              final widgetUrlName = key;
+              final metadata = value["metadata"] as Map<String, dynamic>;
+              widgets.add(
+                NearWidgetInfo(
+                  accountId: accountId,
+                  urlName: widgetUrlName,
+                  name: metadata["name"] ?? "",
+                  description: metadata["description"] ?? "",
+                  imageUrl: metadata["image"] != null &&
+                          metadata["image"]["ipfs_cid"] != null
+                      ? _ipfsMediaHosting + metadata["image"]["ipfs_cid"]
+                      : metadata["image"]?["url"] ?? "",
+                  tags: metadata["tags"] != null
+                      ? (metadata["tags"] as Map<String, dynamic>).keys.toList()
+                      : [],
+                  blockHeight: responseOfWidgetsBlockHeight.data[accountId]
+                      ["widget"][widgetUrlName],
+                ),
+              );
+            },
+          );
+        },
+      );
+
+      return widgets;
+    } catch (err) {
+      rethrow;
+    }
+  }
+}
+
+class NearWidgetInfo {
+  final String accountId;
+  final String urlName;
+  final String name;
+  final String description;
+  final String imageUrl;
+  final List<String> tags;
+  final int blockHeight;
+
+  NearWidgetInfo({
+    required this.accountId,
+    required this.urlName,
+    required this.name,
+    required this.description,
+    required this.imageUrl,
+    required this.tags,
+    required this.blockHeight,
+  });
+
+  String get widgetPath => "$accountId/widget/$urlName";
+
+  NearWidgetInfo copyWith({
+    String? accountId,
+    String? urlName,
+    String? name,
+    String? description,
+    String? imageUrl,
+    List<String>? tags,
+    int? blockHeight,
+  }) {
+    return NearWidgetInfo(
+      accountId: accountId ?? this.accountId,
+      urlName: urlName ?? this.urlName,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      tags: tags ?? this.tags,
+      blockHeight: blockHeight ?? this.blockHeight,
+    );
   }
 }
