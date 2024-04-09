@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 class NearNetworkImage extends StatelessWidget {
   const NearNetworkImage({
-    super.key, required this.imageUrl, this.placeholder,
+    super.key,
+    required this.imageUrl,
+    this.placeholder,
   });
 
   final String imageUrl;

@@ -5,9 +5,12 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_smart_contract_arguments.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
+import 'package:near_social_mobile/modules/home/apis/models/follower.dart';
 import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
 import 'package:near_social_mobile/modules/home/apis/models/like.dart';
+import 'package:near_social_mobile/modules/home/apis/models/near_widget_info.dart';
+import 'package:near_social_mobile/modules/home/apis/models/nft.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
@@ -24,15 +27,18 @@ class NearSocialApi {
   Future<List<Post>> getPosts({
     int? lastBlockHeightIndexOfPosts,
     int? lastBlockHeightIndexOfReposts,
+    List<String>? targetAccounts,
+    int? limit = 10,
   }) async {
     try {
       final onlyPosts = await _getOnlyPosts(
-        limit: 10,
-        fromBlockHeight: lastBlockHeightIndexOfPosts,
-      );
+          limit: limit,
+          fromBlockHeight: lastBlockHeightIndexOfPosts,
+          targetAccounts: targetAccounts);
       final reposts = await _getReposts(
-        limit: 10,
+        limit: limit,
         fromBlockHeight: lastBlockHeightIndexOfReposts,
+        targetAccounts: targetAccounts,
       );
 
       final List<FullPostCreationInfo> fullpostsCreationInfo = [
@@ -139,16 +145,18 @@ class NearSocialApi {
 
   Future<List<FullPostCreationInfo>> _getOnlyPosts({
     int? fromBlockHeight,
-    int limit = 30,
+    int? limit,
+    List<String>? targetAccounts,
   }) async {
     try {
       final data = {
         "action": "post",
         "key": "main",
         "options": {
-          "limit": limit,
+          if (limit != null) "limit": limit,
           "order": "desc",
           if (fromBlockHeight != null) "from": fromBlockHeight,
+          if (targetAccounts != null) "accountId": targetAccounts
         }
       };
       final response = await _dio.request(
@@ -180,16 +188,18 @@ class NearSocialApi {
 
   Future<List<FullPostCreationInfo>> _getReposts({
     int? fromBlockHeight,
-    int limit = 30,
+    int? limit,
+    List<String>? targetAccounts,
   }) async {
     try {
       final data = {
         "action": "repost",
         "key": "main",
         "options": {
-          "limit": limit,
+          if (limit != null) "limit": limit,
           "order": "desc",
           if (fromBlockHeight != null) "from": fromBlockHeight,
+          if (targetAccounts != null) "accountId": targetAccounts,
         }
       };
       final response = await _dio.request(
@@ -506,25 +516,42 @@ class NearSocialApi {
           : {};
 
       return GeneralAccountInfo(
-        accountId: accountId,
-        name: profileInfo["name"] ?? "",
-        description: profileInfo["description"] ?? "",
-        linktree: profileInfo["linktree"] ?? {},
-        tags: profileInfo["tags"] != null
-            ? (profileInfo["tags"] as Map<String, dynamic>).keys.toList()
-            : [],
-        profileImageLink:
-            "https://i.near.social/magic/large/https://near.social/magic/img/account/$accountId",
-        //TODO: load nft image for profile background
-        backgroundImageLink: profileInfo["backgroundImage"] != null
-            ? profileInfo["backgroundImage"]["ipfs_cid"] != null
-                ? _ipfsMediaHosting + profileInfo["backgroundImage"]["ipfs_cid"]
-                : profileInfo["backgroundImage"]["url"] ?? ""
-            : "",
-      );
+          accountId: accountId,
+          name: profileInfo["name"] ?? "",
+          description: profileInfo["description"] ?? "",
+          linktree: profileInfo["linktree"] ?? {},
+          tags: profileInfo["tags"] != null
+              ? (profileInfo["tags"] as Map<String, dynamic>).keys.toList()
+              : [],
+          profileImageLink:
+              "https://i.near.social/magic/large/https://near.social/magic/img/account/$accountId",
+          backgroundImageLink: _getLinkOfNearPicture(
+              requestBody: profileInfo, typeOfImage: "backgroundImage"));
     } catch (err) {
       rethrow;
     }
+  }
+
+  String _getLinkOfNearPicture(
+      {required Map requestBody, required String typeOfImage}) {
+    String imageLink = "";
+
+    if (requestBody[typeOfImage] != null) {
+      final image = requestBody[typeOfImage];
+
+      if (image["ipfs_cid"] != null) {
+        imageLink = _ipfsMediaHosting + image["ipfs_cid"];
+      } else if (image["url"] != null) {
+        imageLink = image["url"];
+      } else if (image["nft"] != null) {
+        final nft = image["nft"];
+        if (nft["contractId"] != null && nft["tokenId"] != null) {
+          imageLink =
+              "https://i.near.social/magic/large/https://near.social/magic/img/nft/${nft["contractId"]}/${nft["tokenId"]}";
+        }
+      }
+    }
+    return imageLink;
   }
 
   String getUrlOfPost({required String accountId, required int blockHeight}) {
@@ -836,7 +863,7 @@ class NearSocialApi {
     }
   }
 
-  Future<List<NearWidgetInfo>> getWidgetsList() async {
+  Future<List<NearWidgetInfo>> getWidgetsList({String? accountId}) async {
     try {
       final headers = {'Content-Type': 'application/json'};
       final responseOfWidgetsList = await _dio.request(
@@ -846,7 +873,7 @@ class NearSocialApi {
           headers: headers,
         ),
         data: {
-          "keys": ["*/widget/*/metadata/**"]
+          "keys": ["${accountId ?? "*"}/widget/*/metadata/**"]
         },
       );
 
@@ -886,10 +913,8 @@ class NearSocialApi {
                   urlName: widgetUrlName,
                   name: metadata["name"] ?? "",
                   description: metadata["description"] ?? "",
-                  imageUrl: metadata["image"] != null &&
-                          metadata["image"]["ipfs_cid"] != null
-                      ? _ipfsMediaHosting + metadata["image"]["ipfs_cid"]
-                      : metadata["image"]?["url"] ?? "",
+                  imageUrl: _getLinkOfNearPicture(
+                      requestBody: metadata, typeOfImage: "image"),
                   tags: metadata["tags"] != null
                       ? (metadata["tags"] as Map<String, dynamic>).keys.toList()
                       : [],
@@ -907,46 +932,321 @@ class NearSocialApi {
       rethrow;
     }
   }
-}
 
-class NearWidgetInfo {
-  final String accountId;
-  final String urlName;
-  final String name;
-  final String description;
-  final String imageUrl;
-  final List<String> tags;
-  final int blockHeight;
+  Future<List<GeneralAccountInfo>> getNearSocialAccountList() async {
+    try {
+      var headers = {'Content-Type': 'application/json'};
+      var data = {
+        "keys": ["*/profile/**"]
+      };
+      var response = await _dio.request(
+        'https://api.near.social/get',
+        options: Options(
+          method: 'POST',
+          headers: headers,
+        ),
+        data: data,
+      );
+      final List<GeneralAccountInfo> listOfNearSocialAccounts = [];
+      (response.data as Map<String, dynamic>).forEach(
+        (accountId, value) {
+          final profileInfo = value["profile"] as Map<String, dynamic>;
+          listOfNearSocialAccounts.add(
+            GeneralAccountInfo(
+                accountId: accountId,
+                name: profileInfo["name"] ?? "",
+                description: profileInfo["description"] ?? "",
+                linktree: profileInfo["linktree"] ?? {},
+                tags: profileInfo["tags"] != null && profileInfo["tags"] is Map
+                    ? (profileInfo["tags"] as Map<String, dynamic>)
+                        .keys
+                        .toList()
+                    : [],
+                profileImageLink:
+                    "https://i.near.social/magic/large/https://near.social/magic/img/account/$accountId",
+                backgroundImageLink: _getLinkOfNearPicture(
+                    requestBody: profileInfo, typeOfImage: "backgroundImage")),
+          );
+        },
+      );
 
-  NearWidgetInfo({
-    required this.accountId,
-    required this.urlName,
-    required this.name,
-    required this.description,
-    required this.imageUrl,
-    required this.tags,
-    required this.blockHeight,
-  });
+      return listOfNearSocialAccounts;
+    } catch (err) {
+      rethrow;
+    }
+  }
 
-  String get widgetPath => "$accountId/widget/$urlName";
+  Future<List<Follower>> getFollowingsOfAccount(
+      {required String accountId}) async {
+    try {
+      final headers = {'Content-Type': 'application/json'};
+      final data = {
+        "keys": ["$accountId/graph/follow/*"]
+      };
+      var response = await _dio.request(
+        'https://api.near.social/keys',
+        options: Options(
+          method: 'POST',
+          headers: headers,
+        ),
+        data: data,
+      );
 
-  NearWidgetInfo copyWith({
-    String? accountId,
-    String? urlName,
-    String? name,
-    String? description,
-    String? imageUrl,
-    List<String>? tags,
-    int? blockHeight,
-  }) {
-    return NearWidgetInfo(
-      accountId: accountId ?? this.accountId,
-      urlName: urlName ?? this.urlName,
-      name: name ?? this.name,
-      description: description ?? this.description,
-      imageUrl: imageUrl ?? this.imageUrl,
-      tags: tags ?? this.tags,
-      blockHeight: blockHeight ?? this.blockHeight,
-    );
+      if ((response.data as Map<String, dynamic>).isEmpty) {
+        return [];
+      }
+
+      final List<Follower> followings =
+          (response.data[accountId]["graph"]?["follow"] as Map<String, dynamic>)
+              .keys
+              .map((accoundIfOfFollowing) =>
+                  Follower(accountId: accoundIfOfFollowing))
+              .toList();
+      return followings;
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<List<Follower>> getFollowersOfAccount(
+      {required String accountId}) async {
+    try {
+      final headers = {'Content-Type': 'application/json'};
+      final data = {
+        "keys": ["*/graph/follow/$accountId"],
+        "options": {"return_type": "BlockHeight", "values_only": true}
+      };
+
+      var response = await _dio.request(
+        'https://api.near.social/keys',
+        options: Options(
+          method: 'POST',
+          headers: headers,
+        ),
+        data: data,
+      );
+
+      final List<Follower> followers = (response.data as Map<String, dynamic>)
+          .keys
+          .map((followerAccountId) => Follower(accountId: followerAccountId))
+          .toList();
+      return followers;
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<List<String>> getUserTagsOfAccount({required String accountId}) async {
+    try {
+      final headers = {'Content-Type': 'application/json'};
+      final data = {
+        "keys": ["*/nametag/$accountId/tags/*"]
+      };
+      final response = await _dio.request(
+        'https://api.near.social/keys',
+        options: Options(
+          method: 'POST',
+          headers: headers,
+        ),
+        data: data,
+      );
+
+      final Set<String> userTags = {};
+
+      if ((response.data as Map<String, dynamic>).isEmpty) {
+        return [];
+      }
+
+      (response.data as Map<String, dynamic>).forEach((_, value) {
+        userTags.addAll(
+            (value["nametag"][accountId]["tags"] as Map<String, dynamic>)
+                .keys
+                .toList());
+      });
+
+      return userTags.toList();
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<void> followAccount({
+    required String accountIdToFollow,
+    required String accountId,
+    required String publicKey,
+    required String privateKey,
+  }) async {
+    try {
+      final response = await _nearBlockChainService.callSmartContractFunction(
+        "social.near",
+        accountId,
+        privateKey,
+        publicKey,
+        NearBlockChainSmartContractArguments(
+          args: {
+            "data": {
+              accountId: {
+                "graph": {
+                  "follow": {accountIdToFollow: ""}
+                },
+                "index": {
+                  "graph":
+                      '''{\\"key\\":\\"follow\\",\\"value\\":{\\"type\\":\\"follow\\",\\"accountId\\":\\"$accountIdToFollow\\"}}''',
+                  "notify":
+                      '''{\\"key\\":\\"$accountIdToFollow\\",\\"value\\":{\\"type\\":\\"follow\\"}}'''
+                }
+              }
+            }
+          },
+          method: "set",
+          transferAmount: "0",
+        ),
+      );
+
+      if (response.status != "success") {
+        throw Exception(
+            response.data["error"] ?? "Failed to call smart contract");
+      }
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<void> unfollowAccount({
+    required String accountIdToUnfollow,
+    required String accountId,
+    required String publicKey,
+    required String privateKey,
+  }) async {
+    try {
+      final response = await _nearBlockChainService.callSmartContractFunction(
+        "social.near",
+        accountId,
+        privateKey,
+        publicKey,
+        NearBlockChainSmartContractArguments(
+          args: {
+            "data": {
+              accountId: {
+                "graph": {
+                  "follow": {accountIdToUnfollow: null}
+                },
+                "index": {
+                  "graph":
+                      '''{\\"key\\":\\"follow\\",\\"value\\":{\\"type\\":\\"unfollow\\",\\"accountId\\":\\"$accountIdToUnfollow\\"}}''',
+                  "notify":
+                      '''{\\"key\\":\\"$accountIdToUnfollow\\",\\"value\\":{\\"type\\":\\"unfollow\\"}}'''
+                }
+              }
+            }
+          },
+          method: "set",
+          transferAmount: "0",
+        ),
+      );
+
+      if (response.status != "success") {
+        throw Exception(
+            response.data["error"] ?? "Failed to call smart contract");
+      }
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<void> pokeAccount({
+    required String accountIdToPoke,
+    required String accountId,
+    required String publicKey,
+    required String privateKey,
+  }) async {
+    try {
+      final response = await _nearBlockChainService.callSmartContractFunction(
+        "social.near",
+        accountId,
+        privateKey,
+        publicKey,
+        NearBlockChainSmartContractArguments(
+          args: {
+            "data": {
+              accountId: {
+                "index": {
+                  "graph":
+                      '''{\\"key\\":\\"poke\\",\\"value\\":{\\"accountId\\":\\"$accountIdToPoke\\"}}''',
+                  "notify":
+                      '''{\\"key\\":\\"$accountIdToPoke\\",\\"value\\":{\\"type\\":\\"poke\\"}}'''
+                }
+              }
+            }
+          },
+          method: "set",
+          transferAmount: "0",
+        ),
+      );
+
+      if (response.status != "success") {
+        throw Exception(
+            response.data["error"] ?? "Failed to call smart contract");
+      }
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<List<Nft>> getNftsOfAccount({required String accountIdOfUser}) async {
+    final List<Nft> nftList = [];
+    final nftListOfAccountResponse = await _dio
+        .get("https://api.fastnear.com/v0/account/$accountIdOfUser/nft");
+
+    final List<String> nftContractIds =
+        List<String>.from(nftListOfAccountResponse.data["contract_ids"]);
+
+    final args = {"account_id": accountIdOfUser};
+    for (var nftContractId in nftContractIds) {
+      final nftInfoResponse = await _dio.request(
+        'https://rpc.mainnet.near.org',
+        data: {
+          'jsonrpc': '2.0',
+          'id': 'dontcare',
+          'method': 'query',
+          'params': {
+            'request_type': 'call_function',
+            'finality': 'final',
+            'account_id': nftContractId,
+            'method_name': "nft_tokens_for_owner",
+            'args_base64': base64.encode(utf8.encode(json.encode(args))),
+          },
+        },
+        options: Options(
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+      if (nftInfoResponse.data['error'] != null ||
+          nftInfoResponse.data['result']['error'] != null) {
+        continue;
+      }
+      final decodedResponse = List<Map<String, dynamic>>.from(json.decode(
+        utf8.decode(
+          List<int>.from(
+            nftInfoResponse.data['result']?['result'],
+          ),
+        ),
+      ));
+      for (var nftInfo in decodedResponse) {
+        nftList.add(Nft(
+          contractId: nftContractId,
+          tokenId: nftInfo['token_id'],
+          title: nftInfo["metadata"]["title"] ?? "",
+          description: nftInfo["metadata"]["description"] ?? "",
+        ));
+      }
+    }
+    return nftList;
   }
 }
+
+
+

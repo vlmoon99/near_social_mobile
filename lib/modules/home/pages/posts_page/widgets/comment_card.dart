@@ -126,7 +126,7 @@ class CommentCard extends StatelessWidget {
                       final AppExceptions appException = AppExceptions(
                         messageForUser: "Error occurred. Please try later.",
                         messageForDev: err.toString(),
-                        statusCode: AppErrorCodes.cryptoError,
+                        statusCode: AppErrorCodes.nearSocialApiError,
                       );
                       Modular.get<Catcher>()
                           .exceptionsHandler

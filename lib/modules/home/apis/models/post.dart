@@ -80,10 +80,18 @@ class FullPostCreationInfo {
     this.reposterPostCreationInfo,
   });
 
+
+
   @override
   String toString() {
     return 'FullPostCreationInfo(postCreationInfo: $postCreationInfo, reposterPostCreationInfo: $reposterPostCreationInfo)';
   }
+
+  @override
+  operator ==(Object other) =>
+      other is FullPostCreationInfo &&
+      other.postCreationInfo == postCreationInfo &&
+      other.reposterPostCreationInfo == reposterPostCreationInfo;
 }
 
 class PostCreationInfo {
@@ -99,6 +107,12 @@ class PostCreationInfo {
   String toString() {
     return 'PostCreationInfo(accountId: $accountId, blockHeight: $blockHeight)';
   }
+
+  @override
+  operator ==(Object other) =>
+      other is PostCreationInfo &&
+      other.accountId == accountId &&
+      other.blockHeight == blockHeight;
 }
 
 class PostBody {

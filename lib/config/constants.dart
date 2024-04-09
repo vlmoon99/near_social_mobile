@@ -14,6 +14,7 @@ class AppErrorCodes {
   static const flutterchainError = 5;
   static const localAuthError = 6;
   static const testnetError = 7;
+  static const nearSocialApiError = 8;
 }
 
 class NearAssets {

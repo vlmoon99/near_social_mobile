@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutterchain/flutterchain_lib/constants/chains/near_blockchain_network_urls.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/modules/home/pages/decryption_page_for_loggined_user.dart';
-import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_list_page.dart';
-import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/models/auth_info.dart';
 import 'package:near_social_mobile/routes/routes.dart';
@@ -23,6 +20,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    Modular.to.navigate(".${Routes.home.postsFeed}");
+  }
+
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
@@ -40,15 +43,10 @@ class _HomePageState extends State<HomePage> {
         newUrl: NearBlockChainNetworkUrls.listOfUrls.first,
       );
     }
-    final PostsController postsController = Modular.get<PostsController>();
-    if (postsController.state.status == PostLoadingStatus.initial) {
-      postsController.loadPosts();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    Modular.to.navigate(".${Routes.home.postsFeed}");
     final AuthController authController = Modular.get<AuthController>();
     return StreamBuilder<AuthInfo>(
       stream: authController.stream,
@@ -62,7 +60,6 @@ class _HomePageState extends State<HomePage> {
             centerTitle: true,
           ),
           body: const RouterOutlet(),
-          // body: const NearWidgetListPage(),
           bottomNavigationBar: BottomAppBar(
             height: 60.w,
             padding: EdgeInsets.zero,
@@ -86,6 +83,15 @@ class _HomePageState extends State<HomePage> {
                         : null,
                     onPressed: () {
                       Modular.to.navigate(".${Routes.home.widgetsListPage}");
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.people),
+                    color: Modular.to.path.endsWith(Routes.home.peopleListPage)
+                        ? Theme.of(context).primaryColor
+                        : null,
+                    onPressed: () {
+                      Modular.to.navigate(".${Routes.home.peopleListPage}");
                     },
                   ),
                   IconButton(

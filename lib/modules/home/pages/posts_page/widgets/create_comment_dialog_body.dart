@@ -198,7 +198,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                     final AppExceptions appException = AppExceptions(
                       messageForUser: error.toString(),
                       messageForDev: error.toString(),
-                      statusCode: AppErrorCodes.cryptoError,
+                      statusCode: AppErrorCodes.nearSocialApiError,
                     );
                     Modular.get<Catcher>().exceptionsHandler.add(appException);
                   });

@@ -37,7 +37,7 @@ class PostPage extends StatelessWidget {
           final AppExceptions appException = AppExceptions(
             messageForUser: "Error occurred. Please try later.",
             messageForDev: error.toString(),
-            statusCode: AppErrorCodes.cryptoError,
+            statusCode: AppErrorCodes.nearSocialApiError,
           );
           Modular.get<Catcher>().exceptionsHandler.add(appException);
         },
