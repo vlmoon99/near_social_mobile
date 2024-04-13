@@ -5,10 +5,12 @@ import 'package:near_social_mobile/modules/home/pages/account_info_page.dart';
 import 'package:near_social_mobile/modules/home/pages/home_page.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_app_page.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_list_page.dart';
+import 'package:near_social_mobile/modules/home/pages/notifications_page.dart';
 import 'package:near_social_mobile/modules/home/pages/people/people_list_page.dart';
 import 'package:near_social_mobile/modules/home/pages/people/user_page.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/posts_feed_page.dart';
 import 'package:near_social_mobile/modules/home/vms/near_widgets/near_widgets_controller.dart';
+import 'package:near_social_mobile/modules/home/vms/notifications/notifications_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
@@ -27,31 +29,38 @@ class HomeModule extends Module {
     i.addSingleton(PostsController.new);
     i.addSingleton(NearWidgetsController.new);
     i.addSingleton(UserListController.new);
+    i.addSingleton(NotificationsController.new);
   }
 
   @override
   void routes(RouteManager r) {
-    r.child(Routes.home.startPage,
-        child: (context) => const HomePage(),
-        transition: TransitionType.fadeIn,
-        children: [
-          ChildRoute(
-            Routes.home.postsFeed,
-            child: (context) => const PostsFeedPage(),
-          ),
-          ChildRoute(
-            Routes.home.accountPage,
-            child: (context) => const AccountInfoPage(),
-          ),
-          ChildRoute(
-            Routes.home.widgetsListPage,
-            child: (context) => const NearWidgetListPage(),
-          ),
-          ChildRoute(
-            Routes.home.peopleListPage,
-            child: (context) => const PeopleListPage(),
-          ),
-        ]);
+    r.child(
+      Routes.home.startPage,
+      child: (context) => const HomePage(),
+      transition: TransitionType.fadeIn,
+      children: [
+        ChildRoute(
+          Routes.home.postsFeed,
+          child: (context) => const PostsFeedPage(),
+        ),
+        ChildRoute(
+          Routes.home.accountPage,
+          child: (context) => const AccountInfoPage(),
+        ),
+        ChildRoute(
+          Routes.home.widgetsListPage,
+          child: (context) => const NearWidgetListPage(),
+        ),
+        ChildRoute(
+          Routes.home.peopleListPage,
+          child: (context) => const PeopleListPage(),
+        ),
+        ChildRoute(
+          Routes.home.notificationsPage,
+          child: (context) => const NotificationsPage(),
+        ),
+      ],
+    );
     r.child(
       Routes.home.postPage,
       child: (context) => PostPage(

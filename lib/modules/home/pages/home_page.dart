@@ -9,6 +9,7 @@ import 'package:near_social_mobile/modules/home/pages/decryption_page_for_loggin
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/models/auth_info.dart';
 import 'package:near_social_mobile/routes/routes.dart';
+import 'package:near_social_mobile/services/firebase/firebase_notifications.dart';
 import 'package:near_social_mobile/utils/check_for_jailbreak.dart';
 import 'package:near_social_mobile/utils/get_network_type.dart';
 
@@ -54,6 +55,9 @@ class _HomePageState extends State<HomePage> {
         if (authController.state.status == AuthInfoStatus.unauthenticated) {
           return const DecryptionPageForLoginnedUser();
         }
+        if (authController.state.status == AuthInfoStatus.authenticated) {
+          FirebaseNotificationService.subscribeToNotifications(authController.state.accountId);
+        }
         return Scaffold(
           appBar: AppBar(
             title: SvgPicture.asset(NearAssets.logoIcon),
@@ -92,6 +96,16 @@ class _HomePageState extends State<HomePage> {
                         : null,
                     onPressed: () {
                       Modular.to.navigate(".${Routes.home.peopleListPage}");
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.notifications),
+                    color:
+                        Modular.to.path.endsWith(Routes.home.notificationsPage)
+                            ? Theme.of(context).primaryColor
+                            : null,
+                    onPressed: () {
+                      Modular.to.navigate(".${Routes.home.notificationsPage}");
                     },
                   ),
                   IconButton(

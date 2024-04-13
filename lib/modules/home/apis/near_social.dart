@@ -11,6 +11,7 @@ import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
 import 'package:near_social_mobile/modules/home/apis/models/like.dart';
 import 'package:near_social_mobile/modules/home/apis/models/near_widget_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/nft.dart';
+import 'package:near_social_mobile/modules/home/apis/models/notification.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
@@ -1246,7 +1247,58 @@ class NearSocialApi {
     }
     return nftList;
   }
+
+  Future<List<Notification>> getNotificationsOfAccount({
+    required String accountId,
+    int? from,
+  }) async {
+    try {
+      final response = await _dio.request(
+        'https://api.near.social/index',
+        options: Options(
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+        ),
+        data: {
+          "action": "notify",
+          "key": accountId,
+          "options": {
+            "limit": 20,
+            "order": "desc",
+            if (from != null) "from": from,
+          }
+        },
+      );
+      final data = List<Map<String, dynamic>>.from(response.data);
+      final List<Notification> notifications = [];
+
+      for (var notificationData in data) {
+        final accoundIdOfNotificationCreator = notificationData["accountId"];
+        final blockHeight = notificationData["blockHeight"];
+        final GeneralAccountInfo authorInfo = await getGeneralAccountInfo(
+            accountId: accoundIdOfNotificationCreator);
+        final DateTime date =
+            await getDateOfBlockHeight(blockHeight: blockHeight);
+        final typeOfNotification =
+            getNotificationType(notificationData["value"]["type"]);
+        notifications.add(
+          Notification(
+            authorInfo: authorInfo,
+            blockHeight: blockHeight,
+            date: date,
+            notificationType: NotificationType(
+              type: typeOfNotification,
+              data: getNotificationData(
+                notificationData["value"]["item"],
+                typeOfNotification,
+              ),
+            ),
+          ),
+        );
+      }
+      return notifications;
+    } catch (err) {
+      rethrow;
+    }
+  }
 }
-
-
-
