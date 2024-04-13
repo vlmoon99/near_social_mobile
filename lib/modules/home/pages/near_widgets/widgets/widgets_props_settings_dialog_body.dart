@@ -45,7 +45,7 @@ class _WidgetsPropsSettingsDialogBodyState
           SizedBox(height: 5.h),
           ElevatedButton(
             onPressed: () {
-              widget.navigateFunction(_textEditingController.text);
+              widget.navigateFunction("""'${_textEditingController.text}'""");
               Modular.to.pop();
             },
             child: const Text("Open widget"),

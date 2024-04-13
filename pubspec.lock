@@ -77,10 +77,10 @@ packages:
     dependency: "direct main"
     description:
       name: bos_gateway_viewer
-      sha256: b87783dd23980754149aa080a915ec21476ddcf4b8f53e57c2ed885b15ab1a64
+      sha256: "1e96a66847286ccf16006ee1ec5bd1a13a766ab416a89b1679ba8d7633e65bb4"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.1"
+    version: "0.0.2"
   bs58:
     dependency: transitive
     description:

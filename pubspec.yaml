@@ -28,7 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  bos_gateway_viewer: 0.0.1
+  bos_gateway_viewer: 0.0.2
   cloud_firestore: 4.16.1
   cupertino_icons: ^1.0.2
   dio: 5.4.1
