@@ -55,5 +55,10 @@
 	<string>This app needs camera access to scan QR codes</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Why is my app authenticating using face id?</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+  	<string>sms</string>
+  	<string>tel</string>
+</array>
 </dict>
 </plist>

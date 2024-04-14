@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/assets/localizations/localizations_strings.dart';
+import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/app_module.dart';
 import 'package:near_social_mobile/routes/routes.dart';
@@ -17,14 +18,14 @@ void main() async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
     await initOfApp();
-    FlutterError.onError = (FlutterErrorDetails details) {
-      final catcher = Modular.get<Catcher>();
-      catcher.exceptionsHandler.add(AppExceptions(
-        messageForUser: details.exceptionAsString(),
-        messageForDev: details.exception.runtimeType.toString(),
-        statusCode: AppErrorCodes.errorFromFlutter,
-      ));
-    };
+    // FlutterError.onError = (FlutterErrorDetails details) {
+    //   final catcher = Modular.get<Catcher>();
+    //   catcher.exceptionsHandler.add(AppExceptions(
+    //     messageForUser: details.exceptionAsString(),
+    //     messageForDev: details.exception.runtimeType.toString(),
+    //     statusCode: AppErrorCodes.errorFromFlutter,
+    //   ));
+    // };
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -72,13 +73,7 @@ class AppWidget extends StatelessWidget {
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
-      theme: ThemeData.light(useMaterial3: true).copyWith(
-        appBarTheme: const AppBarTheme(
-          surfaceTintColor: Colors.white,
-          elevation: 1,
-          shadowColor: Colors.black,
-        ),
-      ),
+      theme: appTheme,
     );
   }
 }

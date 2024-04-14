@@ -1,14 +1,14 @@
 // ignore_for_file: hash_and_equals
 
 import 'package:flutter/foundation.dart';
-import 'package:near_social_mobile/modules/home/apis/models/author_info.dart';
+import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
 import 'package:near_social_mobile/modules/home/apis/models/like.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
 
 class Post {
-  final AuthorInfo authorInfo;
+  final GeneralAccountInfo authorInfo;
   final int blockHeight;
   final DateTime date;
   final PostBody postBody;
@@ -29,7 +29,7 @@ class Post {
   });
 
   Post copyWith({
-    AuthorInfo? authorInfo,
+    GeneralAccountInfo? authorInfo,
     int? blockHeight,
     DateTime? date,
     PostBody? postBody,
@@ -80,10 +80,18 @@ class FullPostCreationInfo {
     this.reposterPostCreationInfo,
   });
 
+
+
   @override
   String toString() {
     return 'FullPostCreationInfo(postCreationInfo: $postCreationInfo, reposterPostCreationInfo: $reposterPostCreationInfo)';
   }
+
+  @override
+  operator ==(Object other) =>
+      other is FullPostCreationInfo &&
+      other.postCreationInfo == postCreationInfo &&
+      other.reposterPostCreationInfo == reposterPostCreationInfo;
 }
 
 class PostCreationInfo {
@@ -99,8 +107,13 @@ class PostCreationInfo {
   String toString() {
     return 'PostCreationInfo(accountId: $accountId, blockHeight: $blockHeight)';
   }
-}
 
+  @override
+  operator ==(Object other) =>
+      other is PostCreationInfo &&
+      other.accountId == accountId &&
+      other.blockHeight == blockHeight;
+}
 
 class PostBody {
   String text;
@@ -120,5 +133,3 @@ class PostBody {
     return 'PostBody(text: $text, mediaLink: $mediaLink)';
   }
 }
-
-

@@ -20,6 +20,11 @@ class _Home extends RouteClass {
   String postPage = '/post';
   String postsFeed = '/posts_feed';
   String accountPage = '/account';
+  String widgetsListPage = '/widgets_list';
+  String widgetPage = '/widget';
+  String peopleListPage = '/people_list';
+  String userPage = '/profile';
+  String notificationsPage = '/notifications';
 }
 
 abstract class RouteClass {

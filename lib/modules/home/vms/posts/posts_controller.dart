@@ -18,20 +18,35 @@ class PostsController {
   Stream<Posts> get stream => _streamController.stream;
   Posts get state => _streamController.value;
 
-  Future<void> loadPosts() async {
+  Future<void> loadPosts({String? postsOfAccountId}) async {
     try {
       _streamController.add(
         state.copyWith(status: PostLoadingStatus.loading),
       );
 
-      final posts = await nearSocialApi.getPosts();
+      late final List<Post> posts;
 
-      _streamController.add(
-        state.copyWith(
-          posts: posts,
-          status: PostLoadingStatus.loaded,
-        ),
-      );
+      if (postsOfAccountId != null) {
+        posts = await nearSocialApi.getPosts(
+          targetAccounts: [postsOfAccountId],
+          limit: 10,
+        );
+        _streamController.add(
+          state.copyWith(
+            posts: posts,
+            mainPosts: state.posts,
+            status: PostLoadingStatus.loaded,
+          ),
+        );
+      } else {
+        posts = await nearSocialApi.getPosts();
+        _streamController.add(
+          state.copyWith(
+            posts: posts,
+            status: PostLoadingStatus.loaded,
+          ),
+        );
+      }
 
       for (var indexOfPost = 0;
           indexOfPost < state.posts.length;
@@ -43,7 +58,31 @@ class PostsController {
     }
   }
 
-  Future<void> loadMorePosts() async {
+  Future<void> changePostsChannelToMain(String accountId) async {
+    _streamController.add(
+      state.copyWith(
+        posts: state.mainPosts,
+        postsOfAccounts: Map.of(state.postsOfAccounts)
+          ..[accountId] = state.posts,
+        mainPosts: [],
+      ),
+    );
+  }
+
+  Future<void> changePostsChannelToAccount(String accountId) async {
+    if (state.postsOfAccounts[accountId] == null) {
+      await loadPosts(postsOfAccountId: accountId);
+    } else {
+      _streamController.add(
+        state.copyWith(
+          posts: state.postsOfAccounts[accountId]!,
+          mainPosts: state.posts,
+        ),
+      );
+    }
+  }
+
+  Future<List<Post>> loadMorePosts({String? postsOfAccountId}) async {
     try {
       log("Loading more posts");
       _streamController.add(
@@ -60,6 +99,19 @@ class PostsController {
             state.posts.elementAt(lastBlockHeightIndexOfPosts).blockHeight,
         lastBlockHeightIndexOfReposts:
             state.posts.elementAt(lastBlockHeightIndexOfReposts).blockHeight,
+        targetAccounts: postsOfAccountId == null ? null : [postsOfAccountId],
+      );
+
+      posts.removeWhere(
+        (post) =>
+            post.blockHeight ==
+                state.posts
+                    .elementAt(lastBlockHeightIndexOfPosts)
+                    .blockHeight ||
+            post.blockHeight ==
+                state.posts
+                    .elementAt(lastBlockHeightIndexOfReposts)
+                    .blockHeight,
       );
 
       final newPosts = [...state.posts, ...posts];
@@ -74,6 +126,8 @@ class PostsController {
           indexOfPost++) {
         _loadPostsDataAsync(indexOfPost);
       }
+
+      return posts;
     } catch (err) {
       _streamController.add(
         state.copyWith(
@@ -126,10 +180,35 @@ class PostsController {
     }
   }
 
+  Future<void> updatePostsOfAccount({required String postsOfAccountId}) async {
+    try {
+      final posts = await nearSocialApi.getPosts(
+        targetAccounts: [postsOfAccountId],
+        limit: 10,
+      );
+      _streamController.add(
+        state.copyWith(
+          posts: posts,
+          status: PostLoadingStatus.loaded,
+        ),
+      );
+      for (var indexOfPost = 0;
+          indexOfPost < state.posts.length;
+          indexOfPost++) {
+        _loadPostsDataAsync(indexOfPost);
+      }
+    } catch (err) {
+      rethrow;
+    }
+  }
+
   Future<void> _loadPostsDataAsync(int indexOfPost) async {
+    if (indexOfPost > state.posts.length) {
+      return;
+    }
     final post = state.posts[indexOfPost];
 
-    nearSocialApi
+    await nearSocialApi
         .getPostContent(
       accountId: post.authorInfo.accountId,
       blockHeight: post.blockHeight,
@@ -146,8 +225,8 @@ class PostsController {
       },
     );
 
-    nearSocialApi
-        .getAuthorInfo(accountId: post.authorInfo.accountId)
+    await nearSocialApi
+        .getGeneralAccountInfo(accountId: post.authorInfo.accountId)
         .then((authorInfo) {
       _streamController.add(
         state.copyWith(
@@ -158,8 +237,8 @@ class PostsController {
       );
     });
     if (post.reposterInfo != null) {
-      nearSocialApi
-          .getAuthorInfo(accountId: post.reposterInfo!.accountId)
+      await nearSocialApi
+          .getGeneralAccountInfo(accountId: post.reposterInfo!.accountId)
           .then((authorInfo) {
         _streamController.add(
           state.copyWith(
@@ -171,7 +250,7 @@ class PostsController {
           ),
         );
       });
-      nearSocialApi
+      await nearSocialApi
           .getDateOfBlockHeight(
         blockHeight: post.reposterInfo!.blockHeight,
       )
@@ -184,7 +263,7 @@ class PostsController {
         );
       });
     } else {
-      nearSocialApi
+      await nearSocialApi
           .getDateOfBlockHeight(blockHeight: post.blockHeight)
           .then((date) {
         _streamController.add(
@@ -196,7 +275,7 @@ class PostsController {
       });
     }
 
-    nearSocialApi
+    await nearSocialApi
         .getLikesOfPost(
             accountId: post.authorInfo.accountId, blockHeight: post.blockHeight)
         .then((likes) {
@@ -209,7 +288,7 @@ class PostsController {
         ),
       );
     });
-    nearSocialApi
+    await nearSocialApi
         .getRepostsOfPost(
             accountId: post.authorInfo.accountId, blockHeight: post.blockHeight)
         .then((reposts) {
@@ -331,13 +410,14 @@ class PostsController {
           state.copyWith(
             posts: List.of(state.posts)
               ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-                commentList: List.from(state.posts[indexOfPost].commentList ?? [])
-                  ..[indexOfComment] = comment.copyWith(
-                    likeList: comment.likeList
-                      ..removeWhere(
-                        (element) => element.accountId == accountId,
+                commentList:
+                    List.from(state.posts[indexOfPost].commentList ?? [])
+                      ..[indexOfComment] = comment.copyWith(
+                        likeList: comment.likeList
+                          ..removeWhere(
+                            (element) => element.accountId == accountId,
+                          ),
                       ),
-                  ),
               ),
           ),
         );
@@ -353,15 +433,16 @@ class PostsController {
           state.copyWith(
             posts: List.of(state.posts)
               ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-                commentList: List.from(state.posts[indexOfPost].commentList ?? [])
-                  ..[indexOfComment] = comment.copyWith(
-                    likeList: comment.likeList
-                      ..add(
-                        Like(
-                          accountId: accountId,
-                        ),
+                commentList:
+                    List.from(state.posts[indexOfPost].commentList ?? [])
+                      ..[indexOfComment] = comment.copyWith(
+                        likeList: comment.likeList
+                          ..add(
+                            Like(
+                              accountId: accountId,
+                            ),
+                          ),
                       ),
-                  ),
               ),
           ),
         );
@@ -379,15 +460,16 @@ class PostsController {
           state.copyWith(
             posts: List.of(state.posts)
               ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-                commentList: List.from(state.posts[indexOfPost].commentList ?? [])
-                  ..[indexOfComment] = comment.copyWith(
-                    likeList: comment.likeList
-                      ..add(
-                        Like(
-                          accountId: accountId,
-                        ),
+                commentList:
+                    List.from(state.posts[indexOfPost].commentList ?? [])
+                      ..[indexOfComment] = comment.copyWith(
+                        likeList: comment.likeList
+                          ..add(
+                            Like(
+                              accountId: accountId,
+                            ),
+                          ),
                       ),
-                  ),
               ),
           ),
         );
@@ -396,13 +478,14 @@ class PostsController {
           state.copyWith(
             posts: List.of(state.posts)
               ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-                commentList: List.from(state.posts[indexOfPost].commentList ?? [])
-                  ..[indexOfComment] = comment.copyWith(
-                    likeList: comment.likeList
-                      ..removeWhere(
-                        (element) => element.accountId == accountId,
+                commentList:
+                    List.from(state.posts[indexOfPost].commentList ?? [])
+                      ..[indexOfComment] = comment.copyWith(
+                        likeList: comment.likeList
+                          ..removeWhere(
+                            (element) => element.accountId == accountId,
+                          ),
                       ),
-                  ),
               ),
           ),
         );
@@ -470,20 +553,38 @@ enum PostLoadingStatus {
 @immutable
 class Posts {
   final List<Post> posts;
+  final List<Post> mainPosts;
+  final Map<String, dynamic> postsOfAccounts;
   final PostLoadingStatus status;
 
   const Posts({
     this.posts = const [],
+    this.mainPosts = const [],
+    this.postsOfAccounts = const {},
     this.status = PostLoadingStatus.initial,
   });
 
   Posts copyWith({
     List<Post>? posts,
+    List<Post>? mainPosts,
+    Map<String, dynamic>? postsOfAccounts,
     PostLoadingStatus? status,
   }) {
     return Posts(
       posts: posts ?? this.posts,
+      postsOfAccounts: postsOfAccounts ?? this.postsOfAccounts,
+      mainPosts: mainPosts ?? this.mainPosts,
       status: status ?? this.status,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Posts &&
+          runtimeType == other.runtimeType &&
+          listEquals(posts, other.posts) &&
+          listEquals(mainPosts, other.mainPosts) &&
+          mapEquals(postsOfAccounts, other.postsOfAccounts) &&
+          status == other.status;
 }
