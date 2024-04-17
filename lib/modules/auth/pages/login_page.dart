@@ -7,7 +7,7 @@ import 'package:flutterchain/flutterchain_lib/constants/chains/near_blockchain_n
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/assets/localizations/localizations_strings.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
-import 'package:near_social_mobile/formatters/models/qr_auth_info.dart';
+import 'package:near_social_mobile/modules/vms/core/models/authorization_credentials.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/services/testnet_service.dart';
 import 'package:near_social_mobile/shared_widgets/loading_barrier.dart';
@@ -72,8 +72,8 @@ class _LoginPageState extends State<LoginPage> {
                       );
                       Modular.to.pushReplacementNamed(
                         Routes.auth.getRoute(Routes.auth.encryptData),
-                        arguments:
-                            QRAuthInfo(account.publicKey, account.secretKey),
+                        arguments: AuthorizationCredentials(
+                            account.publicKey, account.secretKey),
                       );
                     } on AppExceptions catch (err) {
                       final catcher = Modular.get<Catcher>();

@@ -19,7 +19,7 @@ class AuthModule extends Module {
     r.child(
       Routes.auth.encryptData,
       child: (context) => EncryptionScreen(
-        qrAuthInfo: r.args.data,
+        authorizationCredentials: r.args.data,
       ),
     );
   }

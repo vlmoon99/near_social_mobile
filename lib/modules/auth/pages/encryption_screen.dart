@@ -7,7 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
-import 'package:near_social_mobile/formatters/models/qr_auth_info.dart';
+import 'package:near_social_mobile/modules/vms/core/models/authorization_credentials.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/services/crypto_storage_service.dart';
@@ -15,8 +15,8 @@ import 'package:near_social_mobile/services/crypto_service.dart';
 import 'package:near_social_mobile/services/local_auth_service.dart';
 
 class EncryptionScreen extends StatefulWidget {
-  const EncryptionScreen({super.key, required this.qrAuthInfo});
-  final QRAuthInfo qrAuthInfo;
+  const EncryptionScreen({super.key, required this.authorizationCredentials});
+  final AuthorizationCredentials authorizationCredentials;
 
   @override
   State<EncryptionScreen> createState() => _EncryptionScreenState();
@@ -31,7 +31,7 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
     await cryptoStorageService.write(
       cryptographicKey: cryptographicKey,
       storageKey: SecureStorageKeys.authInfo,
-      data: jsonEncode(widget.qrAuthInfo),
+      data: jsonEncode(widget.authorizationCredentials),
     );
     await Modular.get<NearBlockChainService>()
         .getBlockchainNetworkEnvironment()
@@ -48,14 +48,14 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
     );
     final authController = Modular.get<AuthController>();
     await authController.login(
-      accountId: widget.qrAuthInfo.accountId,
-      secretKey: widget.qrAuthInfo.secretKey,
+      accountId: widget.authorizationCredentials.accountId,
+      secretKey: widget.authorizationCredentials.secretKey,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    log(widget.qrAuthInfo.toString());
+    log(widget.authorizationCredentials.toString());
     return Scaffold(
       body: SafeArea(
         child: SizedBox(
