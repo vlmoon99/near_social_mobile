@@ -32,6 +32,7 @@ dependencies:
   cloud_firestore: 4.16.1
   cupertino_icons: ^1.0.2
   dio: 5.4.1
+  dio_smart_retry: 6.0.0
   easy_localization: 3.0.5
   encrypt: 5.0.3
   firebase_auth: 4.15.3

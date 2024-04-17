@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_smart_contract_arguments.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/modules/home/apis/models/follower.dart';
@@ -21,7 +23,18 @@ class NearSocialApi {
   final NearBlockChainService _nearBlockChainService;
 
   NearSocialApi({required NearBlockChainService nearBlockChainService})
-      : _nearBlockChainService = nearBlockChainService;
+      : _nearBlockChainService = nearBlockChainService {
+    _dio.interceptors.add(
+      RetryInterceptor(
+        dio: _dio,
+        logPrint: log,
+        retries: 60,
+        retryDelays: [
+          ...List.generate(60, (index) => const Duration(seconds: 1))
+        ],
+      ),
+    );
+  }
 
   final _ipfsMediaHosting = "https://ipfs.near.social/ipfs/";
 
