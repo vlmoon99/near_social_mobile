@@ -4,7 +4,7 @@ import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/pages/account_info_page.dart';
 import 'package:near_social_mobile/modules/home/pages/home_menu_page.dart';
 import 'package:near_social_mobile/modules/home/pages/home_page.dart';
-import 'package:near_social_mobile/modules/home/pages/key_manager_page.dart';
+import 'package:near_social_mobile/modules/home/pages/key_manager/key_manager_page.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_app_page.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_list_page.dart';
 import 'package:near_social_mobile/modules/home/pages/notifications_page.dart';
