@@ -28,8 +28,9 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
     final cryptoStorageService =
         CryptoStorageService(secureStorage: secureStorage);
     final cryptographicKey = CryptoUtils.generateCryptographicKey();
+    await cryptoStorageService.saveCryptographicKeyToStorage(
+        cryptographicKey: cryptographicKey);
     await cryptoStorageService.write(
-      cryptographicKey: cryptographicKey,
       storageKey: SecureStorageKeys.authInfo,
       data: jsonEncode(widget.authorizationCredentials),
     );

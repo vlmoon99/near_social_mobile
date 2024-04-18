@@ -109,12 +109,12 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.account_circle),
-                    color: Modular.to.path.endsWith(Routes.home.accountPage)
+                    icon: const Icon(Icons.menu),
+                    color: Modular.to.path.endsWith(Routes.home.homeMenu)
                         ? Theme.of(context).primaryColor
                         : null,
                     onPressed: () {
-                      Modular.to.navigate(".${Routes.home.accountPage}");
+                      Modular.to.navigate(".${Routes.home.homeMenu}");
                     },
                   ),
                 ],

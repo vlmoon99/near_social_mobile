@@ -24,7 +24,9 @@ class _Home extends RouteClass {
   String widgetPage = '/widget';
   String peopleListPage = '/people_list';
   String userPage = '/profile';
+  String homeMenu = '/home_menu';
   String notificationsPage = '/notifications';
+  String keyManagerPage = '/key_manager';
 }
 
 abstract class RouteClass {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
+import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 
 class WidgetsPropsSettingsDialogBody extends StatefulWidget {
   const WidgetsPropsSettingsDialogBody({
@@ -8,7 +10,8 @@ class WidgetsPropsSettingsDialogBody extends StatefulWidget {
     required this.navigateFunction,
   });
 
-  final Function navigateFunction;
+  final Function(String widgetprops, PrivateKeyInfo privateKeyInfo)
+      navigateFunction;
 
   @override
   State<WidgetsPropsSettingsDialogBody> createState() =>
@@ -20,8 +23,22 @@ class _WidgetsPropsSettingsDialogBodyState
   final TextEditingController _textEditingController = TextEditingController()
     ..text = "{}";
 
+  late PrivateKeyInfo selectedKey;
+
+  @override
+  void initState() {
+    super.initState();
+    final AuthController authController = Modular.get<AuthController>();
+    selectedKey = authController.state.additionalStoredKeys.entries
+        .firstWhere((element) =>
+            element.value.privateKey == authController.state.secretKey)
+        .value;
+    print(selectedKey);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final AuthController authController = Modular.get<AuthController>();
     return Padding(
       padding: const EdgeInsets.all(10).r,
       child: Column(
@@ -36,16 +53,40 @@ class _WidgetsPropsSettingsDialogBodyState
             ),
             child: TextField(
               controller: _textEditingController,
-              // maxLines: 10,
               decoration: const InputDecoration.collapsed(
-                hintText: "Widget props in format like {\"key\": \"value\"}",
+                hintText: "props",
               ),
+            ),
+          ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: DropdownButton<PrivateKeyInfo>(
+              value: selectedKey,
+              onChanged: (newKey) {
+                if (newKey == null) return;
+                setState(() {
+                  selectedKey = newKey;
+                });
+              },
+              items: authController.state.additionalStoredKeys.entries
+                  .map((keyInfo) {
+                return DropdownMenuItem<PrivateKeyInfo>(
+                  alignment: Alignment.center,
+                  value: keyInfo.value,
+                  child: Text(
+                    keyInfo.key,
+                  ),
+                );
+              }).toList(),
             ),
           ),
           SizedBox(height: 5.h),
           ElevatedButton(
             onPressed: () {
-              widget.navigateFunction("""'${_textEditingController.text}'""");
+              widget.navigateFunction(
+                """'${_textEditingController.text}'""",
+                selectedKey,
+              );
               Modular.to.pop();
             },
             child: const Text("Open widget"),

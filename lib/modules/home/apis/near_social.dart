@@ -5,7 +5,9 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
+import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_data.dart';
 import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_smart_contract_arguments.dart';
+import 'package:flutterchain/flutterchain_lib/models/core/wallet.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/modules/home/apis/models/follower.dart';
 import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
@@ -15,6 +17,7 @@ import 'package:near_social_mobile/modules/home/apis/models/near_widget_info.dar
 import 'package:near_social_mobile/modules/home/apis/models/nft.dart';
 import 'package:near_social_mobile/modules/home/apis/models/notification.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
+import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
 
@@ -1310,6 +1313,79 @@ class NearSocialApi {
         );
       }
       return notifications;
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<PrivateKeyInfo> getAccessKeyInfo({
+    required String accountId,
+    required String key,
+  }) async {
+    try {
+      final publicKeyOfSecretKey = await _nearBlockChainService
+          .getPublicKeyFromSecretKeyFromNearApiJSFormat(key.split(":").last);
+      final privateKeyInNearApiJsFormat =
+          await _nearBlockChainService.exportPrivateKeyToTheNearApiJsFormat(
+        currentBlockchainData: NearBlockChainData(
+          publicKey: publicKeyOfSecretKey,
+          privateKey: key,
+          passphrase: '',
+          derivationPath: const DerivationPath(
+            accountNumber: '',
+            purpose: '',
+            coinType: '',
+            address: '',
+            change: '',
+          ),
+        ),
+      );
+      final request = {
+        "jsonrpc": "2.0",
+        "id": "dontcare",
+        "method": "query",
+        "params": {
+          "request_type": "view_access_key",
+          "finality": "final",
+          "account_id": accountId,
+          "public_key": privateKeyInNearApiJsFormat
+        }
+      };
+      final response = await _dio.request(
+        'https://rpc.mainnet.near.org',
+        options: Options(
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+        ),
+        data: request,
+      );
+      final permission = response.data["result"]?["permission"];
+      if (permission == null) {
+        throw Exception(response.data["result"]["error"].toString());
+      }
+      if (permission is Map && permission.keys.first == "FunctionCall") {
+        return PrivateKeyInfo(
+          publicKey: accountId,
+          privateKey: key,
+          privateKeyInNearApiJsFormat: privateKeyInNearApiJsFormat,
+          privateKeyTypeInfo: PrivateKeyTypeInfo(
+            type: PrivateKeyType.FunctionCall,
+            receiverId: permission["FunctionCall"]["receiver_id"],
+            methodNames: List<String>.from(permission["FunctionCall"]?["method_names"] ?? []),
+          ),
+        );
+      } else if (permission is String && permission == "FullAccess") {
+        return PrivateKeyInfo(
+          publicKey: accountId,
+          privateKey: key,
+          privateKeyInNearApiJsFormat: privateKeyInNearApiJsFormat,
+          privateKeyTypeInfo: PrivateKeyTypeInfo(
+            type: PrivateKeyType.FullAccess,
+          ),
+        );
+      } else {
+        throw Exception("Unknown permission type");
+      }
     } catch (err) {
       rethrow;
     }
