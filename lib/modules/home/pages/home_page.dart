@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -56,7 +58,8 @@ class _HomePageState extends State<HomePage> {
           return const DecryptionPageForLoginnedUser();
         }
         if (authController.state.status == AuthInfoStatus.authenticated) {
-          FirebaseNotificationService.subscribeToNotifications(authController.state.accountId);
+          FirebaseNotificationService.subscribeToNotifications(
+              authController.state.accountId);
         }
         return Scaffold(
           appBar: AppBar(

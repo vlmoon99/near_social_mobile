@@ -25,7 +25,7 @@ class AuthController extends Disposable {
       : cryptoStorageService =
             CryptoStorageService(secureStorage: secureStorage);
 
-  Stream<AuthInfo> get stream => _streamController.stream;
+  Stream<AuthInfo> get stream => _streamController.stream.distinct();
 
   AuthInfo get state => _streamController.value;
 
