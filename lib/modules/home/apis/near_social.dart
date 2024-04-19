@@ -883,7 +883,7 @@ class NearSocialApi {
   Future<List<NearWidgetInfo>> getWidgetsList({String? accountId}) async {
     try {
       final headers = {'Content-Type': 'application/json'};
-      final responseOfWidgetsList = await _dio.request(
+      final responseOfWidgetsListWithMetadata = await _dio.request(
         'https://api.near.social/get',
         options: Options(
           method: 'POST',
@@ -894,16 +894,16 @@ class NearSocialApi {
         },
       );
 
-      List<String> listOfWidgetPaths = [];
+      final List<String> listOfWidgetPaths = [];
 
-      (responseOfWidgetsList.data as Map<String, dynamic>)
-          .forEach((accountId, value) {
-        final listOfWidgetNames = value["widget"] as Map<String, dynamic>;
-        listOfWidgetPaths.addAll(listOfWidgetNames.keys
-            .map((widgetUrlName) => "$accountId/widget/$widgetUrlName"));
-      });
+      listOfWidgetPaths.addAll(
+        (responseOfWidgetsListWithMetadata.data as Map<String, dynamic>)
+            .keys
+            .map((accountId) => "$accountId/widget/*")
+            .toList(),
+      );
 
-      final responseOfWidgetsBlockHeight = await _dio.request(
+      final responseOfAllWidgetsList = await _dio.request(
         'https://api.near.social/keys',
         options: Options(
           method: 'POST',
@@ -915,12 +915,39 @@ class NearSocialApi {
         },
       );
 
+      final fullListOfWidgetsWithoutMetadata =
+          responseOfAllWidgetsList.data as Map<String, dynamic>;
+
       final List<NearWidgetInfo> widgets = [];
-      (responseOfWidgetsList.data as Map<String, dynamic>).forEach(
+
+      (responseOfWidgetsListWithMetadata.data as Map<String, dynamic>).forEach(
         (key, value) {
           final accountId = key;
-          final listOfWidgetNames = value["widget"] as Map<String, dynamic>;
-          listOfWidgetNames.forEach(
+          final listOfWidgetsData =
+              (value["widget"] ?? {}) as Map<String, dynamic>;
+          final widgetsNamesWithoutMetadata =
+              ((fullListOfWidgetsWithoutMetadata[accountId]["widget"] ?? {})
+                      as Map)
+                  .keys
+                  .toSet()
+                  .difference(
+                    listOfWidgetsData.keys.toSet(),
+                  );
+          widgets.addAll(widgetsNamesWithoutMetadata.map((widgetName) {
+            return NearWidgetInfo(
+              accountId: accountId,
+              urlName: widgetName,
+              name: "",
+              description: "",
+              imageUrl: "",
+              tags: [],
+              blockHeight: fullListOfWidgetsWithoutMetadata[accountId]
+                      ?["widget"]?[widgetName] ??
+                  0,
+            );
+          }));
+
+          listOfWidgetsData.forEach(
             (key, value) {
               final widgetUrlName = key;
               final metadata = value["metadata"] as Map<String, dynamic>;
@@ -935,8 +962,9 @@ class NearSocialApi {
                   tags: metadata["tags"] != null
                       ? (metadata["tags"] as Map<String, dynamic>).keys.toList()
                       : [],
-                  blockHeight: responseOfWidgetsBlockHeight.data[accountId]
-                      ["widget"][widgetUrlName],
+                  blockHeight: fullListOfWidgetsWithoutMetadata[accountId]
+                          ?["widget"]?[widgetUrlName] ??
+                      0,
                 ),
               );
             },
@@ -1371,7 +1399,8 @@ class NearSocialApi {
           privateKeyTypeInfo: PrivateKeyTypeInfo(
             type: PrivateKeyType.FunctionCall,
             receiverId: permission["FunctionCall"]["receiver_id"],
-            methodNames: List<String>.from(permission["FunctionCall"]?["method_names"] ?? []),
+            methodNames: List<String>.from(
+                permission["FunctionCall"]?["method_names"] ?? []),
           ),
         );
       } else if (permission is String && permission == "FullAccess") {
