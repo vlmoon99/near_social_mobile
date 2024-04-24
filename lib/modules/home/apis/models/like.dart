@@ -1,5 +1,3 @@
-// ignore_for_file: hash_and_equals
-
 class Like {
   String accountId;
 
@@ -14,5 +12,9 @@ class Like {
 
   @override
   operator ==(Object other) => other is Like && other.accountId == accountId;
+  
+  @override
+  int get hashCode => accountId.hashCode;
+  
 }
 

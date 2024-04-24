@@ -6,6 +6,7 @@ import 'package:near_social_mobile/modules/home/apis/models/like.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/utils/future_queue.dart';
 import 'package:rxdart/rxdart.dart';
 
 class PostsController {
@@ -17,6 +18,10 @@ class PostsController {
 
   Stream<Posts> get stream => _streamController.stream;
   Posts get state => _streamController.value;
+
+  final FutureQueue _futureQueue = FutureQueue(
+    timeout: const Duration(milliseconds: 1000),
+  );
 
   Future<void> loadPosts({String? postsOfAccountId}) async {
     try {
@@ -319,6 +324,15 @@ class PostsController {
     );
     try {
       if (isLiked) {
+        await _futureQueue.addToQueue(
+          () => nearSocialApi.unlikePost(
+            accountIdOfPost: post.authorInfo.accountId,
+            accountId: accountId,
+            blockHeight: post.blockHeight,
+            publicKey: publicKey,
+            privateKey: privateKey,
+          ),
+        );
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -328,14 +342,16 @@ class PostsController {
               ),
           ),
         );
-        await nearSocialApi.unlikePost(
-          accountIdOfPost: post.authorInfo.accountId,
-          accountId: accountId,
-          blockHeight: post.blockHeight,
-          publicKey: publicKey,
-          privateKey: privateKey,
-        );
       } else {
+        await _futureQueue.addToQueue(
+          () => nearSocialApi.likePost(
+            accountIdOfPost: post.authorInfo.accountId,
+            accountId: accountId,
+            blockHeight: post.blockHeight,
+            publicKey: publicKey,
+            privateKey: privateKey,
+          ),
+        );
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -346,13 +362,6 @@ class PostsController {
                   ),
               ),
           ),
-        );
-        await nearSocialApi.likePost(
-          accountIdOfPost: post.authorInfo.accountId,
-          accountId: accountId,
-          blockHeight: post.blockHeight,
-          publicKey: publicKey,
-          privateKey: privateKey,
         );
       }
     } catch (err) {
@@ -406,6 +415,15 @@ class PostsController {
 
     try {
       if (isLiked) {
+        await _futureQueue.addToQueue(
+          () => nearSocialApi.unlikeComment(
+            accountIdOfPost: comment.authorInfo.accountId,
+            accountId: accountId,
+            blockHeight: comment.blockHeight,
+            publicKey: publicKey,
+            privateKey: privateKey,
+          ),
+        );
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -421,39 +439,33 @@ class PostsController {
               ),
           ),
         );
-        await nearSocialApi.unlikeComment(
-          accountIdOfPost: comment.authorInfo.accountId,
-          accountId: accountId,
-          blockHeight: comment.blockHeight,
-          publicKey: publicKey,
-          privateKey: privateKey,
-        );
       } else {
-        _streamController.add(
-          state.copyWith(
-            posts: List.of(state.posts)
-              ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-                commentList:
-                    List.from(state.posts[indexOfPost].commentList ?? [])
-                      ..[indexOfComment] = comment.copyWith(
-                        likeList: comment.likeList
-                          ..add(
-                            Like(
-                              accountId: accountId,
-                            ),
-                          ),
-                      ),
-              ),
+        await _futureQueue.addToQueue(
+          () => nearSocialApi.likeComment(
+            accountIdOfPost: comment.authorInfo.accountId,
+            accountId: accountId,
+            blockHeight: comment.blockHeight,
+            publicKey: publicKey,
+            privateKey: privateKey,
           ),
         );
-        await nearSocialApi.likeComment(
-          accountIdOfPost: comment.authorInfo.accountId,
-          accountId: accountId,
-          blockHeight: comment.blockHeight,
-          publicKey: publicKey,
-          privateKey: privateKey,
-        );
       }
+      _streamController.add(
+        state.copyWith(
+          posts: List.of(state.posts)
+            ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+              commentList: List.from(state.posts[indexOfPost].commentList ?? [])
+                ..[indexOfComment] = comment.copyWith(
+                  likeList: comment.likeList
+                    ..add(
+                      Like(
+                        accountId: accountId,
+                      ),
+                    ),
+                ),
+            ),
+        ),
+      );
     } catch (err) {
       if (isLiked) {
         _streamController.add(
@@ -510,6 +522,15 @@ class PostsController {
           element.reposterInfo == post.reposterInfo,
     );
     try {
+      await _futureQueue.addToQueue(
+        () => nearSocialApi.repostPost(
+          accountIdOfPost: post.authorInfo.accountId,
+          accountId: accountId,
+          blockHeight: post.blockHeight,
+          publicKey: publicKey,
+          privateKey: privateKey,
+        ),
+      );
       _streamController.add(
         state.copyWith(
           posts: List.of(state.posts)
@@ -520,13 +541,6 @@ class PostsController {
                 ),
             ),
         ),
-      );
-      await nearSocialApi.repostPost(
-        accountIdOfPost: post.authorInfo.accountId,
-        accountId: accountId,
-        blockHeight: post.blockHeight,
-        publicKey: publicKey,
-        privateKey: privateKey,
       );
     } catch (err) {
       _streamController.add(

@@ -1,4 +1,3 @@
-// ignore_for_file: hash_and_equals
 
 class Reposter {
   String accountId;
@@ -12,7 +11,11 @@ class Reposter {
       other is Reposter && other.accountId == accountId;
 
   @override
+  int get hashCode => accountId.hashCode;
+  
+  @override
   String toString() {
     return 'Reposter(accountId: $accountId)';
   }
+  
 }

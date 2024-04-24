@@ -306,14 +306,42 @@ class NearSocialApi {
         data: data,
       );
 
-      final likes = List<Map<String, dynamic>>.from(response.data)
-          .map((info) => Like(accountId: info["accountId"]))
-          .toSet();
+      final likes =
+          _convertToLikes(List<Map<String, dynamic>>.from(response.data));
 
       return likes;
     } catch (err) {
       rethrow;
     }
+  }
+
+  Set<Like> _convertToLikes(List<Map<String, dynamic>> data) {
+    Map<String, int> likeCounts = {};
+    Map<String, int> unlikeCounts = {};
+
+    for (var item in data) {
+      String accountId = item["accountId"];
+      String type = item["value"]["type"];
+
+      if (type == "like") {
+        likeCounts[accountId] = (likeCounts[accountId] ?? 0) + 1;
+      } else if (type == "unlike") {
+        unlikeCounts[accountId] = (unlikeCounts[accountId] ?? 0) + 1;
+      }
+    }
+
+    Set<Like> result = {};
+
+    for (var accountId in likeCounts.keys) {
+      int likeCount = likeCounts[accountId] ?? 0;
+      int unlikeCount = unlikeCounts[accountId] ?? 0;
+
+      if (likeCount > unlikeCount) {
+        result.add(Like(accountId: accountId));
+      }
+    }
+
+    return result;
   }
 
   Future<Set<Reposter>> getRepostsOfPost({
@@ -483,7 +511,7 @@ class NearSocialApi {
     }
   }
 
-  Future<List<Like>> _getLikesOfComment(
+  Future<Set<Like>> _getLikesOfComment(
       {required String accountId, required int blockHeight}) async {
     try {
       final data = {
@@ -502,9 +530,7 @@ class NearSocialApi {
         ),
         data: data,
       );
-      final likes = List<Map<String, dynamic>>.from(response.data)
-          .map((info) => Like(accountId: info["accountId"]))
-          .toList();
+      final likes = _convertToLikes(List<Map<String, dynamic>>.from(response.data));
 
       return likes;
     } catch (err) {

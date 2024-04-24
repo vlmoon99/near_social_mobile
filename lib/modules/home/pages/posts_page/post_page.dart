@@ -11,7 +11,8 @@ import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/comment
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_comment_dialog_body.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
-import 'package:near_social_mobile/shared_widgets/icon_button_with_counter.dart';
+import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
+import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 
 class PostPage extends StatelessWidget {
@@ -92,7 +93,7 @@ class PostPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      IconButtonWithCounter(
+                      TwoStatesIconButton(
                         iconPath: NearAssets.commentIcon,
                         onPressed: () async {
                           showDialog(
@@ -120,7 +121,7 @@ class PostPage extends StatelessWidget {
                           );
                         },
                       ),
-                      IconButtonWithCounter(
+                      ScaleAnimatedIconButtonWithCounter(
                         iconPath: NearAssets.likeIcon,
                         iconActivatedPath: NearAssets.activatedLikeIcon,
                         count: post.likeList.length,
@@ -153,7 +154,7 @@ class PostPage extends StatelessWidget {
                           }
                         },
                       ),
-                      IconButtonWithCounter(
+                      ScaleAnimatedIconButtonWithCounter (
                         iconPath: NearAssets.repostIcon,
                         count: post.repostList.length,
                         activated: post.repostList.any(
@@ -173,7 +174,7 @@ class PostPage extends StatelessWidget {
                               (element) => element.accountId == accountId)) {
                             return;
                           }
-                          showDialog(
+                          await showDialog(
                             context: context,
                             builder: (context) {
                               return AlertDialog(
@@ -225,7 +226,7 @@ class PostPage extends StatelessWidget {
                           );
                         },
                       ),
-                      IconButtonWithCounter(
+                      TwoStatesIconButton(
                         iconPath: NearAssets.shareIcon,
                         onPressed: () async {
                           final nearSocialApi = Modular.get<NearSocialApi>();
