@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class IconButtonWithCounter extends StatelessWidget {
-  const IconButtonWithCounter({
+class TwoStatesIconButton extends StatelessWidget {
+  const TwoStatesIconButton({
     super.key,
     required this.iconPath,
     this.iconActivatedPath,
     required this.onPressed,
-    this.count = 0,
     this.activated = false,
     this.size = 20,
     this.activatedColor = Colors.red,
@@ -17,7 +16,6 @@ class IconButtonWithCounter extends StatelessWidget {
   final String iconPath;
   final String? iconActivatedPath;
   final Function() onPressed;
-  final int count;
   final bool activated;
   final Color activatedColor;
   final int size;
@@ -45,13 +43,6 @@ class IconButtonWithCounter extends StatelessWidget {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ),
-        if (count > 0)
-          Text(
-            "$count",
-            style: TextStyle(
-              color: Colors.grey.shade600,
-            ),
-          ),
       ],
     );
   }

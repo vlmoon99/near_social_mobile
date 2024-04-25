@@ -66,18 +66,21 @@ class FirebaseNotificationService {
       final userCredential = await FirebaseAuth.instance.signInAnonymously();
       final userRecord = FirebaseFirestore.instance
           .collection('users')
-          .doc(userCredential.user?.uid);
-      final userExists = await userRecord.get().then((u) => u.exists);
+          .doc(userCredential.user!.uid);
+      final userExists = (await userRecord.get()).exists;
       if (userExists) {
         return;
       }
       final userData = {
-        "uid": userCredential.user?.uid,
+        "uid": userCredential.user!.uid,
         "createdTime": DateTime.now(),
       };
       await userRecord.set(userData);
     } catch (err) {
-      rethrow;
+      await Future.delayed(
+        const Duration(seconds: 1),
+        () => loginingOnNotificationBackend(),
+      );
     }
   }
 

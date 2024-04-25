@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -56,7 +58,8 @@ class _HomePageState extends State<HomePage> {
           return const DecryptionPageForLoginnedUser();
         }
         if (authController.state.status == AuthInfoStatus.authenticated) {
-          FirebaseNotificationService.subscribeToNotifications(authController.state.accountId);
+          FirebaseNotificationService.subscribeToNotifications(
+              authController.state.accountId);
         }
         return Scaffold(
           appBar: AppBar(
@@ -109,12 +112,12 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.account_circle),
-                    color: Modular.to.path.endsWith(Routes.home.accountPage)
+                    icon: const Icon(Icons.menu),
+                    color: Modular.to.path.endsWith(Routes.home.homeMenu)
                         ? Theme.of(context).primaryColor
                         : null,
                     onPressed: () {
-                      Modular.to.navigate(".${Routes.home.accountPage}");
+                      Modular.to.navigate(".${Routes.home.homeMenu}");
                     },
                   ),
                 ],

@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
+import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_data.dart';
 import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_smart_contract_arguments.dart';
+import 'package:flutterchain/flutterchain_lib/models/core/wallet.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/modules/home/apis/models/follower.dart';
 import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
@@ -13,6 +17,7 @@ import 'package:near_social_mobile/modules/home/apis/models/near_widget_info.dar
 import 'package:near_social_mobile/modules/home/apis/models/nft.dart';
 import 'package:near_social_mobile/modules/home/apis/models/notification.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
+import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
 
@@ -21,7 +26,18 @@ class NearSocialApi {
   final NearBlockChainService _nearBlockChainService;
 
   NearSocialApi({required NearBlockChainService nearBlockChainService})
-      : _nearBlockChainService = nearBlockChainService;
+      : _nearBlockChainService = nearBlockChainService {
+    _dio.interceptors.add(
+      RetryInterceptor(
+        dio: _dio,
+        logPrint: log,
+        retries: 60,
+        retryDelays: [
+          ...List.generate(60, (index) => const Duration(seconds: 1))
+        ],
+      ),
+    );
+  }
 
   final _ipfsMediaHosting = "https://ipfs.near.social/ipfs/";
 
@@ -290,14 +306,42 @@ class NearSocialApi {
         data: data,
       );
 
-      final likes = List<Map<String, dynamic>>.from(response.data)
-          .map((info) => Like(accountId: info["accountId"]))
-          .toSet();
+      final likes =
+          _convertToLikes(List<Map<String, dynamic>>.from(response.data));
 
       return likes;
     } catch (err) {
       rethrow;
     }
+  }
+
+  Set<Like> _convertToLikes(List<Map<String, dynamic>> data) {
+    Map<String, int> likeCounts = {};
+    Map<String, int> unlikeCounts = {};
+
+    for (var item in data) {
+      String accountId = item["accountId"];
+      String type = item["value"]["type"];
+
+      if (type == "like") {
+        likeCounts[accountId] = (likeCounts[accountId] ?? 0) + 1;
+      } else if (type == "unlike") {
+        unlikeCounts[accountId] = (unlikeCounts[accountId] ?? 0) + 1;
+      }
+    }
+
+    Set<Like> result = {};
+
+    for (var accountId in likeCounts.keys) {
+      int likeCount = likeCounts[accountId] ?? 0;
+      int unlikeCount = unlikeCounts[accountId] ?? 0;
+
+      if (likeCount > unlikeCount) {
+        result.add(Like(accountId: accountId));
+      }
+    }
+
+    return result;
   }
 
   Future<Set<Reposter>> getRepostsOfPost({
@@ -467,7 +511,7 @@ class NearSocialApi {
     }
   }
 
-  Future<List<Like>> _getLikesOfComment(
+  Future<Set<Like>> _getLikesOfComment(
       {required String accountId, required int blockHeight}) async {
     try {
       final data = {
@@ -486,9 +530,7 @@ class NearSocialApi {
         ),
         data: data,
       );
-      final likes = List<Map<String, dynamic>>.from(response.data)
-          .map((info) => Like(accountId: info["accountId"]))
-          .toList();
+      final likes = _convertToLikes(List<Map<String, dynamic>>.from(response.data));
 
       return likes;
     } catch (err) {
@@ -867,7 +909,7 @@ class NearSocialApi {
   Future<List<NearWidgetInfo>> getWidgetsList({String? accountId}) async {
     try {
       final headers = {'Content-Type': 'application/json'};
-      final responseOfWidgetsList = await _dio.request(
+      final responseOfWidgetsListWithMetadata = await _dio.request(
         'https://api.near.social/get',
         options: Options(
           method: 'POST',
@@ -878,16 +920,16 @@ class NearSocialApi {
         },
       );
 
-      List<String> listOfWidgetPaths = [];
+      final List<String> listOfWidgetPaths = [];
 
-      (responseOfWidgetsList.data as Map<String, dynamic>)
-          .forEach((accountId, value) {
-        final listOfWidgetNames = value["widget"] as Map<String, dynamic>;
-        listOfWidgetPaths.addAll(listOfWidgetNames.keys
-            .map((widgetUrlName) => "$accountId/widget/$widgetUrlName"));
-      });
+      listOfWidgetPaths.addAll(
+        (responseOfWidgetsListWithMetadata.data as Map<String, dynamic>)
+            .keys
+            .map((accountId) => "$accountId/widget/*")
+            .toList(),
+      );
 
-      final responseOfWidgetsBlockHeight = await _dio.request(
+      final responseOfAllWidgetsList = await _dio.request(
         'https://api.near.social/keys',
         options: Options(
           method: 'POST',
@@ -899,12 +941,39 @@ class NearSocialApi {
         },
       );
 
+      final fullListOfWidgetsWithoutMetadata =
+          responseOfAllWidgetsList.data as Map<String, dynamic>;
+
       final List<NearWidgetInfo> widgets = [];
-      (responseOfWidgetsList.data as Map<String, dynamic>).forEach(
+
+      (responseOfWidgetsListWithMetadata.data as Map<String, dynamic>).forEach(
         (key, value) {
           final accountId = key;
-          final listOfWidgetNames = value["widget"] as Map<String, dynamic>;
-          listOfWidgetNames.forEach(
+          final listOfWidgetsData =
+              (value["widget"] ?? {}) as Map<String, dynamic>;
+          final widgetsNamesWithoutMetadata =
+              ((fullListOfWidgetsWithoutMetadata[accountId]["widget"] ?? {})
+                      as Map)
+                  .keys
+                  .toSet()
+                  .difference(
+                    listOfWidgetsData.keys.toSet(),
+                  );
+          widgets.addAll(widgetsNamesWithoutMetadata.map((widgetName) {
+            return NearWidgetInfo(
+              accountId: accountId,
+              urlName: widgetName,
+              name: "",
+              description: "",
+              imageUrl: "",
+              tags: [],
+              blockHeight: fullListOfWidgetsWithoutMetadata[accountId]
+                      ?["widget"]?[widgetName] ??
+                  0,
+            );
+          }));
+
+          listOfWidgetsData.forEach(
             (key, value) {
               final widgetUrlName = key;
               final metadata = value["metadata"] as Map<String, dynamic>;
@@ -919,8 +988,9 @@ class NearSocialApi {
                   tags: metadata["tags"] != null
                       ? (metadata["tags"] as Map<String, dynamic>).keys.toList()
                       : [],
-                  blockHeight: responseOfWidgetsBlockHeight.data[accountId]
-                      ["widget"][widgetUrlName],
+                  blockHeight: fullListOfWidgetsWithoutMetadata[accountId]
+                          ?["widget"]?[widgetUrlName] ??
+                      0,
                 ),
               );
             },
@@ -1297,6 +1367,80 @@ class NearSocialApi {
         );
       }
       return notifications;
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<PrivateKeyInfo> getAccessKeyInfo({
+    required String accountId,
+    required String key,
+  }) async {
+    try {
+      final publicKeyOfSecretKey = await _nearBlockChainService
+          .getPublicKeyFromSecretKeyFromNearApiJSFormat(key.split(":").last);
+      final privateKeyInNearApiJsFormat =
+          await _nearBlockChainService.exportPrivateKeyToTheNearApiJsFormat(
+        currentBlockchainData: NearBlockChainData(
+          publicKey: publicKeyOfSecretKey,
+          privateKey: key,
+          passphrase: '',
+          derivationPath: const DerivationPath(
+            accountNumber: '',
+            purpose: '',
+            coinType: '',
+            address: '',
+            change: '',
+          ),
+        ),
+      );
+      final request = {
+        "jsonrpc": "2.0",
+        "id": "dontcare",
+        "method": "query",
+        "params": {
+          "request_type": "view_access_key",
+          "finality": "final",
+          "account_id": accountId,
+          "public_key": privateKeyInNearApiJsFormat
+        }
+      };
+      final response = await _dio.request(
+        'https://rpc.mainnet.near.org',
+        options: Options(
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+        ),
+        data: request,
+      );
+      final permission = response.data["result"]?["permission"];
+      if (permission == null) {
+        throw Exception(response.data["result"]["error"].toString());
+      }
+      if (permission is Map && permission.keys.first == "FunctionCall") {
+        return PrivateKeyInfo(
+          publicKey: accountId,
+          privateKey: key,
+          privateKeyInNearApiJsFormat: privateKeyInNearApiJsFormat,
+          privateKeyTypeInfo: PrivateKeyTypeInfo(
+            type: PrivateKeyType.FunctionCall,
+            receiverId: permission["FunctionCall"]["receiver_id"],
+            methodNames: List<String>.from(
+                permission["FunctionCall"]?["method_names"] ?? []),
+          ),
+        );
+      } else if (permission is String && permission == "FullAccess") {
+        return PrivateKeyInfo(
+          publicKey: accountId,
+          privateKey: key,
+          privateKeyInNearApiJsFormat: privateKeyInNearApiJsFormat,
+          privateKeyTypeInfo: PrivateKeyTypeInfo(
+            type: PrivateKeyType.FullAccess,
+          ),
+        );
+      } else {
+        throw Exception("Unknown permission type");
+      }
     } catch (err) {
       rethrow;
     }

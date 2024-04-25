@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 
 enum AuthInfoStatus { unauthenticated, authenticated }
 
@@ -9,6 +10,7 @@ class AuthInfo {
   final String secretKey;
   final String privateKey;
   final AuthInfoStatus status;
+  final Map<String, PrivateKeyInfo> additionalStoredKeys;
 
   const AuthInfo({
     this.accountId = "",
@@ -16,6 +18,7 @@ class AuthInfo {
     this.secretKey = "",
     this.privateKey = "",
     this.status = AuthInfoStatus.unauthenticated,
+    this.additionalStoredKeys = const {},
   });
 
   AuthInfo copyWith({
@@ -24,6 +27,7 @@ class AuthInfo {
     String? secretKey,
     String? privateKey,
     AuthInfoStatus? status,
+    Map<String, PrivateKeyInfo>? additionalStoredKeys,
   }) {
     return AuthInfo(
       accountId: accountId ?? this.accountId,
@@ -31,6 +35,19 @@ class AuthInfo {
       secretKey: secretKey ?? this.secretKey,
       privateKey: privateKey ?? this.privateKey,
       status: status ?? this.status,
+      additionalStoredKeys: additionalStoredKeys ?? this.additionalStoredKeys,
     );
   }
+
+  @override
+  bool operator ==(Object other) => 
+      identical(this, other) ||
+      other is AuthInfo &&
+          runtimeType == other.runtimeType &&
+          accountId == other.accountId &&
+          publicKey == other.publicKey &&
+          secretKey == other.secretKey &&
+          privateKey == other.privateKey &&
+          status == other.status &&
+          mapEquals(additionalStoredKeys, other.additionalStoredKeys);
 }

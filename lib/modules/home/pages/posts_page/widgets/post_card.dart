@@ -10,7 +10,8 @@ import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
-import 'package:near_social_mobile/shared_widgets/icon_button_with_counter.dart';
+import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
+import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 
 class PostCard extends StatelessWidget {
@@ -99,10 +100,9 @@ class PostCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  IconButtonWithCounter(
+                  ScaleAnimatedIconButtonWithCounter(
                     iconPath: NearAssets.likeIcon,
                     iconActivatedPath: NearAssets.activatedLikeIcon,
-                    count: post.likeList.length,
                     activated: post.likeList.any(
                       (element) =>
                           element.accountId == authController.state.accountId,
@@ -127,8 +127,9 @@ class PostCard extends StatelessWidget {
                         Modular.get<Catcher>().exceptionsHandler.add(exc);
                       }
                     },
+                    count: post.likeList.length,
                   ),
-                  IconButtonWithCounter(
+                  ScaleAnimatedIconButtonWithCounter(
                     iconPath: NearAssets.repostIcon,
                     count: post.repostList.length,
                     activated: post.repostList.any(
@@ -144,7 +145,7 @@ class PostCard extends StatelessWidget {
                           .any((element) => element.accountId == accountId)) {
                         return;
                       }
-                      showDialog(
+                      await showDialog(
                         context: context,
                         builder: (context) {
                           return AlertDialog(
@@ -194,7 +195,7 @@ class PostCard extends StatelessWidget {
                       );
                     },
                   ),
-                  IconButtonWithCounter(
+                  TwoStatesIconButton(
                     iconPath: NearAssets.shareIcon,
                     onPressed: () async {
                       final nearSocialApi = Modular.get<NearSocialApi>();

@@ -1,9 +1,10 @@
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
-import 'package:near_social_mobile/formatters/models/qr_auth_info.dart';
+import 'package:near_social_mobile/modules/vms/core/models/authorization_credentials.dart';
 
 class QRFormatter {
-  static QRAuthInfo convertURLToQRAuthInfo(String url) {
+  static AuthorizationCredentials convertURLToAuthorizationCredentials(
+      String url) {
     final accountIdStartIndex = url.indexOf('a=');
     final secretKeyStartIndex = url.indexOf('&k=');
 
@@ -25,6 +26,6 @@ class QRFormatter {
     final accountId = url.substring(accountIdStartIndex + 2, accountIdEndIndex);
     final secretKey = url.substring(secretKeyStartIndex + 3, secretKeyEndIndex);
 
-    return QRAuthInfo(accountId, secretKey);
+    return AuthorizationCredentials(accountId, secretKey);
   }
 }

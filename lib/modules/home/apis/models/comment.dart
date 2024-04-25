@@ -9,7 +9,7 @@ class Comment {
   final int blockHeight;
   final DateTime date;
   final CommentBody commentBody;
-  final List<Like> likeList;
+  final Set<Like> likeList;
 
   Comment({
     required this.authorInfo,
@@ -24,7 +24,7 @@ class Comment {
     int? blockHeight,
     DateTime? date,
     CommentBody? commentBody,
-    List<Like>? likeList,
+    Set<Like>? likeList,
   }) {
     return Comment(
       authorInfo: authorInfo ?? this.authorInfo,
@@ -42,7 +42,7 @@ class Comment {
       other.authorInfo == authorInfo &&
       other.date == date &&
       other.commentBody == commentBody &&
-      listEquals(other.likeList, likeList);
+      setEquals(other.likeList, likeList);
 
   @override
   String toString() {

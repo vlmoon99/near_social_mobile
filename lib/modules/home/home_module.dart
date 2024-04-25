@@ -2,7 +2,9 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:near_social_mobile/modules/core_module.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/pages/account_info_page.dart';
+import 'package:near_social_mobile/modules/home/pages/home_menu_page.dart';
 import 'package:near_social_mobile/modules/home/pages/home_page.dart';
+import 'package:near_social_mobile/modules/home/pages/key_manager/key_manager_page.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_app_page.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_list_page.dart';
 import 'package:near_social_mobile/modules/home/pages/notifications_page.dart';
@@ -44,10 +46,6 @@ class HomeModule extends Module {
           child: (context) => const PostsFeedPage(),
         ),
         ChildRoute(
-          Routes.home.accountPage,
-          child: (context) => const AccountInfoPage(),
-        ),
-        ChildRoute(
           Routes.home.widgetsListPage,
           child: (context) => const NearWidgetListPage(),
         ),
@@ -59,6 +57,10 @@ class HomeModule extends Module {
           Routes.home.notificationsPage,
           child: (context) => const NotificationsPage(),
         ),
+        ChildRoute(
+          Routes.home.homeMenu,
+          child: (context) => const HomeMenuPage(),
+        )
       ],
     );
     r.child(
@@ -78,5 +80,11 @@ class HomeModule extends Module {
         accountId: r.args.queryParams['accountId'] as String,
       ),
     );
+    r.child(
+      Routes.home.accountPage,
+      child: (context) => const AccountInfoPage(),
+    );
+    r.child(Routes.home.keyManagerPage,
+        child: (context) => const KeyManagerPage());
   }
 }
