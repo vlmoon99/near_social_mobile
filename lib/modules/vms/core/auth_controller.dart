@@ -82,11 +82,7 @@ class AuthController extends Disposable {
         status: AuthInfoStatus.authenticated,
       ));
     } catch (err) {
-      throw AppExceptions(
-        messageForUser: "Failed to login",
-        messageForDev: err.toString(),
-        statusCode: AppErrorCodes.flutterchainError,
-      );
+      rethrow;
     }
   }
 
@@ -120,7 +116,13 @@ class AuthController extends Disposable {
       );
       _streamController.add(newState);
     } catch (err) {
-      rethrow;
+      final appException = AppExceptions(
+        messageForUser: "Failed to add key",
+        messageForDev: err.toString(),
+        statusCode: AppErrorCodes.storageError,
+      );
+
+      throw appException;
     }
   }
 
@@ -135,7 +137,12 @@ class AuthController extends Disposable {
       );
       _streamController.add(newState);
     } catch (err) {
-      rethrow;
+      final appException = AppExceptions(
+        messageForUser: "Failed to remove key",
+        messageForDev: err.toString(),
+        statusCode: AppErrorCodes.storageError,
+      );
+      throw appException;
     }
   }
 

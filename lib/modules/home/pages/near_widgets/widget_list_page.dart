@@ -24,16 +24,7 @@ class _NearWidgetListPageState extends State<NearWidgetListPage> {
       final NearWidgetsController nearWidgetsController =
           Modular.get<NearWidgetsController>();
       if (nearWidgetsController.state.status == NearWidgetStatus.initial) {
-        runZonedGuarded(() {
-          nearWidgetsController.getNearWidgets();
-        }, (error, stack) {
-          final AppExceptions appException = AppExceptions(
-            messageForUser: "Error occurred. Please try later.",
-            messageForDev: error.toString(),
-            statusCode: AppErrorCodes.nearSocialApiError,
-          );
-          Modular.get<Catcher>().exceptionsHandler.add(appException);
-        });
+        nearWidgetsController.getNearWidgets();
       }
     });
   }
@@ -109,4 +100,3 @@ class _NearWidgetListPageState extends State<NearWidgetListPage> {
     );
   }
 }
-

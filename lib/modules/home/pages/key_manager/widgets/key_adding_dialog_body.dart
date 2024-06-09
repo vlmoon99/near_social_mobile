@@ -83,19 +83,11 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
           accessKeyName: keyName,
           privateKeyInfo: privateKeyInfo,
         );
-        setState(() {
-          addingKeyProcessLoading = false;
-        });
         Modular.to.pop();
       }
     } catch (err) {
-      final catcher = Modular.get<Catcher>();
-      final appException = AppExceptions(
-        messageForUser: "Failed to add key",
-        messageForDev: err.toString(),
-        statusCode: AppErrorCodes.storageError,
-      );
-      catcher.exceptionsHandler.add(appException);
+      rethrow;
+    } finally {
       setState(() {
         addingKeyProcessLoading = false;
       });

@@ -39,12 +39,12 @@ class _QRReaderScreenState extends State<QRReaderScreen> {
         .listen((scanData) {
       try {
         if (scanData.code == null) return;
-        final AuthorizationCredentials =
+        final authorizationCredentials =
             QRFormatter.convertURLToAuthorizationCredentials(scanData.code!);
         controller.stopCamera();
         Modular.to.pushReplacementNamed(
           Routes.auth.getRoute(Routes.auth.encryptData),
-          arguments: AuthorizationCredentials,
+          arguments: authorizationCredentials,
         );
       } on AppExceptions catch (err) {
         log(err.messageForDev);
@@ -57,7 +57,7 @@ class _QRReaderScreenState extends State<QRReaderScreen> {
           ),
         );
       } catch (err) {
-        log(err.toString());
+        rethrow;
       }
     });
   }

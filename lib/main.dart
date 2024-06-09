@@ -47,15 +47,21 @@ void main() async {
     });
   }, (error, stack) {
     final catcher = Modular.get<Catcher>();
-    final appException = AppExceptions(
-      messageForUser:
-          ErrorMessageHandler.getErrorMessageForNotFlutterExceptions(error),
-      messageForDev: error.toString(),
-      statusCode: AppErrorCodes.errorFromZone,
-    );
-    catcher.exceptionsHandler.add(
-      appException,
-    );
+    if (error is AppExceptions) {
+      catcher.exceptionsHandler.add(
+        error,
+      );
+    } else {
+      final appException = AppExceptions(
+        messageForUser:
+            ErrorMessageHandler.getErrorMessageForNotFlutterExceptions(error),
+        messageForDev: error.toString(),
+        statusCode: AppErrorCodes.errorFromZone,
+      );
+      catcher.exceptionsHandler.add(
+        appException,
+      );
+    }
   });
 }
 

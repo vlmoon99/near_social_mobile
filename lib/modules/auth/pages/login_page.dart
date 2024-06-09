@@ -75,11 +75,8 @@ class _LoginPageState extends State<LoginPage> {
                         arguments: AuthorizationCredentials(
                             account.publicKey, account.secretKey),
                       );
-                    } on AppExceptions catch (err) {
-                      final catcher = Modular.get<Catcher>();
-                      catcher.exceptionsHandler.add(err);
                     } catch (err) {
-                      log(err.toString());
+                      rethrow;
                     } finally {
                       setState(() {
                         isLoading = false;

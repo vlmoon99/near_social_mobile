@@ -55,15 +55,8 @@ class AccountInfoPage extends StatelessWidget {
             SizedBox(height: 20.h),
             ElevatedButton(
               onPressed: () async {
-                try {
                   await authController.logout();
                   Modular.to.navigate(Routes.auth.getModule());
-                } on AppExceptions catch (err) {
-                  final catcher = Modular.get<Catcher>();
-                  catcher.exceptionsHandler.add(err);
-                } catch (err) {
-                  log(err.toString());
-                }
               },
               child: const Text("Logout"),
             ),

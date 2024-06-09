@@ -23,16 +23,7 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
     final postsConroller = Modular.get<PostsController>();
     if (_isBottom &&
         postsConroller.state.status != PostLoadingStatus.loadingMorePosts) {
-      runZonedGuarded(() {
-        postsConroller.loadMorePosts();
-      }, (error, stack) {
-        final AppExceptions appException = AppExceptions(
-          messageForUser: "Error occurred. Please try later.",
-          messageForDev: error.toString(),
-          statusCode: AppErrorCodes.nearSocialApiError,
-        );
-        Modular.get<Catcher>().exceptionsHandler.add(appException);
-      });
+      postsConroller.loadMorePosts();
     }
   }
 
@@ -55,16 +46,7 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final PostsController postsController = Modular.get<PostsController>();
       if (postsController.state.status == PostLoadingStatus.initial) {
-        runZonedGuarded(() {
-          postsController.loadPosts();
-        }, (error, stack) {
-          final AppExceptions appException = AppExceptions(
-            messageForUser: "Error occurred. Please try later.",
-            messageForDev: error.toString(),
-            statusCode: AppErrorCodes.nearSocialApiError,
-          );
-          Modular.get<Catcher>().exceptionsHandler.add(appException);
-        });
+        postsController.loadPosts();
       }
     });
   }

@@ -124,7 +124,7 @@ class PostCard extends StatelessWidget {
                           messageForDev: err.toString(),
                           statusCode: AppErrorCodes.flutterchainError,
                         );
-                        Modular.get<Catcher>().exceptionsHandler.add(exc);
+                        throw exc;
                       }
                     },
                     count: post.likeList.length,
@@ -189,7 +189,7 @@ class PostCard extends StatelessWidget {
                               messageForDev: err.toString(),
                               statusCode: AppErrorCodes.flutterchainError,
                             );
-                            Modular.get<Catcher>().exceptionsHandler.add(exc);
+                            throw exc;
                           }
                         },
                       );

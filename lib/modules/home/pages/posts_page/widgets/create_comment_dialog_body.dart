@@ -146,62 +146,53 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
             children: [
               ElevatedButton(
                 onPressed: () async {
-                  runZonedGuarded(() async {
-                    final nearSocialApi = Modular.get<NearSocialApi>();
-                    final AuthController authController =
-                        Modular.get<AuthController>();
-                    final String accountId = authController.state.accountId;
-                    final String publicKey = authController.state.publicKey;
-                    final String privateKey = authController.state.privateKey;
+                  final nearSocialApi = Modular.get<NearSocialApi>();
+                  final AuthController authController =
+                      Modular.get<AuthController>();
+                  final String accountId = authController.state.accountId;
+                  final String publicKey = authController.state.publicKey;
+                  final String privateKey = authController.state.privateKey;
 
-                    String? cidOfMedia;
-                    if (filepathOfMedia != null) {
-                      cidOfMedia =
-                          await nearSocialApi.uploadFileToNearFileHosting(
-                        filepath: filepathOfMedia!,
+                  String? cidOfMedia;
+                  if (filepathOfMedia != null) {
+                    cidOfMedia =
+                        await nearSocialApi.uploadFileToNearFileHosting(
+                      filepath: filepathOfMedia!,
+                    );
+                  }
+
+                  final PostBody postBody = PostBody(
+                    text: _textEditingController.text,
+                    mediaLink: cidOfMedia,
+                  );
+
+                  if (postBody.text == "" && postBody.mediaLink == null) {
+                    throw Exception("Empty text and mediaLink");
+                  }
+
+                  nearSocialApi
+                      .comentThePost(
+                    accountIdOfPost: widget.post.authorInfo.accountId,
+                    blockHeight: widget.post.blockHeight,
+                    accountId: accountId,
+                    publicKey: publicKey,
+                    privateKey: privateKey,
+                    postBody: postBody,
+                  )
+                      .then(
+                    (_) {
+                      Modular.get<PostsController>().loadCommentsOfPost(
+                        accountId: widget.post.authorInfo.accountId,
+                        blockHeight: widget.post.blockHeight,
                       );
-                    }
-
-                    final PostBody postBody = PostBody(
-                      text: _textEditingController.text,
-                      mediaLink: cidOfMedia,
-                    );
-
-                    if (postBody.text == "" && postBody.mediaLink == null) {
-                      throw Exception("Empty text and mediaLink");
-                    }
-
-                    nearSocialApi
-                        .comentThePost(
-                      accountIdOfPost: widget.post.authorInfo.accountId,
-                      blockHeight: widget.post.blockHeight,
-                      accountId: accountId,
-                      publicKey: publicKey,
-                      privateKey: privateKey,
-                      postBody: postBody,
-                    )
-                        .then(
-                      (_) {
-                        Modular.get<PostsController>().loadCommentsOfPost(
-                          accountId: widget.post.authorInfo.accountId,
-                          blockHeight: widget.post.blockHeight,
-                        );
-                      },
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Your comment will be added soon"),
-                      ),
-                    );
-                    Modular.to.pop();
-                  }, (error, stack) {
-                    final AppExceptions appException = AppExceptions(
-                      messageForUser: error.toString(),
-                      messageForDev: error.toString(),
-                      statusCode: AppErrorCodes.nearSocialApiError,
-                    );
-                    Modular.get<Catcher>().exceptionsHandler.add(appException);
-                  });
+                    },
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Your comment will be added soon"),
+                    ),
+                  );
+                  Modular.to.pop();
                 },
                 child: const Text("Send"),
               ),

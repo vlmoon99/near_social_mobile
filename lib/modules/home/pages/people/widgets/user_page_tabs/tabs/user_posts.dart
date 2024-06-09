@@ -61,41 +61,27 @@ class _UserPostsViewState extends State<UserPostsView> {
               : ElevatedButton(
                   onPressed: allPostsLoaded
                       ? null
-                      : () {
-                          runZonedGuarded(() {
+                      : () async {
+                          try {
                             setState(() {
                               loadingMorePosts = true;
                             });
-                            Modular.get<PostsController>()
+                            final posts = await Modular.get<PostsController>()
                                 .loadMorePosts(
                               postsOfAccountId: widget.accountIdOfUser,
-                            )
-                                .then(
-                              (posts) {
-                                setState(() {
-                                  loadingMorePosts = false;
-                                });
-                                if (posts.isEmpty) {
-                                  setState(() {
-                                    allPostsLoaded = true;
-                                  });
-                                }
-                              },
                             );
-                          }, (error, stack) {
+                            if (posts.isEmpty) {
+                              setState(() {
+                                allPostsLoaded = true;
+                              });
+                            }
+                          } catch (err) {
+                            rethrow;
+                          } finally {
                             setState(() {
                               loadingMorePosts = false;
                             });
-                            final AppExceptions appException = AppExceptions(
-                              messageForUser:
-                                  "Error occurred. Please try later.",
-                              messageForDev: error.toString(),
-                              statusCode: AppErrorCodes.nearSocialApiError,
-                            );
-                            Modular.get<Catcher>()
-                                .exceptionsHandler
-                                .add(appException);
-                          });
+                          }
                         },
                   child: allPostsLoaded
                       ? const Text("No more posts")

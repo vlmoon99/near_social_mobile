@@ -67,20 +67,13 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
             children: [
               ElevatedButton(
                 onPressed: () async {
-                  try {
-                    final bool authenticated =
-                        await LocalAuthService().authenticate(
-                      requestAuthMessage: 'Please authenticate to encrypt data',
-                    );
-                    if (!authenticated) return;
-                    await encryptDataAndLogin();
-                    Modular.to.navigate(Routes.home.getModule());
-                  } on AppExceptions catch (err) {
-                    final catcher = Modular.get<Catcher>();
-                    catcher.exceptionsHandler.add(err);
-                  } catch (err) {
-                    log(err.toString());
-                  }
+                  final bool authenticated =
+                      await LocalAuthService().authenticate(
+                    requestAuthMessage: 'Please authenticate to encrypt data',
+                  );
+                  if (!authenticated) return;
+                  await encryptDataAndLogin();
+                  Modular.to.navigate(Routes.home.getModule());
                 },
                 child: const Text("Encrypt"),
               )

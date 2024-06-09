@@ -9,7 +9,8 @@ import 'package:near_social_mobile/modules/home/pages/people/widgets/user_page_t
 import 'package:near_social_mobile/modules/home/pages/people/widgets/user_page_tabs/tabs/user_widgets.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 
-enum UserPageTab {posts, nfts, widgets}
+enum UserPageTab { posts, nfts, widgets }
+
 class UserPageTabs extends StatefulWidget {
   const UserPageTabs({super.key, required this.accountIdOfUser});
 
@@ -53,19 +54,8 @@ class _UserPageTabsState extends State<UserPageTabs> {
                     null) {
                   SchedulerBinding.instance
                       .addPostFrameCallback((timeStamp) async {
-                    try {
-                      await userListController.loadNftsOfAccount(
-                          accountIdOfUser: widget.accountIdOfUser);
-                    } catch (err) {
-                      final AppExceptions appException = AppExceptions(
-                        messageForUser: "Error occurred. Please try later.",
-                        messageForDev: err.toString(),
-                        statusCode: AppErrorCodes.nearSocialApiError,
-                      );
-                      Modular.get<Catcher>()
-                          .exceptionsHandler
-                          .add(appException);
-                    }
+                    await userListController.loadNftsOfAccount(
+                        accountIdOfUser: widget.accountIdOfUser);
                   });
                 }
                 setState(() {
@@ -86,19 +76,8 @@ class _UserPageTabsState extends State<UserPageTabs> {
                     null) {
                   SchedulerBinding.instance
                       .addPostFrameCallback((timeStamp) async {
-                    try {
-                      await userListController.loadWidgetsOfAccount(
-                          accountIdOfUser: widget.accountIdOfUser);
-                    } catch (err) {
-                      final AppExceptions appException = AppExceptions(
-                        messageForUser: "Error occurred. Please try later.",
-                        messageForDev: err.toString(),
-                        statusCode: AppErrorCodes.nearSocialApiError,
-                      );
-                      Modular.get<Catcher>()
-                          .exceptionsHandler
-                          .add(appException);
-                    }
+                    await userListController.loadWidgetsOfAccount(
+                        accountIdOfUser: widget.accountIdOfUser);
                   });
                 }
                 setState(() {

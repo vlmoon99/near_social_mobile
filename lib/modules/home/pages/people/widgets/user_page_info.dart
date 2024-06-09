@@ -274,43 +274,25 @@ class UserPageMainInfo extends StatelessWidget {
                             ),
                           ElevatedButton(
                             onPressed: () {
-                              runZonedGuarded(
-                                () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text("Poking user...")));
-                                  Modular.get<NearSocialApi>()
-                                      .pokeAccount(
-                                    accountIdToPoke: accountIdOfUser,
-                                    accountId: authController.state.accountId,
-                                    publicKey: authController.state.publicKey,
-                                    privateKey: authController.state.privateKey,
-                                  )
-                                      .then((_) {
-                                    ScaffoldMessenger.of(context)
-                                        .hideCurrentSnackBar();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content:
-                                            Text("Poked @$accountIdOfUser!"),
-                                      ),
-                                    );
-                                  });
-                                },
-                                (error, stack) {
-                                  final AppExceptions appException =
-                                      AppExceptions(
-                                    messageForUser:
-                                        "Error occurred poking user. Please try later.",
-                                    messageForDev: error.toString(),
-                                    statusCode:
-                                        AppErrorCodes.nearSocialApiError,
-                                  );
-                                  Modular.get<Catcher>()
-                                      .exceptionsHandler
-                                      .add(appException);
-                                },
-                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text("Poking user...")));
+                              Modular.get<NearSocialApi>()
+                                  .pokeAccount(
+                                accountIdToPoke: accountIdOfUser,
+                                accountId: authController.state.accountId,
+                                publicKey: authController.state.publicKey,
+                                privateKey: authController.state.privateKey,
+                              )
+                                  .then((_) {
+                                ScaffoldMessenger.of(context)
+                                    .hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Poked @$accountIdOfUser!"),
+                                  ),
+                                );
+                              });
                             },
                             child: Text(
                               "👈 Poke",
@@ -448,22 +430,12 @@ class UserPageMainInfo extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () async {
-                runZonedGuarded(() {
-                  userListController.unfollowAccount(
-                    accountIdToUnfollow: accountIdOfUser,
-                    accountId: authController.state.accountId,
-                    publicKey: authController.state.publicKey,
-                    privateKey: authController.state.privateKey,
-                  );
-                  Modular.to.pop();
-                }, (error, stack) {
-                  final AppExceptions appException = AppExceptions(
-                    messageForUser: "Error occurred. Please try later.",
-                    messageForDev: error.toString(),
-                    statusCode: AppErrorCodes.nearSocialApiError,
-                  );
-                  Modular.get<Catcher>().exceptionsHandler.add(appException);
-                });
+                userListController.unfollowAccount(
+                  accountIdToUnfollow: accountIdOfUser,
+                  accountId: authController.state.accountId,
+                  publicKey: authController.state.publicKey,
+                  privateKey: authController.state.privateKey,
+                );
               },
               child: const Text("Yes"),
             ),
@@ -495,22 +467,13 @@ class UserPageMainInfo extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () async {
-                runZonedGuarded(() {
-                  userListController.followAccount(
-                    accountIdToFollow: accountIdOfUser,
-                    accountId: authController.state.accountId,
-                    publicKey: authController.state.publicKey,
-                    privateKey: authController.state.privateKey,
-                  );
-                  Modular.to.pop();
-                }, (error, stack) {
-                  final AppExceptions appException = AppExceptions(
-                    messageForUser: "Error occurred. Please try later.",
-                    messageForDev: error.toString(),
-                    statusCode: AppErrorCodes.nearSocialApiError,
-                  );
-                  Modular.get<Catcher>().exceptionsHandler.add(appException);
-                });
+                userListController.followAccount(
+                  accountIdToFollow: accountIdOfUser,
+                  accountId: authController.state.accountId,
+                  publicKey: authController.state.publicKey,
+                  privateKey: authController.state.privateKey,
+                );
+                Modular.to.pop();
               },
               child: const Text("Yes"),
             ),

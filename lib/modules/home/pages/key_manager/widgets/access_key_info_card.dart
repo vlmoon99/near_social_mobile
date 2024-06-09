@@ -51,22 +51,10 @@ class AccessKeyInfoCard extends StatelessWidget {
                             actions: [
                               TextButton(
                                 onPressed: () async {
-                                  try {
-                                    final authController =
-                                        Modular.get<AuthController>();
-                                    await authController.removeAccessKey(
-                                        accessKeyName: keyName);
-                                  } catch (err) {
-                                    final catcher = Modular.get<Catcher>();
-                                    final appException = AppExceptions(
-                                      messageForUser: "Failed to remove key",
-                                      messageForDev: err.toString(),
-                                      statusCode: AppErrorCodes.storageError,
-                                    );
-                                    catcher.exceptionsHandler.add(
-                                      appException,
-                                    );
-                                  }
+                                  final authController =
+                                      Modular.get<AuthController>();
+                                  await authController.removeAccessKey(
+                                      accessKeyName: keyName);
                                   Modular.to.pop();
                                 },
                                 child: const Text("Remove"),

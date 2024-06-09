@@ -52,16 +52,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           NotificationsLoadingState.initial) {
         final AuthController authController = Modular.get<AuthController>();
         final accountId = authController.state.accountId;
-        runZonedGuarded(() {
-          notificationsController.loadNotifications(accountId: accountId);
-        }, (error, stack) {
-          final AppExceptions appException = AppExceptions(
-            messageForUser: "Error occurred. Please try later.",
-            messageForDev: error.toString(),
-            statusCode: AppErrorCodes.nearSocialApiError,
-          );
-          Modular.get<Catcher>().exceptionsHandler.add(appException);
-        });
+        notificationsController.loadNotifications(accountId: accountId);
       }
     });
     super.didChangeDependencies();
@@ -89,31 +80,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   onPressed: allNotificationsLoaded
                       ? null
                       : () {
-                          runZonedGuarded(() {
-                            final AuthController authController =
-                                Modular.get<AuthController>();
-                            final accountId = authController.state.accountId;
-                            notificationsController
-                                .loadMoreNotifications(
-                              accountId: accountId,
-                            )
-                                .then((moreNotifications) {
-                              if (moreNotifications.isEmpty) {
-                                setState(() {
-                                  allNotificationsLoaded = true;
-                                });
-                              }
-                            });
-                          }, (error, stack) {
-                            final AppExceptions appException = AppExceptions(
-                              messageForUser:
-                                  "Error occurred. Please try later.",
-                              messageForDev: error.toString(),
-                              statusCode: AppErrorCodes.nearSocialApiError,
-                            );
-                            Modular.get<Catcher>()
-                                .exceptionsHandler
-                                .add(appException);
+                          final AuthController authController =
+                              Modular.get<AuthController>();
+                          final accountId = authController.state.accountId;
+                          notificationsController
+                              .loadMoreNotifications(
+                            accountId: accountId,
+                          )
+                              .then((moreNotifications) {
+                            if (moreNotifications.isEmpty) {
+                              setState(() {
+                                allNotificationsLoaded = true;
+                              });
+                            }
                           });
                         },
                   child: allNotificationsLoaded

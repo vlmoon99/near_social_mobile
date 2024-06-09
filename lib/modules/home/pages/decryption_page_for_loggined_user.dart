@@ -42,34 +42,20 @@ class DecryptionPageForLoginnedUser extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () async {
-                try {
-                  final bool authenticated =
-                      await LocalAuthService().authenticate(
-                    requestAuthMessage: 'Please authenticate to decrypt data',
-                  );
-                  if (!authenticated) return;
-                  await decryptDataAndLogin();
-                } on AppExceptions catch (err) {
-                  final catcher = Modular.get<Catcher>();
-                  catcher.exceptionsHandler.add(err);
-                } catch (err) {
-                  log(err.toString());
-                }
+                final bool authenticated =
+                    await LocalAuthService().authenticate(
+                  requestAuthMessage: 'Please authenticate to decrypt data',
+                );
+                if (!authenticated) return;
+                await decryptDataAndLogin();
               },
               child: const Text("Decrypt"),
             ),
             SizedBox(height: 20.h),
             ElevatedButton(
               onPressed: () async {
-                try {
-                  await authController.logout();
-                  Modular.to.navigate(Routes.auth.getModule());
-                } on AppExceptions catch (err) {
-                  final catcher = Modular.get<Catcher>();
-                  catcher.exceptionsHandler.add(err);
-                } catch (err) {
-                  log(err.toString());
-                }
+                await authController.logout();
+                Modular.to.navigate(Routes.auth.getModule());
               },
               child: const Text("Logout"),
             ),

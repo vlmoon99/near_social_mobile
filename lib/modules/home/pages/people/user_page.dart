@@ -34,31 +34,22 @@ class _UserPageState extends State<UserPage> {
         .allMetadataLoaded) {}
 
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      runZonedGuarded(() {
-        if (!userListController.state.users
-            .firstWhere(
-                (user) => user.generalAccountInfo.accountId == widget.accountId)
-            .allMetadataLoaded) {
-          userListController
-              .loadAdditionalMetadata(accountId: widget.accountId)
-              .then((_) {
-            postsController.changePostsChannelToAccount(
-              widget.accountId,
-            );
-          });
-        } else {
+      if (!userListController.state.users
+          .firstWhere(
+              (user) => user.generalAccountInfo.accountId == widget.accountId)
+          .allMetadataLoaded) {
+        userListController
+            .loadAdditionalMetadata(accountId: widget.accountId)
+            .then((_) {
           postsController.changePostsChannelToAccount(
             widget.accountId,
           );
-        }
-      }, (error, stack) {
-        final AppExceptions appException = AppExceptions(
-          messageForUser: "Error occurred. Please try later.",
-          messageForDev: error.toString(),
-          statusCode: AppErrorCodes.nearSocialApiError,
+        });
+      } else {
+        postsController.changePostsChannelToAccount(
+          widget.accountId,
         );
-        Modular.get<Catcher>().exceptionsHandler.add(appException);
-      });
+      }
     });
   }
 

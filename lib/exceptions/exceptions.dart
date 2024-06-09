@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:near_social_mobile/config/constants.dart';
 import 'package:rxdart/rxdart.dart';
 
 class AppExceptions {
@@ -37,24 +35,11 @@ class Catcher {
   Catcher(this.secureStorage) {
     exceptionsHandler.listen((value) {
       log("exceptionsHandler catch the exception --> ${value.toString()}");
-      saveExceptionToFile(value);
       showDialogForError(value);
     });
   }
 
   final exceptionsHandler = BehaviorSubject<AppExceptions>();
-
-  Future<bool> saveExceptionToFile(AppExceptions exception) async {
-    final currentExceptions = jsonDecode(
-        await secureStorage.read(key: SecureStorageKeys.exceptions) ?? '[]');
-    currentExceptions.add(exception);
-
-    await secureStorage.write(
-        key: SecureStorageKeys.exceptions,
-        value: jsonEncode(currentExceptions));
-
-    return true;
-  }
 
   void showDialogForError(
     AppExceptions exception,

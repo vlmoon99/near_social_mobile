@@ -136,58 +136,49 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
             children: [
               ElevatedButton(
                 onPressed: () async {
-                  runZonedGuarded(() async {
-                    final nearSocialApi = Modular.get<NearSocialApi>();
-                    final AuthController authController =
-                        Modular.get<AuthController>();
+                  final nearSocialApi = Modular.get<NearSocialApi>();
+                  final AuthController authController =
+                      Modular.get<AuthController>();
 
-                    final String accountId = authController.state.accountId;
-                    final String publicKey = authController.state.publicKey;
-                    final String privateKey = authController.state.privateKey;
+                  final String accountId = authController.state.accountId;
+                  final String publicKey = authController.state.publicKey;
+                  final String privateKey = authController.state.privateKey;
 
-                    String? cidOfMedia;
-                    if (filepathOfMedia != null) {
-                      cidOfMedia =
-                          await nearSocialApi.uploadFileToNearFileHosting(
-                        filepath: filepathOfMedia!,
-                      );
-                    }
+                  String? cidOfMedia;
+                  if (filepathOfMedia != null) {
+                    cidOfMedia =
+                        await nearSocialApi.uploadFileToNearFileHosting(
+                      filepath: filepathOfMedia!,
+                    );
+                  }
 
-                    final PostBody postBody = PostBody(
+                  final PostBody postBody = PostBody(
+                    text: _textEditingController.text,
+                    mediaLink: cidOfMedia,
+                  );
+
+                  if (postBody.text == "" && postBody.mediaLink == null) {
+                    throw Exception("Empty text and mediaLink");
+                  }
+                  nearSocialApi
+                      .createPost(
+                    accountId: accountId,
+                    publicKey: publicKey,
+                    privateKey: privateKey,
+                    postBody: PostBody(
                       text: _textEditingController.text,
                       mediaLink: cidOfMedia,
-                    );
-
-                    if (postBody.text == "" && postBody.mediaLink == null) {
-                      throw Exception("Empty text and mediaLink");
-                    }
-                    nearSocialApi
-                        .createPost(
-                      accountId: accountId,
-                      publicKey: publicKey,
-                      privateKey: privateKey,
-                      postBody: PostBody(
-                        text: _textEditingController.text,
-                        mediaLink: cidOfMedia,
-                      ),
-                    )
-                        .then((_) {
-                      Modular.get<PostsController>().loadPosts();
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Your post will be added soon."),
-                      ),
-                    );
-                    Modular.to.pop();
-                  }, (error, stack) {
-                    final AppExceptions appException = AppExceptions(
-                      messageForUser: error.toString(),
-                      messageForDev: error.toString(),
-                      statusCode: AppErrorCodes.nearSocialApiError,
-                    );
-                    Modular.get<Catcher>().exceptionsHandler.add(appException);
+                    ),
+                  )
+                      .then((_) {
+                    Modular.get<PostsController>().loadPosts();
                   });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Your post will be added soon."),
+                    ),
+                  );
+                  Modular.to.pop();
                 },
                 child: const Text("Send"),
               ),

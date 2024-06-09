@@ -24,8 +24,7 @@ class LocalAuthService {
         statusCode: AppErrorCodes.localAuthError,
       );
     } catch (err) {
-      log(err.toString());
-      return false;
+      throw Exception(err.toString());
     }
   }
 }

@@ -38,16 +38,7 @@ class _PeopleListPageState extends State<PeopleListPage> {
       final UserListController userListController =
           Modular.get<UserListController>();
       if (userListController.state.loadingState == UserListState.initial) {
-        runZonedGuarded(() {
-          userListController.loadUsers();
-        }, (error, stack) {
-          final AppExceptions appException = AppExceptions(
-            messageForUser: "Error occurred. Please try later.",
-            messageForDev: error.toString(),
-            statusCode: AppErrorCodes.nearSocialApiError,
-          );
-          Modular.get<Catcher>().exceptionsHandler.add(appException);
-        });
+        userListController.loadUsers();
       }
     });
   }

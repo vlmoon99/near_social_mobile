@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -27,21 +25,9 @@ class PostPage extends StatelessWidget {
     final AuthController authController = Modular.get<AuthController>();
     final PostsController postsController = Modular.get<PostsController>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      runZonedGuarded(
-        () {
-          postsController.loadCommentsOfPost(
-            accountId: accountId,
-            blockHeight: blockHeight,
-          );
-        },
-        (error, stack) {
-          final AppExceptions appException = AppExceptions(
-            messageForUser: "Error occurred. Please try later.",
-            messageForDev: error.toString(),
-            statusCode: AppErrorCodes.nearSocialApiError,
-          );
-          Modular.get<Catcher>().exceptionsHandler.add(appException);
-        },
+      postsController.loadCommentsOfPost(
+        accountId: accountId,
+        blockHeight: blockHeight,
       );
     });
 
@@ -150,11 +136,11 @@ class PostPage extends StatelessWidget {
                               messageForDev: err.toString(),
                               statusCode: AppErrorCodes.flutterchainError,
                             );
-                            Modular.get<Catcher>().exceptionsHandler.add(exc);
+                            throw exc;
                           }
                         },
                       ),
-                      ScaleAnimatedIconButtonWithCounter (
+                      ScaleAnimatedIconButtonWithCounter(
                         iconPath: NearAssets.repostIcon,
                         count: post.repostList.length,
                         activated: post.repostList.any(
@@ -218,9 +204,7 @@ class PostPage extends StatelessWidget {
                                   messageForDev: err.toString(),
                                   statusCode: AppErrorCodes.flutterchainError,
                                 );
-                                Modular.get<Catcher>()
-                                    .exceptionsHandler
-                                    .add(exc);
+                                throw exc;
                               }
                             },
                           );

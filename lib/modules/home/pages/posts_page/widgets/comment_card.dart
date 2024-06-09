@@ -115,24 +115,13 @@ class CommentCard extends StatelessWidget {
                         element.accountId == authController.state.accountId,
                   ),
                   onPressed: () async {
-                    try {
-                      await Modular.get<PostsController>().likeComment(
-                        post: post,
-                        comment: comment,
-                        accountId: authController.state.accountId,
-                        publicKey: authController.state.publicKey,
-                        privateKey: authController.state.privateKey,
-                      );
-                    } catch (err) {
-                      final AppExceptions appException = AppExceptions(
-                        messageForUser: "Error occurred. Please try later.",
-                        messageForDev: err.toString(),
-                        statusCode: AppErrorCodes.nearSocialApiError,
-                      );
-                      Modular.get<Catcher>()
-                          .exceptionsHandler
-                          .add(appException);
-                    }
+                    await Modular.get<PostsController>().likeComment(
+                      post: post,
+                      comment: comment,
+                      accountId: authController.state.accountId,
+                      publicKey: authController.state.publicKey,
+                      privateKey: authController.state.privateKey,
+                    );
                   },
                 ),
               ],
