@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutterchain/flutterchain_lib/constants/chains/near_blockchain_network_urls.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
@@ -48,6 +49,7 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 ElevatedButton(
                   onPressed: () async {
+                    HapticFeedback.lightImpact();
                     await Modular.get<NearBlockChainService>()
                         .setBlockchainNetworkEnvironment(
                       newUrl: NearBlockChainNetworkUrls.listOfUrls.elementAt(1),
@@ -60,6 +62,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () async {
+                    HapticFeedback.lightImpact();
                     try {
                       setState(() {
                         isLoading = true;

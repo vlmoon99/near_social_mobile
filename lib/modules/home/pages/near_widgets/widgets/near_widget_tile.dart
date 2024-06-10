@@ -1,5 +1,6 @@
 import 'package:bos_gateway_viewer/bos_gateway_viewer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/config/constants.dart';
@@ -28,6 +29,7 @@ class NearWidgetTile extends StatelessWidget {
       subtitle:
           nearWidget.description != "" ? Text(nearWidget.description) : null,
       onTap: () {
+        HapticFeedback.lightImpact();
         showDialog(
           context: context,
           builder: (context) {
@@ -37,9 +39,9 @@ class NearWidgetTile extends StatelessWidget {
                 final NearWidgetSetupCredentials nearWidgetSetupCredentials =
                     NearWidgetSetupCredentials(
                   network: NearNetwork.mainnet,
-                    // await getNearNetworkType() == NearNetworkType.mainnet
-                    //     ? NearNetwork.mainnet
-                    //     : NearNetwork.testnet,
+                  // await getNearNetworkType() == NearNetworkType.mainnet
+                  //     ? NearNetwork.mainnet
+                  //     : NearNetwork.testnet,
                   privateKeyInfo: privateKeyInfo,
                   widgetSettings: WidgetSettings(
                     widgetSrc: nearWidget.widgetPath,

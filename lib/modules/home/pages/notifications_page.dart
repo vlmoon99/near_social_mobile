@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart' hide Notification;
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -80,6 +81,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   onPressed: allNotificationsLoaded
                       ? null
                       : () {
+                          HapticFeedback.lightImpact();
                           final AuthController authController =
                               Modular.get<AuthController>();
                           final accountId = authController.state.accountId;

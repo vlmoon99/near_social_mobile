@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
@@ -55,8 +56,9 @@ class AccountInfoPage extends StatelessWidget {
             SizedBox(height: 20.h),
             ElevatedButton(
               onPressed: () async {
-                  await authController.logout();
-                  Modular.to.navigate(Routes.auth.getModule());
+                HapticFeedback.lightImpact();
+                await authController.logout();
+                Modular.to.navigate(Routes.auth.getModule());
               },
               child: const Text("Logout"),
             ),

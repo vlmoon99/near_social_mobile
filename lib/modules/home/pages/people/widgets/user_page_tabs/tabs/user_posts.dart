@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/config/constants.dart';
@@ -62,6 +63,7 @@ class _UserPostsViewState extends State<UserPostsView> {
                   onPressed: allPostsLoaded
                       ? null
                       : () async {
+                          HapticFeedback.lightImpact();
                           try {
                             setState(() {
                               loadingMorePosts = true;

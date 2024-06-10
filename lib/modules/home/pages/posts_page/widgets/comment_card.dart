@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -79,6 +80,7 @@ class CommentCard extends StatelessWidget {
                 TwoStatesIconButton(
                   iconPath: NearAssets.commentIcon,
                   onPressed: () {
+                    HapticFeedback.lightImpact();
                     showDialog(
                       context: context,
                       builder: (context) {
@@ -115,6 +117,7 @@ class CommentCard extends StatelessWidget {
                         element.accountId == authController.state.accountId,
                   ),
                   onPressed: () async {
+                    HapticFeedback.lightImpact();
                     await Modular.get<PostsController>().likeComment(
                       post: post,
                       comment: comment,

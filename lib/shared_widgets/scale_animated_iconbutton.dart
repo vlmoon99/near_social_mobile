@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -59,6 +60,7 @@ class _ScaleAnimatedIconButtonState extends State<ScaleAnimatedIconButton>
         builder: (context, _) {
           return IconButton(
             onPressed: () async {
+              HapticFeedback.lightImpact();
               _animationController.repeat();
               try {
                 await widget.onPressed();

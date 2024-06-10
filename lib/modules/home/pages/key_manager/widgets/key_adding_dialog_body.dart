@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutterchain/flutterchain_lib/models/core/wallet.dart';
@@ -34,6 +35,7 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
   String derivationPath = "";
 
   Future<void> addKey() async {
+    HapticFeedback.lightImpact();
     final NearSocialApi nearSocialApi = Modular.get<NearSocialApi>();
     final AuthController authController = Modular.get<AuthController>();
     try {

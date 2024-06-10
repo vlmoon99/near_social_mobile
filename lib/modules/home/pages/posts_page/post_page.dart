@@ -82,6 +82,7 @@ class PostPage extends StatelessWidget {
                       TwoStatesIconButton(
                         iconPath: NearAssets.commentIcon,
                         onPressed: () async {
+                          HapticFeedback.lightImpact();
                           showDialog(
                             context: context,
                             builder: (context) {
@@ -117,6 +118,7 @@ class PostPage extends StatelessWidget {
                               authController.state.accountId,
                         ),
                         onPressed: () async {
+                          HapticFeedback.lightImpact();
                           final String accountId =
                               authController.state.accountId;
                           final String publicKey =
@@ -150,6 +152,7 @@ class PostPage extends StatelessWidget {
                         ),
                         activatedColor: Colors.green,
                         onPressed: () async {
+                          HapticFeedback.lightImpact();
                           final String accountId =
                               authController.state.accountId;
                           final String publicKey =
@@ -174,12 +177,14 @@ class PostPage extends StatelessWidget {
                                   TextButton(
                                     child: const Text("Yes"),
                                     onPressed: () {
+                                      HapticFeedback.lightImpact();
                                       Modular.to.pop(true);
                                     },
                                   ),
                                   TextButton(
                                     child: const Text("No"),
                                     onPressed: () {
+                                      HapticFeedback.lightImpact();
                                       Modular.to.pop(false);
                                     },
                                   ),
@@ -213,6 +218,7 @@ class PostPage extends StatelessWidget {
                       TwoStatesIconButton(
                         iconPath: NearAssets.shareIcon,
                         onPressed: () async {
+                          HapticFeedback.lightImpact();
                           final nearSocialApi = Modular.get<NearSocialApi>();
                           final urlOfPost = nearSocialApi.getUrlOfPost(
                             accountId: post.authorInfo.accountId,

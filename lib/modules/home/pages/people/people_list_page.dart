@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/config/constants.dart';
@@ -99,6 +100,7 @@ class _PeopleListPageState extends State<PeopleListPage> {
                 final user = users[index - 1];
                 return ListTile(
                   onTap: () {
+                    HapticFeedback.lightImpact();
                     Modular.to.pushNamed(
                       ".${Routes.home.userPage}?accountId=${user.generalAccountInfo.accountId}",
                     );

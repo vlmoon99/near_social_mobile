@@ -50,7 +50,10 @@ class Catcher {
         content: Text(exception.messageForUser),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.pop(context);
+            },
             child: const Text('OK'),
           ),
         ],

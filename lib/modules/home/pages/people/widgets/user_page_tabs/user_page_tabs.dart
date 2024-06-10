@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/pages/people/widgets/user_page_tabs/tabs/user_nfts.dart';
 import 'package:near_social_mobile/modules/home/pages/people/widgets/user_page_tabs/tabs/user_posts.dart';
 import 'package:near_social_mobile/modules/home/pages/people/widgets/user_page_tabs/tabs/user_widgets.dart';
@@ -35,6 +34,7 @@ class _UserPageTabsState extends State<UserPageTabs> {
               name: "Posts",
               choosed: tabIndex == UserPageTab.posts.index,
               onTap: () {
+                HapticFeedback.lightImpact();
                 if (tabIndex == UserPageTab.posts.index) return;
                 setState(() {
                   tabIndex = UserPageTab.posts.index;
@@ -45,6 +45,7 @@ class _UserPageTabsState extends State<UserPageTabs> {
               name: "NFTs",
               choosed: tabIndex == UserPageTab.nfts.index,
               onTap: () {
+                HapticFeedback.lightImpact();
                 if (tabIndex == UserPageTab.nfts.index) return;
                 if (userListController.state.users
                         .firstWhere((user) =>
@@ -67,6 +68,7 @@ class _UserPageTabsState extends State<UserPageTabs> {
               name: "Widgets",
               choosed: tabIndex == UserPageTab.widgets.index,
               onTap: () {
+                HapticFeedback.lightImpact();
                 if (tabIndex == UserPageTab.widgets.index) return;
                 if (userListController.state.users
                         .firstWhere((user) =>

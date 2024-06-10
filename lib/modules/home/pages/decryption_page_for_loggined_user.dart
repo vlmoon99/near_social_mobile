@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -42,6 +43,7 @@ class DecryptionPageForLoginnedUser extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () async {
+                HapticFeedback.lightImpact();
                 final bool authenticated =
                     await LocalAuthService().authenticate(
                   requestAuthMessage: 'Please authenticate to decrypt data',
@@ -54,6 +56,7 @@ class DecryptionPageForLoginnedUser extends StatelessWidget {
             SizedBox(height: 20.h),
             ElevatedButton(
               onPressed: () async {
+                HapticFeedback.lightImpact();
                 await authController.logout();
                 Modular.to.navigate(Routes.auth.getModule());
               },

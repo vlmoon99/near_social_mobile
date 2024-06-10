@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/pages/key_manager/widgets/access_key_info_card.dart';
@@ -44,6 +44,7 @@ class KeyManagerPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          HapticFeedback.lightImpact();
           showDialog(
             context: context,
             builder: (context) {
@@ -58,4 +59,3 @@ class KeyManagerPage extends StatelessWidget {
     );
   }
 }
-

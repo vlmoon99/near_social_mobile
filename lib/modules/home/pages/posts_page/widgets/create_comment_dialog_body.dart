@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
@@ -73,6 +74,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
               children: [
                 ElevatedButton.icon(
                   onPressed: () async {
+                    HapticFeedback.lightImpact();
                     final ImagePicker picker = ImagePicker();
                     final XFile? file =
                         await picker.pickImage(source: ImageSource.gallery);
@@ -116,6 +118,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                             child: FittedBox(
                               child: IconButton(
                                 onPressed: () {
+                                  HapticFeedback.lightImpact();
                                   setState(() {
                                     filepathOfMedia = null;
                                   });
@@ -146,6 +149,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
             children: [
               ElevatedButton(
                 onPressed: () async {
+                  HapticFeedback.lightImpact();
                   final nearSocialApi = Modular.get<NearSocialApi>();
                   final AuthController authController =
                       Modular.get<AuthController>();
@@ -198,6 +202,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
               ),
               ElevatedButton(
                 onPressed: () {
+                  HapticFeedback.lightImpact();
                   Modular.to.pop();
                 },
                 child: const Text("Cancel"),

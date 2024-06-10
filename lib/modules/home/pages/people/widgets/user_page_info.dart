@@ -8,7 +8,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
-import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
@@ -24,6 +23,7 @@ class UserPageMainInfo extends StatelessWidget {
       if (pair.key == "twitter") {
         return TextButton.icon(
           onPressed: () {
+            HapticFeedback.lightImpact();
             final url = Uri.parse("https://twitter.com/${pair.value}");
             launchUrl(url);
           },
@@ -36,6 +36,7 @@ class UserPageMainInfo extends StatelessWidget {
       } else if (pair.key == "github") {
         return TextButton.icon(
           onPressed: () {
+            HapticFeedback.lightImpact();
             final url = Uri.parse("https://github.com/${pair.value}");
             launchUrl(url);
           },
@@ -48,6 +49,7 @@ class UserPageMainInfo extends StatelessWidget {
       } else if (pair.key == "telegram") {
         return TextButton.icon(
           onPressed: () {
+            HapticFeedback.lightImpact();
             final url = Uri.parse("https://t.me/${pair.value}");
             launchUrl(url);
           },
@@ -60,6 +62,7 @@ class UserPageMainInfo extends StatelessWidget {
       } else if (pair.key == "website") {
         return TextButton.icon(
           onPressed: () {
+            HapticFeedback.lightImpact();
             final url = Uri.parse("https://${pair.value}");
             launchUrl(url);
           },
@@ -163,6 +166,7 @@ class UserPageMainInfo extends StatelessWidget {
                         ),
                         IconButton(
                           onPressed: () {
+                            HapticFeedback.lightImpact();
                             Clipboard.setData(
                               ClipboardData(
                                 text: user.generalAccountInfo.accountId,
@@ -219,6 +223,7 @@ class UserPageMainInfo extends StatelessWidget {
                                       authController.state.accountId)
                                   ? ElevatedButton(
                                       onPressed: () {
+                                        HapticFeedback.lightImpact();
                                         requestToUnfollowAccount(context);
                                       },
                                       style: ButtonStyle(
@@ -249,6 +254,7 @@ class UserPageMainInfo extends StatelessWidget {
                                     )
                                   : ElevatedButton(
                                       onPressed: () {
+                                        HapticFeedback.lightImpact();
                                         requestToFollowAccount(context);
                                       },
                                       style: ButtonStyle(
@@ -274,6 +280,7 @@ class UserPageMainInfo extends StatelessWidget {
                             ),
                           ElevatedButton(
                             onPressed: () {
+                              HapticFeedback.lightImpact();
                               ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content: Text("Poking user...")));
@@ -430,6 +437,7 @@ class UserPageMainInfo extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () async {
+                HapticFeedback.lightImpact();
                 userListController.unfollowAccount(
                   accountIdToUnfollow: accountIdOfUser,
                   accountId: authController.state.accountId,
@@ -441,6 +449,7 @@ class UserPageMainInfo extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
+                HapticFeedback.lightImpact();
                 Modular.to.pop();
               },
               child: const Text("No"),
@@ -467,6 +476,7 @@ class UserPageMainInfo extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () async {
+                HapticFeedback.lightImpact();
                 userListController.followAccount(
                   accountIdToFollow: accountIdOfUser,
                   accountId: authController.state.accountId,
@@ -479,6 +489,7 @@ class UserPageMainInfo extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
+                HapticFeedback.lightImpact();
                 Modular.to.pop();
               },
               child: const Text("No"),

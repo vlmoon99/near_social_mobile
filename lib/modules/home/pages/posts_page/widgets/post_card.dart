@@ -24,6 +24,7 @@ class PostCard extends StatelessWidget {
     final PostsController postsController = Modular.get<PostsController>();
     return GestureDetector(
       onTap: () {
+        HapticFeedback.lightImpact();
         Modular.to.pushNamed(
           ".${Routes.home.postPage}?accountId=${post.authorInfo.accountId}&blockHeight=${post.blockHeight}",
         );
@@ -108,6 +109,7 @@ class PostCard extends StatelessWidget {
                           element.accountId == authController.state.accountId,
                     ),
                     onPressed: () async {
+                      HapticFeedback.lightImpact();
                       final String accountId = authController.state.accountId;
                       final String publicKey = authController.state.publicKey;
                       final String privateKey = authController.state.privateKey;
@@ -138,6 +140,7 @@ class PostCard extends StatelessWidget {
                     ),
                     activatedColor: Colors.green,
                     onPressed: () async {
+                      HapticFeedback.lightImpact();
                       final String accountId = authController.state.accountId;
                       final String publicKey = authController.state.publicKey;
                       final String privateKey = authController.state.privateKey;
@@ -159,12 +162,14 @@ class PostCard extends StatelessWidget {
                               TextButton(
                                 child: const Text("Yes"),
                                 onPressed: () {
+                                  HapticFeedback.lightImpact();
                                   Modular.to.pop(true);
                                 },
                               ),
                               TextButton(
                                 child: const Text("No"),
                                 onPressed: () {
+                                  HapticFeedback.lightImpact();
                                   Modular.to.pop(false);
                                 },
                               ),
@@ -198,6 +203,7 @@ class PostCard extends StatelessWidget {
                   TwoStatesIconButton(
                     iconPath: NearAssets.shareIcon,
                     onPressed: () async {
+                      HapticFeedback.lightImpact();
                       final nearSocialApi = Modular.get<NearSocialApi>();
                       final urlOfPost = nearSocialApi.getUrlOfPost(
                         accountId: post.authorInfo.accountId,
