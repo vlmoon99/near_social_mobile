@@ -9,7 +9,6 @@ import 'package:near_social_mobile/assets/localizations/localizations_strings.da
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/app_module.dart';
-import 'package:near_social_mobile/routes/routes.dart';
 
 import 'config/constants.dart';
 import 'config/setup.dart';
@@ -70,7 +69,7 @@ class AppWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Modular.setInitialRoute(Routes.home.getModule());
+    // Modular.setInitialRoute(Routes.home.getModule());
     ScreenUtil.init(context);
     return MaterialApp.router(
       title: 'Near Social',

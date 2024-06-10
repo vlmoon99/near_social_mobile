@@ -1,11 +1,8 @@
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/pages/people/widgets/user_page_info.dart';
 import 'package:near_social_mobile/modules/home/pages/people/widgets/user_page_tabs/user_page_tabs.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
