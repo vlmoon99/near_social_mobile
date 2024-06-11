@@ -62,7 +62,7 @@ class _UserPageState extends State<UserPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: RefreshIndicator(
+        child: RefreshIndicator.adaptive(
           onRefresh: () async {
             await Modular.get<UserListController>()
                 .reloadUserInfo(accountId: widget.accountId)

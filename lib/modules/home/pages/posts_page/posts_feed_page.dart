@@ -67,7 +67,7 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
           final postsState = postsController.state;
           if (postsState.status == PostLoadingStatus.loaded ||
               postsState.status == PostLoadingStatus.loadingMorePosts) {
-            return RefreshIndicator(
+            return RefreshIndicator.adaptive(
               onRefresh: () async {
                 return postsController.loadPosts();
               },
