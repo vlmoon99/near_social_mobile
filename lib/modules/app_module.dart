@@ -3,7 +3,6 @@ import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/core_module.dart';
 import 'package:near_social_mobile/modules/splash_page.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
-import 'package:near_social_mobile/routes/guards/auth_guard.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 
 import 'auth/auth_module.dart';
@@ -34,9 +33,6 @@ class AppModule extends Module {
     r.module(
       Routes.home.module,
       module: HomeModule(),
-      guards: [
-        AuthGuard(),
-      ],
     );
   }
 }
