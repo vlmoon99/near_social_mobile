@@ -1,12 +1,10 @@
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/models/auth_info.dart';
-import 'package:near_social_mobile/routes/routes.dart';
 
 class AccountInfoPage extends StatelessWidget {
   const AccountInfoPage({super.key});
@@ -16,26 +14,28 @@ class AccountInfoPage extends StatelessWidget {
     final AuthController authController = Modular.get<AuthController>();
     final AuthInfo authInfo = authController.state;
     return Scaffold(
+      appBar: AppBar(
+        title: SvgPicture.asset("assets/media/icons/near_social_logo.svg"),
+        centerTitle: true,
+        leadingWidth: 0,
+        leading: const SizedBox.shrink(),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20).r,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
+            SelectableText(
               "AccountId: ${authInfo.accountId}",
             ),
             SizedBox(height: 20.h),
-            Text(
+            SelectableText(
               "PublicKey: ${authInfo.publicKey}",
             ),
             SizedBox(height: 20.h),
-            Text(
+            SelectableText(
               "SecretKey: ${authInfo.secretKey}",
-            ),
-            SizedBox(height: 20.h),
-            Text(
-              "PrivateKey: ${authInfo.privateKey}",
             ),
             SizedBox(height: 20.h),
             FutureBuilder(
@@ -50,15 +50,6 @@ class AccountInfoPage extends StatelessWidget {
                   return const CircularProgressIndicator();
                 }
               },
-            ),
-            SizedBox(height: 20.h),
-            ElevatedButton(
-              onPressed: () async {
-                HapticFeedback.lightImpact();
-                await authController.logout();
-                Modular.to.navigate(Routes.auth.getModule());
-              },
-              child: const Text("Logout"),
             ),
           ],
         ),

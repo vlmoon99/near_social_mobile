@@ -33,34 +33,48 @@ class DecryptionPageForLoginnedUser extends StatelessWidget {
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
     return Scaffold(
-      body: SizedBox(
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () async {
-                HapticFeedback.lightImpact();
-                final bool authenticated =
-                    await LocalAuthService().authenticate(
-                  requestAuthMessage: 'Please authenticate to decrypt data',
-                );
-                if (!authenticated) return;
-                await decryptDataAndLogin();
-              },
-              child: const Text("Decrypt"),
-            ),
-            SizedBox(height: 20.h),
-            ElevatedButton(
-              onPressed: () async {
-                HapticFeedback.lightImpact();
-                await authController.logout();
-                Modular.to.navigate(Routes.auth.getModule());
-              },
-              child: const Text("Logout"),
-            ),
-          ],
+      body: SafeArea(
+        child: SizedBox(
+          width: double.infinity,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned.fill(
+                child: Image.asset(
+                  "assets/media/images/near_social_backgorund.png",
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      HapticFeedback.lightImpact();
+                      final bool authenticated =
+                          await LocalAuthService().authenticate(
+                        requestAuthMessage:
+                            'Please authenticate to decrypt data',
+                      );
+                      if (!authenticated) return;
+                      await decryptDataAndLogin();
+                    },
+                    child: const Text("Decrypt"),
+                  ),
+                  SizedBox(height: 20.h),
+                  ElevatedButton(
+                    onPressed: () async {
+                      HapticFeedback.lightImpact();
+                      await authController.logout();
+                      Modular.to.navigate(Routes.auth.getModule());
+                    },
+                    child: const Text("Logout"),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -15,8 +15,15 @@ class KeyManagerPage extends StatelessWidget {
     final AuthController authController = Modular.get<AuthController>();
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Access Keys"),
+        title: Text(
+          "Access Keys",
+          style: TextStyle(
+            fontSize: 20.sp,
+          ),
+        ),
         centerTitle: true,
+        leadingWidth: 0,
+        leading: const SizedBox.shrink(),
       ),
       body: SafeArea(
         child: StreamBuilder<AuthInfo>(
