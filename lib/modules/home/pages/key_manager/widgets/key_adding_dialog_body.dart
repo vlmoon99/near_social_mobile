@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class KeyAddingDialogBody extends StatefulWidget {
   const KeyAddingDialogBody({
@@ -255,7 +256,7 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
                   )
                 else
                   const Center(
-                    child: CircularProgressIndicator(),
+                    child: SpinnerLoadingIndicator(),
                   ),
               ],
             ),

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/post_card.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class UserPostsView extends StatefulWidget {
   const UserPostsView({
@@ -43,7 +43,7 @@ class _UserPostsViewState extends State<UserPostsView> {
   @override
   Widget build(BuildContext context) {
     if (Modular.get<PostsController>().state.mainPosts.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: SpinnerLoadingIndicator());
     }
     if (posts.isEmpty) {
       return const Center(child: Text('No posts yet'));
@@ -55,7 +55,7 @@ class _UserPostsViewState extends State<UserPostsView> {
       itemBuilder: (context, index) {
         if (index == posts.length) {
           return loadingMorePosts
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: SpinnerLoadingIndicator())
               : ElevatedButton(
                   onPressed: allPostsLoaded
                       ? null

@@ -10,6 +10,7 @@ import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 
@@ -246,7 +247,7 @@ class PostPage extends StatelessWidget {
                         .toList()
                   ] else ...[
                     const Center(
-                      child: CircularProgressIndicator(),
+                      child: SpinnerLoadingIndicator(),
                     )
                   ],
                 ],

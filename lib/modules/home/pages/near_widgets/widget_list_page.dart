@@ -1,10 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/apis/models/near_widget_info.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widgets/near_widget_tile.dart';
 import 'package:near_social_mobile/modules/home/vms/near_widgets/near_widgets_controller.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class NearWidgetListPage extends StatefulWidget {
   const NearWidgetListPage({super.key});
@@ -50,7 +50,7 @@ class _NearWidgetListPageState extends State<NearWidgetListPage> {
           stream: nearWidgetsController.stream,
           builder: (context, _) {
             if (nearWidgetsController.state.status != NearWidgetStatus.loaded) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: SpinnerLoadingIndicator());
             }
             final List<NearWidgetInfo> nearWidgets = searchController.text != ""
                 ? nearWidgetsController.state.widgetList

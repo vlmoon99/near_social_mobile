@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -6,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_post_dialog_body.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/post_card.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class PostsFeedPage extends StatefulWidget {
   const PostsFeedPage({super.key});
@@ -82,7 +82,7 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
                       if (postsController.state.status ==
                               PostLoadingStatus.loadingMorePosts &&
                           index == postsState.posts.length - 1) ...[
-                        const Center(child: CircularProgressIndicator()),
+                        const Center(child: SpinnerLoadingIndicator()),
                       ]
                     ],
                   );
@@ -92,7 +92,7 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
             );
           }
           return const Center(
-            child: CircularProgressIndicator(),
+            child: SpinnerLoadingIndicator(),
           );
         },
       ),

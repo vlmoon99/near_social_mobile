@@ -8,6 +8,7 @@ import 'package:near_social_mobile/modules/home/apis/models/notification.dart';
 import 'package:near_social_mobile/modules/home/vms/notifications/notifications_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -67,7 +68,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         if (notificationsController.state.status !=
             NotificationsLoadingState.loaded) {
           return const Center(
-            child: CircularProgressIndicator(),
+            child: SpinnerLoadingIndicator(),
           );
         }
         return ListView.builder(

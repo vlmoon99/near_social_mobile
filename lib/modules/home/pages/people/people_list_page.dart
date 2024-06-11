@@ -13,6 +13,7 @@ import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.d
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class PeopleListPage extends StatefulWidget {
   const PeopleListPage({super.key});
@@ -59,7 +60,7 @@ class _PeopleListPageState extends State<PeopleListPage> {
           stream: userListController.stream,
           builder: (context, snapshot) {
             if (userListController.state.loadingState != UserListState.loaded) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: SpinnerLoadingIndicator());
             }
             final users = searchController.text != ""
                 ? userListController.state.users

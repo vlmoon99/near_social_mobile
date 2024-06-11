@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/apis/models/near_widget_info.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widgets/near_widget_tile.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class WidgetsView extends StatefulWidget {
   const WidgetsView({super.key, required this.accountIdOfUser});
@@ -39,7 +40,7 @@ class _WidgetsViewState extends State<WidgetsView> {
   @override
   Widget build(BuildContext context) {
     if (widgets == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: SpinnerLoadingIndicator());
     } else if (widgets!.isEmpty) {
       return const Center(child: Text('No Widgets yet'));
     } else {

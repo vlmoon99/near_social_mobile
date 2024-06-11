@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class LoadingBarrier extends StatelessWidget {
   const LoadingBarrier({
@@ -23,7 +24,7 @@ class LoadingBarrier extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircularProgressIndicator(),
+              const SpinnerLoadingIndicator(),
               if (message != null) ...[
                 const SizedBox(height: 16),
                 Text(

@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/models/auth_info.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class AccountInfoPage extends StatelessWidget {
   const AccountInfoPage({super.key});
@@ -47,7 +48,7 @@ class AccountInfoPage extends StatelessWidget {
                     "Near Amount: ${snapshot.data}",
                   );
                 } else {
-                  return const CircularProgressIndicator();
+                  return const SpinnerLoadingIndicator();
                 }
               },
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class NearNetworkImage extends StatelessWidget {
   const NearNetworkImage({
@@ -17,7 +18,7 @@ class NearNetworkImage extends StatelessWidget {
       headers: const {"Referer": "https://near.social/"},
       fit: BoxFit.cover,
       errorBuilder: (context, error, stackTrace) {
-        return placeholder ?? const CircularProgressIndicator();
+        return placeholder ?? const SpinnerLoadingIndicator();
       },
     );
   }
