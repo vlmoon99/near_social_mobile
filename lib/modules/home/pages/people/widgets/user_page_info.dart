@@ -87,8 +87,8 @@ class UserPageMainInfo extends StatelessWidget {
     return StreamBuilder(
         stream: userListController.stream,
         builder: (context, snapshot) {
-          final user = userListController.state.users.firstWhere((element) =>
-              element.generalAccountInfo.accountId == accountIdOfUser);
+          final user = userListController.state
+              .getUserByAccountId(accountId: accountIdOfUser);
           return Column(
             children: [
               SizedBox(
@@ -433,6 +433,7 @@ class UserPageMainInfo extends StatelessWidget {
         return AlertDialog(
           content: Text(
             "Are you sure you want to unfollow $accountIdOfUser?",
+            style: TextStyle(fontSize: 16.sp),
           ),
           actions: [
             TextButton(
@@ -444,6 +445,7 @@ class UserPageMainInfo extends StatelessWidget {
                   publicKey: authController.state.publicKey,
                   privateKey: authController.state.privateKey,
                 );
+                Modular.to.pop();
               },
               child: const Text("Yes"),
             ),
@@ -472,6 +474,7 @@ class UserPageMainInfo extends StatelessWidget {
         return AlertDialog(
           content: Text(
             "Are you sure you want to follow $accountIdOfUser?",
+            style: TextStyle(fontSize: 16.sp),
           ),
           actions: [
             TextButton(

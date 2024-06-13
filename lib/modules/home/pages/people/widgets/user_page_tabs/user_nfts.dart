@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/apis/models/nft.dart';
@@ -17,45 +16,48 @@ class NftsView extends StatefulWidget {
 }
 
 class _NftsViewState extends State<NftsView> {
-  List<Nft>? nfts;
-
   @override
   void initState() {
     super.initState();
-    Modular.get<UserListController>().stream.listen((userList) {
-      SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-        if (mounted) {
-          final user = userList.users.firstWhere((user) =>
-              user.generalAccountInfo.accountId == widget.accountIdOfUser);
-          if (user.nfts == null && nfts != null) {
-            Modular.get<UserListController>()
-                .loadNftsOfAccount(accountIdOfUser: widget.accountIdOfUser);
-          }
-          setState(() {
-            nfts = user.nfts;
-          });
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        final UserListController userListController =
+            Modular.get<UserListController>();
+        final user = userListController.state
+            .getUserByAccountId(accountId: widget.accountIdOfUser);
+        if (user.nfts == null && !user.nftsUpdating) {
+          Modular.get<UserListController>()
+              .loadNftsOfAccount(accountId: widget.accountIdOfUser);
         }
-      });
-    });
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (nfts == null) {
-      return const Center(child: SpinnerLoadingIndicator());
-    } else if (nfts!.isEmpty) {
-      return const Center(child: Text('No NFTs yet'));
-    } else {
-      return ListView.builder(
-        shrinkWrap: true,
-        physics: const ClampingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 20).r,
-        itemBuilder: (context, index) {
-          return NftCard(nft: nfts![index]);
-        },
-        itemCount: nfts!.length,
-      );
-    }
+    final UserListController userListController =
+        Modular.get<UserListController>();
+    return StreamBuilder(
+      stream: userListController.stream,
+      builder: (context, snapshot) {
+        final nfts = userListController.state
+            .getUserByAccountId(accountId: widget.accountIdOfUser)
+            .nfts;
+        if (nfts == null) {
+          return const Center(child: SpinnerLoadingIndicator());
+        } else if (nfts.isEmpty) {
+          return const Center(child: Text('No NFTs yet'));
+        } else {
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 20).r,
+            itemBuilder: (context, index) {
+              return NftCard(nft: nfts[index]);
+            },
+            itemCount: nfts.length,
+          );
+        }
+      },
+    );
   }
 }
 

@@ -187,13 +187,23 @@ class PostsController {
 
   Future<void> updatePostsOfAccount({required String postsOfAccountId}) async {
     try {
-      final posts = await nearSocialApi.getPosts(
+      final newPosts = await nearSocialApi.getPosts(
         targetAccounts: [postsOfAccountId],
         limit: 10,
       );
+
+      newPosts.removeWhere(
+        (post) => state.posts.any(
+          (element) =>
+              element.blockHeight == post.blockHeight &&
+              element.authorInfo.accountId == post.authorInfo.accountId &&
+              element.reposterInfo == post.reposterInfo,
+        ),
+      );
+
       _streamController.add(
         state.copyWith(
-          posts: posts,
+          posts: [...newPosts, ...state.posts],
           status: PostLoadingStatus.loaded,
         ),
       );
