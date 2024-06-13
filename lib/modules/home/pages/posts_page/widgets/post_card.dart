@@ -85,7 +85,10 @@ class PostCard extends StatelessWidget {
                         physics: const NeverScrollableScrollPhysics(),
                         children: [
                           Text(
-                            post.postBody.text.trim(),
+                            post.postBody.text
+                                .replaceAll(RegExp(r'!\[(.*?)\]\((.*?)\)'), "")
+                                .replaceAll(RegExp(r'\[(.*?)\]\((.*?)\)'), "")
+                                .trim(),
                           ),
                           if (post.postBody.mediaLink != null) ...[
                             NearNetworkImage(

@@ -13,6 +13,7 @@ import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PostPage extends StatelessWidget {
   const PostPage(
@@ -71,9 +72,13 @@ class PostPage extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 5.h),
-                  Text(
-                    post.postBody.text.trim(),
+                  // SelectableText(
+                  //   post.postBody.text.trim(),
+                  // ),
+                  RawTextToContentFormatter(
+                    rawText: post.postBody.text.trim(),
                   ),
+
                   if (post.postBody.mediaLink != null) ...[
                     NearNetworkImage(imageUrl: post.postBody.mediaLink!),
                   ],
@@ -254,6 +259,141 @@ class PostPage extends StatelessWidget {
               );
             }),
       ),
+    );
+  }
+}
+
+class RawTextToContentFormatter extends StatelessWidget {
+  const RawTextToContentFormatter({
+    super.key,
+    required this.rawText,
+  });
+
+  final String rawText;
+
+  List<Widget> _generateWidgetsFromRawText(String text) {
+    final List<Widget> widgets = [];
+    final RegExp imageRegex = RegExp(r'!\[(.*?)\]\((.*?)\)');
+    final RegExp linkRegex = RegExp(r'\[(.*?)\]\((.*?)\)');
+    final List<RegExpMatch> imageMatches = imageRegex.allMatches(text).toList();
+    final List<RegExpMatch> linkMatches = linkRegex.allMatches(text).toList();
+
+    int lastMatchEnd = 0;
+    int imageIndex = 0;
+    int linkIndex = 0;
+
+    while (imageIndex < imageMatches.length || linkIndex < linkMatches.length) {
+      RegExpMatch? nextMatch;
+      bool isImageMatch = false;
+
+      if (imageIndex < imageMatches.length &&
+          (linkIndex >= linkMatches.length ||
+              imageMatches[imageIndex].start < linkMatches[linkIndex].start)) {
+        nextMatch = imageMatches[imageIndex];
+        isImageMatch = true;
+        imageIndex++;
+      } else if (linkIndex < linkMatches.length) {
+        nextMatch = linkMatches[linkIndex];
+        linkIndex++;
+      }
+
+      if (nextMatch != null && nextMatch.start > lastMatchEnd) {
+        widgets.add(
+          SelectableText(
+            text.substring(lastMatchEnd, nextMatch.start).trim(),
+          ),
+        );
+      }
+
+      if (nextMatch != null) {
+        if (isImageMatch) {
+          final imageUrl = nextMatch.group(2);
+          if (imageUrl != null && _isImageUrl(imageUrl)) {
+            widgets.add(
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8).r,
+                child: NearNetworkImage(
+                  imageUrl: imageUrl,
+                  placeholder: const Icon(Icons.broken_image),
+                ),
+              ),
+            );
+          } else if (imageUrl != null) {
+            widgets.add(
+              InkWell(
+                onTap: () => _launchURL(imageUrl),
+                child: Text(
+                  nextMatch.group(1) ?? imageUrl,
+                  style: const TextStyle(
+                      color: Colors.blue, decoration: TextDecoration.underline),
+                ),
+              ),
+            );
+          }
+        } else {
+          final linkDescription = nextMatch.group(1);
+          final linkUrl = nextMatch.group(2);
+          if (linkUrl != null) {
+            widgets.add(
+              InkWell(
+                onTap: () {
+                  _launchURL(linkUrl);
+                },
+                child: Text(
+                  linkDescription ?? linkUrl,
+                  style: const TextStyle(
+                      color: Colors.blue, decoration: TextDecoration.underline),
+                ),
+              ),
+            );
+          }
+        }
+        lastMatchEnd = nextMatch.end;
+      }
+    }
+
+    if (lastMatchEnd < text.length) {
+      widgets.add(
+        SelectableText(
+          text.substring(lastMatchEnd).trim(),
+        ),
+      );
+    }
+
+    return widgets;
+  }
+
+  bool _isImageUrl(String url) {
+    final List<String> imageExtensions = [
+      'jpg',
+      'jpeg',
+      'png',
+      'gif',
+      'bmp',
+      'webp'
+    ];
+    final uri = Uri.parse(url);
+    final extension = uri.pathSegments.isNotEmpty
+        ? uri.pathSegments.last.split('.').last
+        : '';
+    return imageExtensions.contains(extension.toLowerCase());
+  }
+
+  void _launchURL(String urlText) async {
+    final Uri url = Uri.parse(urlText);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> contentWidgets = _generateWidgetsFromRawText(rawText);
+    return Wrap(
+      spacing: 4,
+      children: contentWidgets,
     );
   }
 }
