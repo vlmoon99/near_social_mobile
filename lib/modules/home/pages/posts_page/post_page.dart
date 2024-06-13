@@ -57,7 +57,7 @@ class PostPage extends StatelessWidget {
                         clipBehavior: Clip.antiAlias,
                         child: NearNetworkImage(
                           imageUrl: post.authorInfo.profileImageLink,
-                          placeholder: Image.asset(
+                          errorPlaceholder: Image.asset(
                             NearAssets.standartAvatar,
                             fit: BoxFit.cover,
                           ),
@@ -314,7 +314,7 @@ class RawTextToContentFormatter extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8).r,
                 child: NearNetworkImage(
                   imageUrl: imageUrl,
-                  placeholder: const Icon(Icons.broken_image),
+                  errorPlaceholder: const Icon(Icons.broken_image),
                 ),
               ),
             );

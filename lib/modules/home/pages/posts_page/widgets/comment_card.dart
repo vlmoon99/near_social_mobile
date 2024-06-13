@@ -50,7 +50,7 @@ class CommentCard extends StatelessWidget {
                   clipBehavior: Clip.antiAlias,
                   child: NearNetworkImage(
                     imageUrl: comment.authorInfo.profileImageLink,
-                    placeholder: Image.asset(
+                    errorPlaceholder: Image.asset(
                       NearAssets.standartAvatar,
                       fit: BoxFit.cover,
                     ),

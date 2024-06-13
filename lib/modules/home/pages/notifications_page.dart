@@ -137,7 +137,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   clipBehavior: Clip.antiAlias,
                   child: NearNetworkImage(
                     imageUrl: notification.authorInfo.profileImageLink,
-                    placeholder: Image.asset(
+                    errorPlaceholder: Image.asset(
                       NearAssets.standartAvatar,
                       fit: BoxFit.cover,
                     ),

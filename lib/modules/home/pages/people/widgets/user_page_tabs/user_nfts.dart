@@ -79,7 +79,7 @@ class NftCard extends StatelessWidget {
               ),
               child: NearNetworkImage(
                 imageUrl: nft.imageUrl,
-                placeholder: const Icon(Icons.broken_image),
+                errorPlaceholder: const Icon(Icons.broken_image),
               ),
             ),
             if (nft.title != "") Text(nft.title),

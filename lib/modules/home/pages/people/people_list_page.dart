@@ -115,7 +115,7 @@ class _PeopleListPageState extends State<PeopleListPage> {
                     clipBehavior: Clip.antiAlias,
                     child: NearNetworkImage(
                       imageUrl: user.generalAccountInfo.profileImageLink,
-                      placeholder: Image.asset(
+                      errorPlaceholder: Image.asset(
                         NearAssets.standartAvatar,
                         fit: BoxFit.cover,
                       ),

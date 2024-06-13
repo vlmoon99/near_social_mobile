@@ -1,27 +1,31 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class NearNetworkImage extends StatelessWidget {
   const NearNetworkImage({
     super.key,
     required this.imageUrl,
-    this.placeholder,
+    this.errorPlaceholder,
   });
 
   final String imageUrl;
-  final Widget? placeholder;
+  final Widget? errorPlaceholder;
 
   @override
   Widget build(BuildContext context) {
-    return Image.network(
-      imageUrl,
-      headers: const {"Referer": "https://near.social/"},
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      httpHeaders: const {"Referer": "https://near.social/"},
       fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        return placeholder ??
-            const Center(
-              child: Icon(Icons.error_outline),
-            );
-      },
+      errorWidget: (context, error, stackTrace) =>
+          errorPlaceholder ??
+          const Center(
+            child: Icon(Icons.error_outline),
+          ),
+      placeholder: (context, url) => const Center(
+        child: SpinnerLoadingIndicator(size: 25),
+      ),
     );
   }
 }

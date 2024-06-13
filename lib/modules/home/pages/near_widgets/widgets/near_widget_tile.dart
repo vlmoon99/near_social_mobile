@@ -22,7 +22,7 @@ class NearWidgetTile extends StatelessWidget {
         dimension: 50.w,
         child: NearNetworkImage(
           imageUrl: nearWidget.imageUrl,
-          placeholder: Image.asset(NearAssets.widgetPlaceholder),
+          errorPlaceholder: Image.asset(NearAssets.widgetPlaceholder),
         ),
       ),
       title: Text(nearWidget.name != "" ? nearWidget.name : nearWidget.urlName),

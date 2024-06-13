@@ -102,7 +102,7 @@ class UserPageMainInfo extends StatelessWidget {
                       width: double.infinity,
                       child: NearNetworkImage(
                         imageUrl: user.generalAccountInfo.backgroundImageLink,
-                        placeholder: Container(color: AppColors.lightSurface),
+                        errorPlaceholder: Container(color: AppColors.lightSurface),
                       ),
                     ),
                     Positioned(
@@ -124,7 +124,7 @@ class UserPageMainInfo extends StatelessWidget {
                           clipBehavior: Clip.antiAlias,
                           child: NearNetworkImage(
                             imageUrl: user.generalAccountInfo.profileImageLink,
-                            placeholder: Image.asset(
+                            errorPlaceholder: Image.asset(
                               NearAssets.standartAvatar,
                               fit: BoxFit.cover,
                             ),
