@@ -72,14 +72,11 @@ class PostPage extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 5.h),
-                  // SelectableText(
-                  //   post.postBody.text.trim(),
-                  // ),
                   RawTextToContentFormatter(
                     rawText: post.postBody.text.trim(),
                   ),
-
                   if (post.postBody.mediaLink != null) ...[
+                    SizedBox(height: 10.h),
                     NearNetworkImage(imageUrl: post.postBody.mediaLink!),
                   ],
                   Row(
@@ -275,26 +272,43 @@ class RawTextToContentFormatter extends StatelessWidget {
     final List<Widget> widgets = [];
     final RegExp imageRegex = RegExp(r'!\[(.*?)\]\((.*?)\)');
     final RegExp linkRegex = RegExp(r'\[(.*?)\]\((.*?)\)');
+    final RegExp plainLinkRegex = RegExp(r'(?<!\()https?:\/\/[^\s\)]+');
     final List<RegExpMatch> imageMatches = imageRegex.allMatches(text).toList();
     final List<RegExpMatch> linkMatches = linkRegex.allMatches(text).toList();
+    final List<RegExpMatch> plainLinkMatches =
+        plainLinkRegex.allMatches(text).toList();
 
     int lastMatchEnd = 0;
     int imageIndex = 0;
     int linkIndex = 0;
+    int plainLinkIndex = 0;
 
-    while (imageIndex < imageMatches.length || linkIndex < linkMatches.length) {
+    while (imageIndex < imageMatches.length ||
+        linkIndex < linkMatches.length ||
+        plainLinkIndex < plainLinkMatches.length) {
       RegExpMatch? nextMatch;
       bool isImageMatch = false;
+      bool isPlainLinkMatch = false;
 
       if (imageIndex < imageMatches.length &&
           (linkIndex >= linkMatches.length ||
-              imageMatches[imageIndex].start < linkMatches[linkIndex].start)) {
+              imageMatches[imageIndex].start < linkMatches[linkIndex].start) &&
+          (plainLinkIndex >= plainLinkMatches.length ||
+              imageMatches[imageIndex].start <
+                  plainLinkMatches[plainLinkIndex].start)) {
         nextMatch = imageMatches[imageIndex];
         isImageMatch = true;
         imageIndex++;
-      } else if (linkIndex < linkMatches.length) {
+      } else if (linkIndex < linkMatches.length &&
+          (plainLinkIndex >= plainLinkMatches.length ||
+              linkMatches[linkIndex].start <
+                  plainLinkMatches[plainLinkIndex].start)) {
         nextMatch = linkMatches[linkIndex];
         linkIndex++;
+      } else if (plainLinkIndex < plainLinkMatches.length) {
+        nextMatch = plainLinkMatches[plainLinkIndex];
+        isPlainLinkMatch = true;
+        plainLinkIndex++;
       }
 
       if (nextMatch != null && nextMatch.start > lastMatchEnd) {
@@ -311,7 +325,7 @@ class RawTextToContentFormatter extends StatelessWidget {
           if (imageUrl != null && _isImageUrl(imageUrl)) {
             widgets.add(
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8).r,
+                padding: const EdgeInsets.only(top: 8),
                 child: NearNetworkImage(
                   imageUrl: imageUrl,
                   errorPlaceholder: const Icon(Icons.broken_image),
@@ -330,10 +344,24 @@ class RawTextToContentFormatter extends StatelessWidget {
               ),
             );
           }
+        } else if (isPlainLinkMatch) {
+          final plainLink = nextMatch.group(0);
+          if (plainLink != null) {
+            widgets.add(
+              InkWell(
+                onTap: () => _launchURL(plainLink),
+                child: Text(
+                  plainLink,
+                  style: const TextStyle(
+                      color: Colors.blue, decoration: TextDecoration.underline),
+                ),
+              ),
+            );
+          }
         } else {
           final linkDescription = nextMatch.group(1);
           final linkUrl = nextMatch.group(2);
-          if (linkUrl != null) {
+          if (linkUrl != null && !_isImageUrl(linkUrl)) {
             widgets.add(
               InkWell(
                 onTap: () {
