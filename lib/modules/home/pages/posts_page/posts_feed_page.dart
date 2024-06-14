@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -6,6 +8,7 @@ import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/post_card.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
+import 'package:rxdart/rxdart.dart';
 
 class PostsFeedPage extends StatefulWidget {
   const PostsFeedPage({super.key});
@@ -16,6 +19,7 @@ class PostsFeedPage extends StatefulWidget {
 
 class _PostsFeedPageState extends State<PostsFeedPage> {
   final _scrollController = ScrollController();
+  final _postsLoaderDebouncer = StreamController();
 
   void _onScroll() async {
     final postsConroller = Modular.get<PostsController>();
@@ -35,7 +39,12 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
+    _scrollController.addListener(() {
+      _postsLoaderDebouncer.add(null);
+    });
+    _postsLoaderDebouncer.stream
+        .debounceTime(const Duration(milliseconds: 300))
+        .listen((_) => _onScroll());
   }
 
   @override
@@ -54,6 +63,7 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
     _scrollController
       ..removeListener(_onScroll)
       ..dispose();
+    _postsLoaderDebouncer.close();
     super.dispose();
   }
 
