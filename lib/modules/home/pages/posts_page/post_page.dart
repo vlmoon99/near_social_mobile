@@ -9,6 +9,7 @@ import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/comment
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_comment_dialog_body.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
@@ -77,7 +78,25 @@ class PostPage extends StatelessWidget {
                   ),
                   if (post.postBody.mediaLink != null) ...[
                     SizedBox(height: 10.h),
-                    NearNetworkImage(imageUrl: post.postBody.mediaLink!),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.push(
+                          Modular.routerDelegate.navigatorKey.currentContext!,
+                          MaterialPageRoute(
+                            builder: (context) => ImageFullScreen(
+                              imageUrl: post.postBody.mediaLink!,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Hero(
+                        tag: post.postBody.mediaLink!,
+                        child: NearNetworkImage(
+                          imageUrl: post.postBody.mediaLink!,
+                        ),
+                      ),
+                    ),
                   ],
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -326,9 +345,25 @@ class RawTextToContentFormatter extends StatelessWidget {
             widgets.add(
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child: NearNetworkImage(
-                  imageUrl: imageUrl,
-                  errorPlaceholder: const Icon(Icons.broken_image),
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.push(
+                      Modular.routerDelegate.navigatorKey.currentContext!,
+                      MaterialPageRoute(
+                        builder: (context) => ImageFullScreen(
+                          imageUrl: imageUrl,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Hero(
+                    tag: imageUrl,
+                    child: NearNetworkImage(
+                      imageUrl: imageUrl,
+                      errorPlaceholder: const Icon(Icons.broken_image),
+                    ),
+                  ),
                 ),
               ),
             );
