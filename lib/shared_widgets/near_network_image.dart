@@ -7,10 +7,12 @@ class NearNetworkImage extends StatelessWidget {
     super.key,
     required this.imageUrl,
     this.errorPlaceholder,
+    this.placeholder,
   });
 
   final String imageUrl;
   final Widget? errorPlaceholder;
+  final Widget? placeholder;
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +25,11 @@ class NearNetworkImage extends StatelessWidget {
           const Center(
             child: Icon(Icons.error_outline),
           ),
-      placeholder: (context, url) => const Center(
-        child: SpinnerLoadingIndicator(size: 25),
-      ),
+      placeholder: (context, url) =>
+          placeholder ??
+          const Center(
+            child: SpinnerLoadingIndicator(size: 25),
+          ),
     );
   }
 }
