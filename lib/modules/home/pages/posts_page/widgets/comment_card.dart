@@ -79,8 +79,8 @@ class CommentCard extends StatelessWidget {
               ],
             ),
             SizedBox(height: 10.h),
-            Text(
-              comment.commentBody.text.trim(),
+            RawTextToContentFormatter(
+              rawText: comment.commentBody.text.trim(),
             ),
             if (comment.commentBody.mediaLink != null) ...[
               NearNetworkImage(
