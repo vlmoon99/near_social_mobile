@@ -141,6 +141,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       NearAssets.standartAvatar,
                       fit: BoxFit.cover,
                     ),
+                    placeholder: Stack(
+                      children: [
+                        Image.asset(
+                          NearAssets.standartAvatar,
+                          fit: BoxFit.cover,
+                        ),
+                        const Positioned.fill(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 6,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 title: Text.rich(

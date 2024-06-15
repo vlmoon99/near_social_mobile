@@ -7,6 +7,7 @@ import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_comment_dialog_body.dart';
+import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
@@ -60,8 +61,10 @@ class CommentCard extends StatelessWidget {
                           NearAssets.standartAvatar,
                           fit: BoxFit.cover,
                         ),
-                        const Center(
-                          child: CircularProgressIndicator(),
+                        const Positioned.fill(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 6,
+                          ),
                         ),
                       ],
                     ),

@@ -119,6 +119,19 @@ class _PeopleListPageState extends State<PeopleListPage> {
                         NearAssets.standartAvatar,
                         fit: BoxFit.cover,
                       ),
+                      placeholder: Stack(
+                        children: [
+                          Image.asset(
+                            NearAssets.standartAvatar,
+                            fit: BoxFit.cover,
+                          ),
+                          const Positioned.fill(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 6,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   title: user.generalAccountInfo.name != ""

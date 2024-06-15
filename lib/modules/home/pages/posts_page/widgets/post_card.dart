@@ -83,8 +83,10 @@ class PostCard extends StatelessWidget {
                               NearAssets.standartAvatar,
                               fit: BoxFit.cover,
                             ),
-                            const Center(
-                              child: CircularProgressIndicator(),
+                            const Positioned.fill(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 6,
+                              ),
                             ),
                           ],
                         ),
