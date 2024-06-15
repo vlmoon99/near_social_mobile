@@ -7,6 +7,7 @@ import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/comment_card.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_comment_dialog_body.dart';
+import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
@@ -14,7 +15,6 @@ import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class PostPage extends StatelessWidget {
   const PostPage(
@@ -76,8 +76,8 @@ class PostPage extends StatelessWidget {
                   RawTextToContentFormatter(
                     rawText: post.postBody.text.trim(),
                   ),
+                  SizedBox(height: 10.h),
                   if (post.postBody.mediaLink != null) ...[
-                    SizedBox(height: 10.h),
                     GestureDetector(
                       onTap: () {
                         HapticFeedback.lightImpact();
@@ -275,188 +275,6 @@ class PostPage extends StatelessWidget {
               );
             }),
       ),
-    );
-  }
-}
-
-class RawTextToContentFormatter extends StatelessWidget {
-  const RawTextToContentFormatter({
-    super.key,
-    required this.rawText,
-  });
-
-  final String rawText;
-
-  List<Widget> _generateWidgetsFromRawText(String text) {
-    final List<Widget> widgets = [];
-    final RegExp imageRegex = RegExp(r'!\[(.*?)\]\((.*?)\)');
-    final RegExp linkRegex = RegExp(r'\[(.*?)\]\((.*?)\)');
-    final RegExp plainLinkRegex = RegExp(r'(?<!\()https?:\/\/[^\s\)]+');
-    final List<RegExpMatch> imageMatches = imageRegex.allMatches(text).toList();
-    final List<RegExpMatch> linkMatches = linkRegex.allMatches(text).toList();
-    final List<RegExpMatch> plainLinkMatches =
-        plainLinkRegex.allMatches(text).toList();
-
-    int lastMatchEnd = 0;
-    int imageIndex = 0;
-    int linkIndex = 0;
-    int plainLinkIndex = 0;
-
-    while (imageIndex < imageMatches.length ||
-        linkIndex < linkMatches.length ||
-        plainLinkIndex < plainLinkMatches.length) {
-      RegExpMatch? nextMatch;
-      bool isImageMatch = false;
-      bool isPlainLinkMatch = false;
-
-      if (imageIndex < imageMatches.length &&
-          (linkIndex >= linkMatches.length ||
-              imageMatches[imageIndex].start < linkMatches[linkIndex].start) &&
-          (plainLinkIndex >= plainLinkMatches.length ||
-              imageMatches[imageIndex].start <
-                  plainLinkMatches[plainLinkIndex].start)) {
-        nextMatch = imageMatches[imageIndex];
-        isImageMatch = true;
-        imageIndex++;
-      } else if (linkIndex < linkMatches.length &&
-          (plainLinkIndex >= plainLinkMatches.length ||
-              linkMatches[linkIndex].start <
-                  plainLinkMatches[plainLinkIndex].start)) {
-        nextMatch = linkMatches[linkIndex];
-        linkIndex++;
-      } else if (plainLinkIndex < plainLinkMatches.length) {
-        nextMatch = plainLinkMatches[plainLinkIndex];
-        isPlainLinkMatch = true;
-        plainLinkIndex++;
-      }
-
-      if (nextMatch != null && nextMatch.start > lastMatchEnd) {
-        widgets.add(
-          SelectableText(
-            text.substring(lastMatchEnd, nextMatch.start).trim(),
-          ),
-        );
-      }
-
-      if (nextMatch != null) {
-        if (isImageMatch) {
-          final imageUrl = nextMatch.group(2);
-          if (imageUrl != null && _isImageUrl(imageUrl)) {
-            widgets.add(
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    Navigator.push(
-                      Modular.routerDelegate.navigatorKey.currentContext!,
-                      MaterialPageRoute(
-                        builder: (context) => ImageFullScreen(
-                          imageUrl: imageUrl,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Hero(
-                    tag: imageUrl,
-                    child: NearNetworkImage(
-                      imageUrl: imageUrl,
-                      errorPlaceholder: const Icon(Icons.broken_image),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          } else if (imageUrl != null) {
-            widgets.add(
-              InkWell(
-                onTap: () => _launchURL(imageUrl),
-                child: Text(
-                  nextMatch.group(1) ?? imageUrl,
-                  style: const TextStyle(
-                      color: Colors.blue, decoration: TextDecoration.underline),
-                ),
-              ),
-            );
-          }
-        } else if (isPlainLinkMatch) {
-          final plainLink = nextMatch.group(0);
-          if (plainLink != null) {
-            widgets.add(
-              InkWell(
-                onTap: () => _launchURL(plainLink),
-                child: Text(
-                  plainLink,
-                  style: const TextStyle(
-                      color: Colors.blue, decoration: TextDecoration.underline),
-                ),
-              ),
-            );
-          }
-        } else {
-          final linkDescription = nextMatch.group(1);
-          final linkUrl = nextMatch.group(2);
-          if (linkUrl != null && !_isImageUrl(linkUrl)) {
-            widgets.add(
-              InkWell(
-                onTap: () {
-                  _launchURL(linkUrl);
-                },
-                child: Text(
-                  linkDescription ?? linkUrl,
-                  style: const TextStyle(
-                      color: Colors.blue, decoration: TextDecoration.underline),
-                ),
-              ),
-            );
-          }
-        }
-        lastMatchEnd = nextMatch.end;
-      }
-    }
-
-    if (lastMatchEnd < text.length) {
-      widgets.add(
-        SelectableText(
-          text.substring(lastMatchEnd).trim(),
-        ),
-      );
-    }
-
-    return widgets;
-  }
-
-  bool _isImageUrl(String url) {
-    final List<String> imageExtensions = [
-      'jpg',
-      'jpeg',
-      'png',
-      'gif',
-      'bmp',
-      'webp'
-    ];
-    final uri = Uri.parse(url);
-    final extension = uri.pathSegments.isNotEmpty
-        ? uri.pathSegments.last.split('.').last
-        : '';
-    return imageExtensions.contains(extension.toLowerCase());
-  }
-
-  void _launchURL(String urlText) async {
-    final Uri url = Uri.parse(urlText);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> contentWidgets = _generateWidgetsFromRawText(rawText);
-    return Wrap(
-      spacing: 4,
-      children: contentWidgets,
     );
   }
 }

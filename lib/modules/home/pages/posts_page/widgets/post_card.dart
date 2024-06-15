@@ -7,6 +7,7 @@ import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
@@ -95,11 +96,12 @@ class PostCard extends StatelessWidget {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         children: [
-                          Text(
-                            post.postBody.text
-                                .replaceAll(RegExp(r'!\[(.*?)\]\((.*?)\)'), "")
-                                .replaceAll(RegExp(r'\[(.*?)\]\((.*?)\)'), "")
-                                .trim(),
+                          RawTextToContentFormatter(
+                            rawText: post.postBody.text.trim(),
+                            selectable: false,
+                            tappable: false,
+                            heroAnimForImages: false,
+                            loadImages: false,
                           ),
                           if (post.postBody.mediaLink != null) ...[
                             NearNetworkImage(

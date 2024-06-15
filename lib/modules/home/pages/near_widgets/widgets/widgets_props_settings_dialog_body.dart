@@ -8,8 +8,10 @@ class WidgetsPropsSettingsDialogBody extends StatefulWidget {
   const WidgetsPropsSettingsDialogBody({
     super.key,
     required this.navigateFunction,
+    this.initWidgetProps,
   });
 
+  final String? initWidgetProps;
   final Function(String widgetprops, PrivateKeyInfo privateKeyInfo)
       navigateFunction;
 
@@ -20,8 +22,8 @@ class WidgetsPropsSettingsDialogBody extends StatefulWidget {
 
 class _WidgetsPropsSettingsDialogBodyState
     extends State<WidgetsPropsSettingsDialogBody> {
-  final TextEditingController _textEditingController = TextEditingController()
-    ..text = "{}";
+  late final TextEditingController _textEditingController =
+      TextEditingController()..text = widget.initWidgetProps ?? "{}";
 
   late PrivateKeyInfo selectedKey;
 
@@ -33,7 +35,6 @@ class _WidgetsPropsSettingsDialogBodyState
         .firstWhere((element) =>
             element.value.privateKey == authController.state.secretKey)
         .value;
-    print(selectedKey);
   }
 
   @override
