@@ -100,10 +100,12 @@ class PostsController {
       final lastBlockHeightIndexOfReposts =
           state.posts.lastIndexWhere((element) => element.reposterInfo != null);
       final posts = await nearSocialApi.getPosts(
-        lastBlockHeightIndexOfPosts:
-            state.posts.elementAt(lastBlockHeightIndexOfPosts).blockHeight,
-        lastBlockHeightIndexOfReposts:
-            state.posts.elementAt(lastBlockHeightIndexOfReposts).blockHeight,
+        lastBlockHeightIndexOfPosts: lastBlockHeightIndexOfPosts == -1
+            ? null
+            : state.posts.elementAt(lastBlockHeightIndexOfPosts).blockHeight,
+        lastBlockHeightIndexOfReposts: lastBlockHeightIndexOfReposts == -1
+            ? null
+            : state.posts.elementAt(lastBlockHeightIndexOfReposts).blockHeight,
         targetAccounts: postsOfAccountId == null ? null : [postsOfAccountId],
       );
 
