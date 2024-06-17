@@ -19,6 +19,7 @@ class RawTextToContentFormatter extends StatelessWidget {
     this.tappable = true,
     this.heroAnimForImages = true,
     this.loadImages = true,
+    this.imageHeight,
   });
 
   final String rawText;
@@ -26,6 +27,7 @@ class RawTextToContentFormatter extends StatelessWidget {
   final bool tappable;
   final bool heroAnimForImages;
   final bool loadImages;
+  final double? imageHeight;
 
   bool _isNearWidget(String url) => url.contains("/widget/");
 
@@ -108,18 +110,22 @@ class RawTextToContentFormatter extends StatelessWidget {
                   );
                 }
               : null,
-          child: heroAnimForImages
-              ? Hero(
-                  tag: uri.toString(),
-                  child: NearNetworkImage(
+          child: SizedBox(
+            height: imageHeight,
+            width: double.infinity,
+            child: heroAnimForImages
+                ? Hero(
+                    tag: uri.toString(),
+                    child: NearNetworkImage(
+                      imageUrl: uri.toString(),
+                      errorPlaceholder: const Icon(Icons.broken_image),
+                    ),
+                  )
+                : NearNetworkImage(
                     imageUrl: uri.toString(),
                     errorPlaceholder: const Icon(Icons.broken_image),
                   ),
-                )
-              : NearNetworkImage(
-                  imageUrl: uri.toString(),
-                  errorPlaceholder: const Icon(Icons.broken_image),
-                ),
+          ),
         );
       },
       onTapLink: tappable

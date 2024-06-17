@@ -9,8 +9,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/shared_widgets/expandable_wiget.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -102,7 +104,8 @@ class UserPageMainInfo extends StatelessWidget {
                       width: double.infinity,
                       child: NearNetworkImage(
                         imageUrl: user.generalAccountInfo.backgroundImageLink,
-                        errorPlaceholder: Container(color: AppColors.lightSurface),
+                        errorPlaceholder:
+                            Container(color: AppColors.lightSurface),
                       ),
                     ),
                     Positioned(
@@ -407,12 +410,17 @@ class UserPageMainInfo extends StatelessWidget {
                           })
                         ],
                       ),
-                      if (user.generalAccountInfo.description != "")
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10).r,
-                          child: Text(user.generalAccountInfo.description),
+                    ],
+                    if (user.generalAccountInfo.description.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10).r,
+                        child: CollapseWidget(
+                          children: RawTextToContentFormatter(
+                            rawText: user.generalAccountInfo.description,
+                            imageHeight: 0.2.sh,
+                          ),
                         ),
-                    ]
+                      ),
                   ],
                 ),
               ),
