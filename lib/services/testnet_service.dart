@@ -1,11 +1,14 @@
 import 'dart:developer';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:flutterchain/flutterchain_lib/constants/core/supported_blockchains.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:flutterchain/flutterchain_lib/services/core/crypto_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
+import 'package:near_social_mobile/services/dio_connectivity_retry_interceptor/retry_interceptor.dart';
 
 class TestNetService {
   final FlutterChainService flutterChainService =
@@ -31,7 +34,23 @@ class TestNetService {
       log("TestNet account private key: ${blockchainData.privateKey}");
       log("TestNet account secret key: $secretKey");
 
-      final response = await Dio().post(
+      final Dio dio = Dio();
+      dio.interceptors.addAll([
+        RetryInterceptor(
+          dio: dio,
+          logPrint: log,
+          retries: 5,
+          retryDelays: [
+            ...List.generate(5, (index) => const Duration(seconds: 1))
+          ],
+        ),
+        RetryOnConnectionChangeInterceptor(
+          dio: dio,
+          connectivity: Connectivity(),
+        ),
+      ]);
+
+      final response = await dio.post(
         "https://server-for-account-creation.onrender.com/create-account",
         data: {
           "accountId": blockchainData.publicKey,

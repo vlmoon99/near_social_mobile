@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_data.dart';
@@ -20,6 +21,7 @@ import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
+import 'package:near_social_mobile/services/dio_connectivity_retry_interceptor/retry_interceptor.dart';
 
 class NearSocialApi {
   final Dio _dio = Dio();
@@ -27,16 +29,20 @@ class NearSocialApi {
 
   NearSocialApi({required NearBlockChainService nearBlockChainService})
       : _nearBlockChainService = nearBlockChainService {
-    _dio.interceptors.add(
+    _dio.interceptors.addAll([
       RetryInterceptor(
         dio: _dio,
         logPrint: log,
-        retries: 60,
+        retries: 5,
         retryDelays: [
-          ...List.generate(60, (index) => const Duration(seconds: 1))
+          ...List.generate(5, (index) => const Duration(seconds: 1))
         ],
       ),
-    );
+      RetryOnConnectionChangeInterceptor(
+        dio: _dio,
+        connectivity: Connectivity(),
+      ),
+    ]);
   }
 
   final _ipfsMediaHosting = "https://ipfs.near.social/ipfs/";
@@ -530,7 +536,8 @@ class NearSocialApi {
         ),
         data: data,
       );
-      final likes = _convertToLikes(List<Map<String, dynamic>>.from(response.data));
+      final likes =
+          _convertToLikes(List<Map<String, dynamic>>.from(response.data));
 
       return likes;
     } catch (err) {

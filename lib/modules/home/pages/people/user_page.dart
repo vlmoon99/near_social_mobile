@@ -9,6 +9,7 @@ import 'package:near_social_mobile/modules/home/pages/people/widgets/user_page_t
 import 'package:near_social_mobile/modules/home/pages/people/widgets/user_page_tabs/user_widgets.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
+import 'package:near_social_mobile/services/pausable_timer.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key, required this.accountId});
@@ -22,9 +23,9 @@ class UserPage extends StatefulWidget {
 class _UserPageState extends State<UserPage>
     with SingleTickerProviderStateMixin {
   late final _tabController = TabController(length: 3, vsync: this);
-  late final Timer _generalProfileInfoTimer;
-  Timer? _nftsUpdatingTimer;
-  Timer? _widgetsUpdatingTimer;
+  late final PausableTimer _generalProfileInfoTimer;
+  PausableTimer? _nftsUpdatingTimer;
+  PausableTimer? _widgetsUpdatingTimer;
 
   @override
   void initState() {
@@ -34,31 +35,35 @@ class _UserPageState extends State<UserPage>
     final user = userListController.state
         .getUserByAccountId(accountId: widget.accountId);
 
-    _generalProfileInfoTimer =
-        Timer.periodic(const Duration(seconds: 40), (timer) async {
-      await Modular.get<UserListController>()
-          .reloadUserInfo(accountId: widget.accountId)
-          .then((_) {
-        Modular.get<PostsController>().updatePostsOfAccount(
+    _generalProfileInfoTimer = PausableTimer.periodic(
+      const Duration(seconds: 40),
+      () async {
+        _generalProfileInfoTimer.pause();
+        await Modular.get<UserListController>()
+            .reloadUserInfo(accountId: widget.accountId);
+        await Modular.get<PostsController>().updatePostsOfAccount(
           postsOfAccountId: widget.accountId,
         );
-      });
-    });
+        _generalProfileInfoTimer.start();
+      },
+    )..start();
 
     //nft auto update
 
     //nfts never vere loaded
     if (user.timeOfLastNftsUpdate == null) {
-      _nftsUpdatingTimer = Timer.periodic(
+      _nftsUpdatingTimer = PausableTimer.periodic(
         const Duration(minutes: 6),
-        (timer) {
+        () async {
+          _nftsUpdatingTimer?.pause();
           if (user.nfts != null) {
-            userListController.loadNftsOfAccount(
+            await userListController.loadNftsOfAccount(
               accountId: widget.accountId,
             );
           }
+          _nftsUpdatingTimer?.start();
         },
-      );
+      )..start();
     } else {
       //calculate time for remaining time to load nfts
       final difference = DateTime.now().difference(user.timeOfLastNftsUpdate!);
@@ -74,16 +79,18 @@ class _UserPageState extends State<UserPage>
           )
               .then(
             (_) {
-              _nftsUpdatingTimer = Timer.periodic(
+              _nftsUpdatingTimer = PausableTimer.periodic(
                 const Duration(minutes: 6),
-                (timer) {
+                () async {
+                  _nftsUpdatingTimer?.pause();
                   if (user.nfts != null) {
-                    userListController.loadNftsOfAccount(
+                    await userListController.loadNftsOfAccount(
                       accountId: widget.accountId,
                     );
                   }
+                  _nftsUpdatingTimer?.start();
                 },
-              );
+              )..start();
             },
           );
         },
@@ -91,16 +98,18 @@ class _UserPageState extends State<UserPage>
     }
 
     if (user.timeOfLastWidgetsUpdate == null) {
-      _widgetsUpdatingTimer = Timer.periodic(
+      _widgetsUpdatingTimer = PausableTimer.periodic(
         const Duration(minutes: 5),
-        (timer) {
+        () async {
+          _widgetsUpdatingTimer?.pause();
           if (user.widgetList != null) {
-            userListController.loadWidgetsOfAccount(
+            await userListController.loadWidgetsOfAccount(
               accountId: widget.accountId,
             );
           }
+          _widgetsUpdatingTimer?.start();
         },
-      );
+      )..start();
     } else {
       //calculate time for remaining time to load widgets
       final difference =
@@ -117,16 +126,18 @@ class _UserPageState extends State<UserPage>
           )
               .then(
             (_) {
-              _widgetsUpdatingTimer = Timer.periodic(
+              _widgetsUpdatingTimer = PausableTimer.periodic(
                 const Duration(minutes: 5),
-                (timer) {
+                () async {
+                  _widgetsUpdatingTimer?.pause();
                   if (user.widgetList != null) {
                     userListController.loadWidgetsOfAccount(
                       accountId: widget.accountId,
                     );
                   }
+                  _widgetsUpdatingTimer?.start();
                 },
-              );
+              )..start();
             },
           );
         },
