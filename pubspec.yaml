@@ -32,6 +32,7 @@ dependencies:
   bos_gateway_viewer: 0.0.2
   cached_network_image: 3.3.1
   cloud_firestore: 4.16.1
+  connectivity_plus: 6.0.3
   cupertino_icons: ^1.0.2
   dio: 5.4.1
   dio_smart_retry: 6.0.0
