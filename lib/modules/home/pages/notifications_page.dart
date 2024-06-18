@@ -6,7 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/modules/home/apis/models/notification.dart';
 import 'package:near_social_mobile/modules/home/vms/notifications/notifications_controller.dart';
+import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
@@ -128,6 +130,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
               final notification =
                   notificationsController.state.notifications[index];
               return ListTile(
+                onTap: () async {
+                  HapticFeedback.lightImpact();
+                  await Modular.get<UserListController>()
+                      .addGeneralAccountInfoIfNotExists(
+                          generalAccountInfo: notification.authorInfo);
+                  Modular.to.pushNamed(
+                    ".${Routes.home.userPage}?accountId=${notification.authorInfo.accountId}",
+                  );
+                },
                 leading: Container(
                   width: 40.w,
                   height: 40.w,

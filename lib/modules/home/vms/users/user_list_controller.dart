@@ -20,6 +20,9 @@ class UserListController {
   UsersList get state => _streamController.value;
 
   Future<void> loadUsers() async {
+    if (state.loadingState == UserListState.loading) {
+      return;
+    }
     _streamController.add(state.copyWith(loadingState: UserListState.loading));
     try {
       final users = await nearSocialApi.getNearSocialAccountList();
@@ -41,6 +44,20 @@ class UserListController {
     }
   }
 
+  Future<void> addGeneralAccountInfoIfNotExists(
+      {required GeneralAccountInfo generalAccountInfo}) async {
+    final indexOfUser = state.users.indexWhere(
+      (element) =>
+          element.generalAccountInfo.accountId == generalAccountInfo.accountId,
+    );
+    if (indexOfUser == -1) {
+      _streamController.add(state.copyWith(users: [
+        FullUserInfo(generalAccountInfo: generalAccountInfo),
+        ...state.users
+      ]));
+    }
+  }
+  
   Future<void> loadAdditionalMetadata({required String accountId}) async {
     try {
       final indexOfUser = state.users.indexWhere(
