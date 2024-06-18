@@ -13,6 +13,7 @@ import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_tex
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/shared_widgets/expandable_wiget.dart';
+import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -99,13 +100,30 @@ class UserPageMainInfo extends StatelessWidget {
                 child: Stack(
                   alignment: Alignment.topCenter,
                   children: [
-                    SizedBox(
-                      height: .25.sh,
-                      width: double.infinity,
-                      child: NearNetworkImage(
-                        imageUrl: user.generalAccountInfo.backgroundImageLink,
-                        errorPlaceholder:
-                            Container(color: AppColors.lightSurface),
+                    GestureDetector(
+                      onTap: () {
+                        if (user
+                            .generalAccountInfo.backgroundImageLink.isEmpty) {
+                          return;
+                        }
+                        Navigator.push(
+                          Modular.routerDelegate.navigatorKey.currentContext!,
+                          MaterialPageRoute(
+                            builder: (context) => ImageFullScreen(
+                              imageUrl:
+                                  user.generalAccountInfo.backgroundImageLink,
+                            ),
+                          ),
+                        );
+                      },
+                      child: SizedBox(
+                        height: .25.sh,
+                        width: double.infinity,
+                        child: NearNetworkImage(
+                          imageUrl: user.generalAccountInfo.backgroundImageLink,
+                          errorPlaceholder:
+                              Container(color: AppColors.lightSurface),
+                        ),
                       ),
                     ),
                     Positioned(
@@ -113,23 +131,41 @@ class UserPageMainInfo extends StatelessWidget {
                       left: 30.w,
                       width: .2.sh,
                       height: .2.sh,
-                      child: Container(
-                        padding: REdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          border: Border.all(color: Colors.black, width: 1),
-                        ),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (user
+                              .generalAccountInfo.profileImageLink.isEmpty) {
+                            return;
+                          }
+                          Navigator.push(
+                            Modular.routerDelegate.navigatorKey.currentContext!,
+                            MaterialPageRoute(
+                              builder: (context) => ImageFullScreen(
+                                imageUrl:
+                                    user.generalAccountInfo.profileImageLink,
+                              ),
+                            ),
+                          );
+                        },
                         child: Container(
-                          decoration: const BoxDecoration(
+                          padding: REdgeInsets.all(8),
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
+                            color: Colors.white,
+                            border: Border.all(color: Colors.black, width: 1),
                           ),
-                          clipBehavior: Clip.antiAlias,
-                          child: NearNetworkImage(
-                            imageUrl: user.generalAccountInfo.profileImageLink,
-                            errorPlaceholder: Image.asset(
-                              NearAssets.standartAvatar,
-                              fit: BoxFit.cover,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: NearNetworkImage(
+                              imageUrl:
+                                  user.generalAccountInfo.profileImageLink,
+                              errorPlaceholder: Image.asset(
+                                NearAssets.standartAvatar,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ),
