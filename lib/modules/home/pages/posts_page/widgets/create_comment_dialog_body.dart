@@ -182,7 +182,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                   )
                       .then(
                     (_) {
-                      Modular.get<PostsController>().loadCommentsOfPost(
+                      Modular.get<PostsController>().updateCommentsOfPost(
                         accountId: widget.post.authorInfo.accountId,
                         blockHeight: widget.post.blockHeight,
                       );
