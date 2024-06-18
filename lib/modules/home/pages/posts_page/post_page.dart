@@ -28,10 +28,21 @@ class PostPage extends StatelessWidget {
     final AuthController authController = Modular.get<AuthController>();
     final PostsController postsController = Modular.get<PostsController>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      postsController.loadCommentsOfPost(
-        accountId: accountId,
-        blockHeight: blockHeight,
-      );
+      if (postsController.state.posts.firstWhere((element) {
+            return element.blockHeight == blockHeight &&
+                element.authorInfo.accountId == accountId;
+          }).commentList ==
+          null) {
+        postsController.loadCommentsOfPost(
+          accountId: accountId,
+          blockHeight: blockHeight,
+        );
+      } else {
+        postsController.updateCommentsOfPost(
+          accountId: accountId,
+          blockHeight: blockHeight,
+        );
+      }
     });
 
     return Scaffold(

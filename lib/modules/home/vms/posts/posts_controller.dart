@@ -153,38 +153,129 @@ class PostsController {
             element.authorInfo.accountId == accountId;
       });
 
-      if (state.posts[indexOfPost].commentList != null) {
-        nearSocialApi
-            .getCommentsOfPost(
-          accountId: accountId,
-          blockHeight: blockHeight,
-        )
-            .then((commentsOfPost) {
-          _streamController.add(
-            state.copyWith(
-              posts: List.of(state.posts)
-                ..[indexOfPost] = state.posts[indexOfPost]
-                    .copyWith(commentList: commentsOfPost),
-            ),
-          );
-        });
-      } else {
-        final commentsOfPost = await nearSocialApi.getCommentsOfPost(
-          accountId: accountId,
-          blockHeight: blockHeight,
-        );
+      final commentsOfPost = await nearSocialApi.getCommentsOfPost(
+        accountId: accountId,
+        blockHeight: blockHeight,
+      );
 
-        _streamController.add(
-          state.copyWith(
-            posts: List.of(state.posts)
-              ..[indexOfPost] = state.posts[indexOfPost]
-                  .copyWith(commentList: commentsOfPost),
-          ),
-        );
+      _streamController.add(
+        state.copyWith(
+          posts: List.of(state.posts)
+            ..[indexOfPost] =
+                state.posts[indexOfPost].copyWith(commentList: commentsOfPost),
+        ),
+      );
+
+      for (var indexOfComment = 0;
+          indexOfComment < commentsOfPost.length;
+          indexOfComment++) {
+        _loadCommentsDataAsync(indexOfPost, indexOfComment);
       }
+      // }
     } catch (err) {
       rethrow;
     }
+  }
+
+  Future<void> updateCommentsOfPost(
+      {required String accountId, required int blockHeight}) async {
+    final int indexOfPost = state.posts.indexWhere((element) {
+      return element.blockHeight == blockHeight &&
+          element.authorInfo.accountId == accountId;
+    });
+    final commentsOfPost = await nearSocialApi.getCommentsOfPost(
+      accountId: accountId,
+      blockHeight: blockHeight,
+    );
+
+    commentsOfPost.removeWhere(
+      (comment) => state.posts[indexOfPost].commentList!.any(
+        (element) =>
+            element.blockHeight == comment.blockHeight &&
+            element.authorInfo.accountId == comment.authorInfo.accountId,
+      ),
+    );
+
+    _streamController.add(
+      state.copyWith(
+        posts: List.of(state.posts)
+          ..[indexOfPost] = state.posts[indexOfPost].copyWith(commentList: [
+            ...commentsOfPost,
+            ...state.posts[indexOfPost].commentList!
+          ]),
+        status: PostLoadingStatus.loaded,
+      ),
+    );
+
+    for (var i = 0; i < state.posts[indexOfPost].commentList!.length; i++) {
+      _loadCommentsDataAsync(indexOfPost, i);
+    }
+  }
+
+  Future<void> _loadCommentsDataAsync(
+      int indexOfPost, int indexOfComment) async {
+    final Comment comment =
+        state.posts[indexOfPost].commentList![indexOfComment];
+
+    nearSocialApi
+        .getCommentContent(
+      accountId: comment.authorInfo.accountId,
+      blockHeight: comment.blockHeight,
+    )
+        .then(
+      (commentBody) {
+        _streamController.add(
+          state.copyWith(
+            posts: List.of(state.posts)
+              ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+                commentList: List.of(state.posts[indexOfPost].commentList!)
+                  ..[indexOfComment] = state
+                      .posts[indexOfPost].commentList![indexOfComment]
+                      .copyWith(commentBody: commentBody),
+              ),
+          ),
+        );
+      },
+    );
+
+    nearSocialApi
+        .getDateOfBlockHeight(
+      blockHeight: comment.blockHeight,
+    )
+        .then((date) {
+      _streamController.add(
+        state.copyWith(
+          posts: List.of(state.posts)
+            ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+              commentList: List.of(state.posts[indexOfPost].commentList!)
+                ..[indexOfComment] = state
+                    .posts[indexOfPost].commentList![indexOfComment]
+                    .copyWith(date: date),
+            ),
+        ),
+      );
+    });
+
+    nearSocialApi
+        .getLikesOfComment(
+      accountId: comment.authorInfo.accountId,
+      blockHeight: comment.blockHeight,
+    )
+        .then(
+      (likes) {
+        _streamController.add(
+          state.copyWith(
+            posts: List.of(state.posts)
+              ..[indexOfPost] = state.posts[indexOfPost].copyWith(
+                commentList: List.of(state.posts[indexOfPost].commentList!)
+                  ..[indexOfComment] = state
+                      .posts[indexOfPost].commentList![indexOfComment]
+                      .copyWith(likeList: likes),
+              ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> updatePostsOfAccount({required String postsOfAccountId}) async {

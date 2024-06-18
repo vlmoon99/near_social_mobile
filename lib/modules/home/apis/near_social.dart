@@ -412,30 +412,30 @@ class NearSocialApi {
       final List<Comment> comments = [];
 
       for (final info in commentsInfoCreation) {
-        final CommentBody commentBody = await _getCommentContent(
-          accountId: info.accountId,
-          blockHeight: info.blockHeight,
-        );
-        final date = await getDateOfBlockHeight(
-          blockHeight: info.blockHeight,
-        );
+        // final CommentBody commentBody = await getCommentContent(
+        //   accountId: info.accountId,
+        //   blockHeight: info.blockHeight,
+        // );
+        // final date = await getDateOfBlockHeight(
+        //   blockHeight: info.blockHeight,
+        // );
 
         final authorInfo = await getGeneralAccountInfo(
           accountId: info.accountId,
         );
 
-        final likes = await _getLikesOfComment(
-          accountId: info.accountId,
-          blockHeight: info.blockHeight,
-        );
+        // final likes = await getLikesOfComment(
+        //   accountId: info.accountId,
+        //   blockHeight: info.blockHeight,
+        // );
 
         comments.add(
           Comment(
             authorInfo: authorInfo,
             blockHeight: info.blockHeight,
-            commentBody: commentBody,
-            date: date,
-            likeList: likes,
+            commentBody: CommentBody(text: "Loading...", mediaLink: null),
+            date: DateTime.now(),
+            likeList: {},
           ),
         );
       }
@@ -487,7 +487,7 @@ class NearSocialApi {
     }
   }
 
-  Future<CommentBody> _getCommentContent(
+  Future<CommentBody> getCommentContent(
       {required String accountId, required int blockHeight}) async {
     try {
       final data = {
@@ -517,7 +517,7 @@ class NearSocialApi {
     }
   }
 
-  Future<Set<Like>> _getLikesOfComment(
+  Future<Set<Like>> getLikesOfComment(
       {required String accountId, required int blockHeight}) async {
     try {
       final data = {
