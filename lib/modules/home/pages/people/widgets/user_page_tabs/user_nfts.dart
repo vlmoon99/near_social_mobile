@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/apis/models/nft.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
+import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
@@ -73,13 +74,28 @@ class NftCard extends StatelessWidget {
         padding: REdgeInsets.all(10.0),
         child: Column(
           children: [
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: 200.h,
-              ),
-              child: NearNetworkImage(
-                imageUrl: nft.imageUrl,
-                errorPlaceholder: const Icon(Icons.broken_image),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  Modular.routerDelegate.navigatorKey.currentContext!,
+                  MaterialPageRoute(
+                    builder: (context) => ImageFullScreen(
+                      imageUrl: nft.imageUrl,
+                    ),
+                  ),
+                );
+              },
+              child: Hero(
+                tag: nft.imageUrl,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: 200.h,
+                  ),
+                  child: NearNetworkImage(
+                    imageUrl: nft.imageUrl,
+                    errorPlaceholder: const Icon(Icons.broken_image),
+                  ),
+                ),
               ),
             ),
             if (nft.title != "") Text(nft.title),
