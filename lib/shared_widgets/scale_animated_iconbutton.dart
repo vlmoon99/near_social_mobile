@@ -67,7 +67,9 @@ class _ScaleAnimatedIconButtonState extends State<ScaleAnimatedIconButton>
               } catch (err) {
                 rethrow;
               } finally {
-                _animationController.reset();
+                if (mounted) {
+                  _animationController.reset();
+                }
               }
             },
             icon: _animationController.isAnimating
