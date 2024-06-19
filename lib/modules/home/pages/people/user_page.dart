@@ -43,10 +43,11 @@ class _UserPageState extends State<UserPage>
             .reloadUserInfo(accountId: widget.accountId);
         await Modular.get<PostsController>().updatePostsOfAccount(
           postsOfAccountId: widget.accountId,
+          postsViewMode: PostsViewMode.account,
         );
         _generalProfileInfoTimer.start();
       },
-    )..start();
+    );
 
     //nft auto update
 
@@ -152,22 +153,26 @@ class _UserPageState extends State<UserPage>
         Modular.get<UserListController>();
     final PostsController postsController = Modular.get<PostsController>();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!userListController.state.users
           .firstWhere(
               (user) => user.generalAccountInfo.accountId == widget.accountId)
           .allMetadataLoaded) {
-        userListController
-            .loadAdditionalMetadata(accountId: widget.accountId)
-            .then((_) {
-          postsController.changePostsChannelToAccount(
+        await userListController.loadAdditionalMetadata(
+            accountId: widget.accountId);
+        if (mounted) {
+          await postsController.changePostsChannelToAccount(
             widget.accountId,
           );
-        });
+          _generalProfileInfoTimer.start();
+        }
       } else {
-        postsController.changePostsChannelToAccount(
-          widget.accountId,
-        );
+        if (mounted) {
+          await postsController.changePostsChannelToAccount(
+            widget.accountId,
+          );
+          _generalProfileInfoTimer.start();
+        }
       }
     });
   }

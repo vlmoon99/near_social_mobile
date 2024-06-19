@@ -18,11 +18,13 @@ class CreateCommentDialog extends StatefulWidget {
     required this.post,
     required this.descriptionTitle,
     this.initialText = "",
+    required this.postsViewMode,
   });
 
   final Post post;
   final Widget descriptionTitle;
   final String initialText;
+  final PostsViewMode postsViewMode;
 
   @override
   State<CreateCommentDialog> createState() => _CreateCommentDialogState();
@@ -185,6 +187,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                       Modular.get<PostsController>().updateCommentsOfPost(
                         accountId: widget.post.authorInfo.accountId,
                         blockHeight: widget.post.blockHeight,
+                        postsViewMode: widget.postsViewMode,
                       );
                     },
                   );

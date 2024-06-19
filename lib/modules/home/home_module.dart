@@ -68,6 +68,7 @@ class HomeModule extends Module {
       child: (context) => PostPage(
         accountId: r.args.queryParams['accountId'] as String,
         blockHeight: int.parse(r.args.queryParams['blockHeight'] as String),
+        postsViewMode: PostsViewMode.values[int.parse(r.args.queryParams['postsViewMode'] as String)],
       ),
     );
     r.child(

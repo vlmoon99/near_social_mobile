@@ -25,7 +25,7 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
     final postsConroller = Modular.get<PostsController>();
     if (_isBottom &&
         postsConroller.state.status != PostLoadingStatus.loadingMorePosts) {
-      postsConroller.loadMorePosts();
+      postsConroller.loadMorePosts(postsViewMode: PostsViewMode.main);
     }
   }
 
@@ -53,7 +53,7 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final PostsController postsController = Modular.get<PostsController>();
       if (postsController.state.status == PostLoadingStatus.initial) {
-        postsController.loadPosts();
+        postsController.loadPosts(postsViewMode: PostsViewMode.main);
       }
     });
   }
@@ -79,7 +79,8 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
               postsState.status == PostLoadingStatus.loadingMorePosts) {
             return RefreshIndicator.adaptive(
               onRefresh: () async {
-                return postsController.loadPosts();
+                return postsController.loadPosts(
+                    postsViewMode: PostsViewMode.main);
               },
               child: ListView.builder(
                 controller: _scrollController,
@@ -88,7 +89,10 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
                   final post = postsState.posts[index];
                   return Column(
                     children: [
-                      PostCard(post: post),
+                      PostCard(
+                        post: post,
+                        postsViewMode: PostsViewMode.main,
+                      ),
                       if (postsController.state.status ==
                               PostLoadingStatus.loadingMorePosts &&
                           index == postsState.posts.length - 1) ...[

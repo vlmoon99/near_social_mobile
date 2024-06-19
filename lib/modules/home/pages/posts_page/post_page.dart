@@ -18,10 +18,14 @@ import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 
 class PostPage extends StatelessWidget {
   const PostPage(
-      {super.key, required this.accountId, required this.blockHeight});
+      {super.key,
+      required this.accountId,
+      required this.blockHeight,
+      required this.postsViewMode});
 
   final String accountId;
   final int blockHeight;
+  final PostsViewMode postsViewMode;
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +40,13 @@ class PostPage extends StatelessWidget {
         postsController.loadCommentsOfPost(
           accountId: accountId,
           blockHeight: blockHeight,
+          postsViewMode: postsViewMode,
         );
       } else {
         postsController.updateCommentsOfPost(
           accountId: accountId,
           blockHeight: blockHeight,
+          postsViewMode: postsViewMode,
         );
       }
     });
@@ -121,6 +127,7 @@ class PostPage extends StatelessWidget {
                             builder: (context) {
                               return Dialog(
                                 child: CreateCommentDialog(
+                                  postsViewMode: postsViewMode,
                                   descriptionTitle: Text.rich(
                                     style: TextStyle(fontSize: 14.sp),
                                     TextSpan(
@@ -164,6 +171,7 @@ class PostPage extends StatelessWidget {
                               accountId: accountId,
                               publicKey: publicKey,
                               privateKey: privateKey,
+                              postsViewMode: postsViewMode,
                             );
                           } catch (err) {
                             final exc = AppExceptions(
@@ -235,6 +243,7 @@ class PostPage extends StatelessWidget {
                                   accountId: accountId,
                                   publicKey: publicKey,
                                   privateKey: privateKey,
+                                  postsViewMode: postsViewMode,
                                 );
                               } catch (err) {
                                 final exc = AppExceptions(
@@ -274,6 +283,7 @@ class PostPage extends StatelessWidget {
                           (comment) => CommentCard(
                             comment: comment,
                             post: post,
+                            postsViewMode: postsViewMode,
                           ),
                         )
                         .toList()

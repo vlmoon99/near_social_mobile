@@ -16,8 +16,9 @@ import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 
 class PostCard extends StatelessWidget {
-  const PostCard({super.key, required this.post});
+  const PostCard({super.key, required this.post, required this.postsViewMode});
   final Post post;
+  final PostsViewMode postsViewMode;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,7 @@ class PostCard extends StatelessWidget {
       onTap: () {
         HapticFeedback.lightImpact();
         Modular.to.pushNamed(
-          ".${Routes.home.postPage}?accountId=${post.authorInfo.accountId}&blockHeight=${post.blockHeight}",
+          ".${Routes.home.postPage}?accountId=${post.authorInfo.accountId}&blockHeight=${post.blockHeight}&postsViewMode=${postsViewMode.index}",
         );
       },
       child: Card(
@@ -137,6 +138,7 @@ class PostCard extends StatelessWidget {
                           accountId: accountId,
                           publicKey: publicKey,
                           privateKey: privateKey,
+                          postsViewMode: postsViewMode,
                         );
                       } catch (err) {
                         final exc = AppExceptions(
@@ -205,6 +207,7 @@ class PostCard extends StatelessWidget {
                               accountId: accountId,
                               publicKey: publicKey,
                               privateKey: privateKey,
+                              postsViewMode: postsViewMode,
                             );
                           } catch (err) {
                             final exc = AppExceptions(

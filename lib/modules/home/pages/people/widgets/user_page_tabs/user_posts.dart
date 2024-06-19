@@ -55,6 +55,7 @@ class _UserPostsViewState extends State<UserPostsView> {
                                     await Modular.get<PostsController>()
                                         .loadMorePosts(
                                   postsOfAccountId: widget.accountIdOfUser,
+                                  postsViewMode: PostsViewMode.account,
                                 );
                                 if (posts.isEmpty) {
                                   setState(() {
@@ -76,6 +77,7 @@ class _UserPostsViewState extends State<UserPostsView> {
             }
             return PostCard(
               post: posts[index],
+              postsViewMode: PostsViewMode.account,
             );
           },
           itemCount: posts.length + 1,

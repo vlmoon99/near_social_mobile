@@ -23,10 +23,12 @@ class PostsController {
     timeout: const Duration(milliseconds: 1000),
   );
 
-  Future<void> loadPosts({String? postsOfAccountId}) async {
+  Future<void> loadPosts(
+      {String? postsOfAccountId, required PostsViewMode postsViewMode}) async {
     try {
       _streamController.add(
-        state.copyWith(status: PostLoadingStatus.loading),
+        state.copyWith(
+            status: PostLoadingStatus.loading, postsViewMode: postsViewMode),
       );
 
       late final List<Post> posts;
@@ -36,14 +38,21 @@ class PostsController {
           targetAccounts: [postsOfAccountId],
           limit: 10,
         );
+        if (state.postsViewMode != postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: posts,
             mainPosts: state.posts,
             status: PostLoadingStatus.loaded,
+            postsViewMode: postsViewMode,
           ),
         );
       } else {
+        if (state.postsViewMode != postsViewMode) {
+          return;
+        }
         posts = await nearSocialApi.getPosts();
         _streamController.add(
           state.copyWith(
@@ -56,7 +65,7 @@ class PostsController {
       for (var indexOfPost = 0;
           indexOfPost < state.posts.length;
           indexOfPost++) {
-        _loadPostsDataAsync(indexOfPost);
+        _loadPostsDataAsync(indexOfPost, postsViewMode);
       }
     } catch (err) {
       rethrow;
@@ -64,30 +73,38 @@ class PostsController {
   }
 
   Future<void> changePostsChannelToMain(String accountId) async {
-    _streamController.add(
-      state.copyWith(
-        posts: state.mainPosts,
-        postsOfAccounts: Map.of(state.postsOfAccounts)
-          ..[accountId] = state.posts,
-        mainPosts: [],
-      ),
-    );
-  }
-
-  Future<void> changePostsChannelToAccount(String accountId) async {
-    if (state.postsOfAccounts[accountId] == null) {
-      await loadPosts(postsOfAccountId: accountId);
-    } else {
+    if (state.postsViewMode == PostsViewMode.account) {
       _streamController.add(
         state.copyWith(
-          posts: state.postsOfAccounts[accountId]!,
-          mainPosts: state.posts,
+          posts: state.mainPosts,
+          postsOfAccounts: Map.of(state.postsOfAccounts)
+            ..[accountId] = state.posts,
+          mainPosts: [],
+          postsViewMode: PostsViewMode.main,
         ),
       );
     }
   }
 
-  Future<List<Post>> loadMorePosts({String? postsOfAccountId}) async {
+  Future<void> changePostsChannelToAccount(String accountId) async {
+    if (state.postsOfAccounts[accountId] == null) {
+      await loadPosts(
+          postsOfAccountId: accountId, postsViewMode: PostsViewMode.account);
+    } else {
+      _streamController.add(
+        state.copyWith(
+          posts: state.postsOfAccounts[accountId]!,
+          mainPosts: state.posts,
+          postsViewMode: PostsViewMode.account,
+        ),
+      );
+      await updatePostsOfAccount(
+          postsOfAccountId: accountId, postsViewMode: PostsViewMode.account);
+    }
+  }
+
+  Future<List<Post>> loadMorePosts(
+      {String? postsOfAccountId, required PostsViewMode postsViewMode}) async {
     try {
       log("Loading more posts");
       _streamController.add(
@@ -131,7 +148,7 @@ class PostsController {
       for (var indexOfPost = (state.posts.length - posts.length - 1);
           indexOfPost < state.posts.length;
           indexOfPost++) {
-        _loadPostsDataAsync(indexOfPost);
+        _loadPostsDataAsync(indexOfPost, postsViewMode);
       }
 
       return posts;
@@ -146,7 +163,9 @@ class PostsController {
   }
 
   Future<void> loadCommentsOfPost(
-      {required String accountId, required int blockHeight}) async {
+      {required String accountId,
+      required int blockHeight,
+      required PostsViewMode postsViewMode}) async {
     try {
       final int indexOfPost = state.posts.indexWhere((element) {
         return element.blockHeight == blockHeight &&
@@ -157,7 +176,9 @@ class PostsController {
         accountId: accountId,
         blockHeight: blockHeight,
       );
-
+      if (state.postsViewMode != postsViewMode) {
+        return;
+      }
       _streamController.add(
         state.copyWith(
           posts: List.of(state.posts)
@@ -169,7 +190,7 @@ class PostsController {
       for (var indexOfComment = 0;
           indexOfComment < commentsOfPost.length;
           indexOfComment++) {
-        _loadCommentsDataAsync(indexOfPost, indexOfComment);
+        _loadCommentsDataAsync(indexOfPost, indexOfComment, postsViewMode);
       }
       // }
     } catch (err) {
@@ -178,7 +199,9 @@ class PostsController {
   }
 
   Future<void> updateCommentsOfPost(
-      {required String accountId, required int blockHeight}) async {
+      {required String accountId,
+      required int blockHeight,
+      required PostsViewMode postsViewMode}) async {
     final int indexOfPost = state.posts.indexWhere((element) {
       return element.blockHeight == blockHeight &&
           element.authorInfo.accountId == accountId;
@@ -187,6 +210,10 @@ class PostsController {
       accountId: accountId,
       blockHeight: blockHeight,
     );
+
+    if (state.postsViewMode != postsViewMode) {
+      return;
+    }
 
     commentsOfPost.removeWhere(
       (comment) => state.posts[indexOfPost].commentList!.any(
@@ -208,12 +235,12 @@ class PostsController {
     );
 
     for (var i = 0; i < state.posts[indexOfPost].commentList!.length; i++) {
-      _loadCommentsDataAsync(indexOfPost, i);
+      _loadCommentsDataAsync(indexOfPost, i, postsViewMode);
     }
   }
 
   Future<void> _loadCommentsDataAsync(
-      int indexOfPost, int indexOfComment) async {
+      int indexOfPost, int indexOfComment, PostsViewMode postsViewMode) async {
     final Comment comment =
         state.posts[indexOfPost].commentList![indexOfComment];
 
@@ -224,6 +251,9 @@ class PostsController {
     )
         .then(
       (commentBody) {
+        if (state.postsViewMode != postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -243,6 +273,9 @@ class PostsController {
       blockHeight: comment.blockHeight,
     )
         .then((date) {
+      if (state.postsViewMode != postsViewMode) {
+        return;
+      }
       _streamController.add(
         state.copyWith(
           posts: List.of(state.posts)
@@ -263,6 +296,9 @@ class PostsController {
     )
         .then(
       (likes) {
+        if (state.postsViewMode != postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -278,7 +314,9 @@ class PostsController {
     );
   }
 
-  Future<void> updatePostsOfAccount({required String postsOfAccountId}) async {
+  Future<void> updatePostsOfAccount(
+      {required String postsOfAccountId,
+      required PostsViewMode postsViewMode}) async {
     try {
       final newPosts = await nearSocialApi.getPosts(
         targetAccounts: [postsOfAccountId],
@@ -293,7 +331,9 @@ class PostsController {
               element.reposterInfo == post.reposterInfo,
         ),
       );
-
+      if (state.postsViewMode != postsViewMode) {
+        return;
+      }
       _streamController.add(
         state.copyWith(
           posts: [...newPosts, ...state.posts],
@@ -303,14 +343,15 @@ class PostsController {
       for (var indexOfPost = 0;
           indexOfPost < state.posts.length;
           indexOfPost++) {
-        _loadPostsDataAsync(indexOfPost);
+        _loadPostsDataAsync(indexOfPost, postsViewMode);
       }
     } catch (err) {
       rethrow;
     }
   }
 
-  Future<void> _loadPostsDataAsync(int indexOfPost) async {
+  Future<void> _loadPostsDataAsync(
+      int indexOfPost, PostsViewMode postsViewMode) async {
     if (indexOfPost > state.posts.length) {
       return;
     }
@@ -323,6 +364,9 @@ class PostsController {
     )
         .then(
       (postBody) {
+        if (postsViewMode != state.postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -336,6 +380,9 @@ class PostsController {
     await nearSocialApi
         .getGeneralAccountInfo(accountId: post.authorInfo.accountId)
         .then((authorInfo) {
+      if (postsViewMode != state.postsViewMode) {
+        return;
+      }
       _streamController.add(
         state.copyWith(
           posts: List.of(state.posts)
@@ -348,6 +395,9 @@ class PostsController {
       await nearSocialApi
           .getGeneralAccountInfo(accountId: post.reposterInfo!.accountId)
           .then((authorInfo) {
+        if (postsViewMode != state.postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -363,6 +413,9 @@ class PostsController {
         blockHeight: post.reposterInfo!.blockHeight,
       )
           .then((date) {
+        if (postsViewMode != state.postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -374,6 +427,9 @@ class PostsController {
       await nearSocialApi
           .getDateOfBlockHeight(blockHeight: post.blockHeight)
           .then((date) {
+        if (postsViewMode != state.postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -387,6 +443,9 @@ class PostsController {
         .getLikesOfPost(
             accountId: post.authorInfo.accountId, blockHeight: post.blockHeight)
         .then((likes) {
+      if (postsViewMode != state.postsViewMode) {
+        return;
+      }
       _streamController.add(
         state.copyWith(
           posts: List.of(state.posts)
@@ -400,6 +459,9 @@ class PostsController {
         .getRepostsOfPost(
             accountId: post.authorInfo.accountId, blockHeight: post.blockHeight)
         .then((reposts) {
+      if (postsViewMode != state.postsViewMode) {
+        return;
+      }
       _streamController.add(
         state.copyWith(
           posts: List.of(state.posts)
@@ -416,6 +478,7 @@ class PostsController {
     required String accountId,
     required String publicKey,
     required String privateKey,
+    required PostsViewMode postsViewMode,
   }) async {
     final isLiked =
         post.likeList.any((element) => element.accountId == accountId);
@@ -436,6 +499,9 @@ class PostsController {
             privateKey: privateKey,
           ),
         );
+        if (state.postsViewMode != postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -455,6 +521,9 @@ class PostsController {
             privateKey: privateKey,
           ),
         );
+        if (state.postsViewMode != postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -469,6 +538,9 @@ class PostsController {
       }
     } catch (err) {
       if (isLiked) {
+        if (state.postsViewMode != postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -481,6 +553,9 @@ class PostsController {
           ),
         );
       } else {
+        if (state.postsViewMode != postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -501,6 +576,7 @@ class PostsController {
     required String accountId,
     required String publicKey,
     required String privateKey,
+    required PostsViewMode postsViewMode,
   }) async {
     final indexOfPost = state.posts.indexWhere(
       (element) =>
@@ -527,6 +603,9 @@ class PostsController {
             privateKey: privateKey,
           ),
         );
+        if (state.postsViewMode != postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -553,6 +632,9 @@ class PostsController {
           ),
         );
       }
+      if (state.postsViewMode != postsViewMode) {
+        return;
+      }
       _streamController.add(
         state.copyWith(
           posts: List.of(state.posts)
@@ -571,6 +653,9 @@ class PostsController {
       );
     } catch (err) {
       if (isLiked) {
+        if (state.postsViewMode != postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -589,6 +674,9 @@ class PostsController {
           ),
         );
       } else {
+        if (state.postsViewMode != postsViewMode) {
+          return;
+        }
         _streamController.add(
           state.copyWith(
             posts: List.of(state.posts)
@@ -614,6 +702,7 @@ class PostsController {
     required String accountId,
     required String publicKey,
     required String privateKey,
+    required PostsViewMode postsViewMode,
   }) async {
     if (post.repostList.any((element) => element.accountId == accountId)) {
       return;
@@ -634,6 +723,9 @@ class PostsController {
           privateKey: privateKey,
         ),
       );
+      if (state.postsViewMode != postsViewMode) {
+        return;
+      }
       _streamController.add(
         state.copyWith(
           posts: List.of(state.posts)
@@ -646,6 +738,9 @@ class PostsController {
         ),
       );
     } catch (err) {
+      if (state.postsViewMode != postsViewMode) {
+        return;
+      }
       _streamController.add(
         state.copyWith(
           posts: List.of(state.posts)
@@ -667,18 +762,22 @@ enum PostLoadingStatus {
   loaded,
 }
 
+enum PostsViewMode { main, account }
+
 @immutable
 class Posts {
   final List<Post> posts;
   final List<Post> mainPosts;
   final Map<String, dynamic> postsOfAccounts;
   final PostLoadingStatus status;
+  final PostsViewMode postsViewMode;
 
   const Posts({
     this.posts = const [],
     this.mainPosts = const [],
     this.postsOfAccounts = const {},
     this.status = PostLoadingStatus.initial,
+    this.postsViewMode = PostsViewMode.main,
   });
 
   Posts copyWith({
@@ -686,12 +785,14 @@ class Posts {
     List<Post>? mainPosts,
     Map<String, dynamic>? postsOfAccounts,
     PostLoadingStatus? status,
+    PostsViewMode? postsViewMode,
   }) {
     return Posts(
       posts: posts ?? this.posts,
       postsOfAccounts: postsOfAccounts ?? this.postsOfAccounts,
       mainPosts: mainPosts ?? this.mainPosts,
       status: status ?? this.status,
+      postsViewMode: postsViewMode ?? this.postsViewMode,
     );
   }
 
@@ -703,5 +804,6 @@ class Posts {
           listEquals(posts, other.posts) &&
           listEquals(mainPosts, other.mainPosts) &&
           mapEquals(postsOfAccounts, other.postsOfAccounts) &&
-          status == other.status;
+          status == other.status &&
+          postsViewMode == other.postsViewMode;
 }

@@ -172,7 +172,8 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
                     ),
                   )
                       .then((_) {
-                    Modular.get<PostsController>().loadPosts();
+                    Modular.get<PostsController>()
+                        .loadPosts(postsViewMode: PostsViewMode.main);
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
