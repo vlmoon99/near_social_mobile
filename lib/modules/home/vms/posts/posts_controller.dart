@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
+import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/like.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
@@ -72,14 +73,23 @@ class PostsController {
     }
   }
 
-  Future<void> changePostsChannelToMain(String accountId) async {
+  void changePostsChannelToMain([String? accountId]) async {
     if (state.postsViewMode == PostsViewMode.account) {
       _streamController.add(
         state.copyWith(
           posts: state.mainPosts,
           postsOfAccounts: Map.of(state.postsOfAccounts)
-            ..[accountId] = state.posts,
+            ..[accountId!] = state.posts,
           mainPosts: [],
+          postsViewMode: PostsViewMode.main,
+        ),
+      );
+    }
+    if (state.postsViewMode == PostsViewMode.temporary) {
+      _streamController.add(
+        state.copyWith(
+          posts: state.mainPosts,
+          temporaryPosts: state.posts,
           postsViewMode: PostsViewMode.main,
         ),
       );
@@ -101,6 +111,63 @@ class PostsController {
       await updatePostsOfAccount(
           postsOfAccountId: accountId, postsViewMode: PostsViewMode.account);
     }
+  }
+
+  void changePostsChannelToTemporary() async {
+    _streamController.add(
+      state.copyWith(
+        posts: state.temporaryPosts,
+        mainPosts: state.posts,
+        postsViewMode: PostsViewMode.temporary,
+      ),
+    );
+  }
+
+  Future<void> loadAndAddSinglePostIfNotExistToTempList({
+    required GeneralAccountInfo accountInfo,
+    required int blockHeight,
+  }) async {
+    if (state.temporaryPosts.length > 1 &&
+        state.temporaryPosts.any((element) =>
+            element.blockHeight == blockHeight &&
+            element.authorInfo.accountId == accountInfo.accountId)) {
+      return;
+    }
+
+    final postBody = await nearSocialApi.getPostContent(
+      accountId: accountInfo.accountId,
+      blockHeight: blockHeight,
+    );
+
+    final data = await nearSocialApi.getDateOfBlockHeight(
+      blockHeight: blockHeight,
+    );
+
+    final likeList = await nearSocialApi.getLikesOfPost(
+        accountId: accountInfo.accountId, blockHeight: blockHeight);
+
+    final repostList = await nearSocialApi.getRepostsOfPost(
+        accountId: accountInfo.accountId, blockHeight: blockHeight);
+
+    // if (state.postsViewMode != PostsViewMode.temporary) {
+    //   return;
+    // }
+    _streamController.add(
+      state.copyWith(
+        temporaryPosts: [
+          Post(
+            authorInfo: accountInfo,
+            postBody: postBody,
+            likeList: likeList,
+            repostList: repostList,
+            blockHeight: blockHeight,
+            date: data,
+            commentList: null,
+          ),
+          ...state.temporaryPosts
+        ],
+      ),
+    );
   }
 
   Future<List<Post>> loadMorePosts(
@@ -762,11 +829,12 @@ enum PostLoadingStatus {
   loaded,
 }
 
-enum PostsViewMode { main, account }
+enum PostsViewMode { main, account, temporary }
 
 @immutable
 class Posts {
   final List<Post> posts;
+  final List<Post> temporaryPosts;
   final List<Post> mainPosts;
   final Map<String, dynamic> postsOfAccounts;
   final PostLoadingStatus status;
@@ -775,6 +843,7 @@ class Posts {
   const Posts({
     this.posts = const [],
     this.mainPosts = const [],
+    this.temporaryPosts = const [],
     this.postsOfAccounts = const {},
     this.status = PostLoadingStatus.initial,
     this.postsViewMode = PostsViewMode.main,
@@ -783,6 +852,7 @@ class Posts {
   Posts copyWith({
     List<Post>? posts,
     List<Post>? mainPosts,
+    List<Post>? temporaryPosts,
     Map<String, dynamic>? postsOfAccounts,
     PostLoadingStatus? status,
     PostsViewMode? postsViewMode,
@@ -791,6 +861,7 @@ class Posts {
       posts: posts ?? this.posts,
       postsOfAccounts: postsOfAccounts ?? this.postsOfAccounts,
       mainPosts: mainPosts ?? this.mainPosts,
+      temporaryPosts: temporaryPosts ?? this.temporaryPosts,
       status: status ?? this.status,
       postsViewMode: postsViewMode ?? this.postsViewMode,
     );
@@ -803,6 +874,7 @@ class Posts {
           runtimeType == other.runtimeType &&
           listEquals(posts, other.posts) &&
           listEquals(mainPosts, other.mainPosts) &&
+          listEquals(temporaryPosts, other.temporaryPosts) &&
           mapEquals(postsOfAccounts, other.postsOfAccounts) &&
           status == other.status &&
           postsViewMode == other.postsViewMode;

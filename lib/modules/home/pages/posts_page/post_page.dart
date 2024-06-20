@@ -56,11 +56,14 @@ class PostPage extends StatelessWidget {
         child: StreamBuilder(
             stream: postsController.stream,
             builder: (context, snapshot) {
-              final post = postsController.state.posts.firstWhere(
-                (element) =>
-                    element.blockHeight == blockHeight &&
-                    element.authorInfo.accountId == accountId,
-              );
+              if (!postsController.state.posts.any((element) =>
+                  element.blockHeight == blockHeight &&
+                  element.authorInfo.accountId == accountId)) {
+                return const SizedBox();
+              }
+              final post = postsController.state.posts.firstWhere((element) =>
+                  element.blockHeight == blockHeight &&
+                  element.authorInfo.accountId == accountId);
               return ListView(
                 padding: REdgeInsets.all(15),
                 children: [

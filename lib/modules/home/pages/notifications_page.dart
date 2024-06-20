@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart' hide Notification;
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -6,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/modules/home/apis/models/notification.dart';
 import 'package:near_social_mobile/modules/home/vms/notifications/notifications_controller.dart';
+import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
@@ -59,6 +63,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
       }
     });
     super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    Modular.get<PostsController>().changePostsChannelToMain();
+    super.dispose();
   }
 
   @override
@@ -129,77 +139,231 @@ class _NotificationsPageState extends State<NotificationsPage> {
               }
               final notification =
                   notificationsController.state.notifications[index];
-              return ListTile(
-                onTap: () async {
-                  HapticFeedback.lightImpact();
-                  await Modular.get<UserListController>()
-                      .addGeneralAccountInfoIfNotExists(
-                          generalAccountInfo: notification.authorInfo);
-                  Modular.to.pushNamed(
-                    ".${Routes.home.userPage}?accountId=${notification.authorInfo.accountId}",
-                  );
-                },
-                leading: Container(
-                  width: 40.w,
-                  height: 40.w,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: NearNetworkImage(
-                    imageUrl: notification.authorInfo.profileImageLink,
-                    errorPlaceholder: Image.asset(
-                      NearAssets.standartAvatar,
-                      fit: BoxFit.cover,
-                    ),
-                    placeholder: Stack(
-                      children: [
-                        Image.asset(
-                          NearAssets.standartAvatar,
-                          fit: BoxFit.cover,
-                        ),
-                        const Positioned.fill(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 6,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                title: Text.rich(
-                  TextSpan(text: notification.authorInfo.name, children: [
-                    TextSpan(
-                      text: " @${notification.authorInfo.accountId}",
-                      style: const TextStyle(color: Colors.grey),
-                    )
-                  ]),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      getFullActionDescription(notification),
-                      style: TextStyle(fontSize: 16.sp),
-                    ),
-                    SizedBox(width: 10.w),
-                    Text(
-                      DateFormat('hh:mm a MMM dd, yyyy')
-                          .format(notification.date),
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 12.sp,
-                      ),
-                    )
-                  ],
-                ),
-              );
+              return NotificationTile(notification: notification);
             },
             itemCount: notificationsController.state.notifications.length + 1,
           ),
         );
       },
     );
+  }
+}
+
+class NotificationTile extends StatefulWidget {
+  const NotificationTile({
+    super.key,
+    required this.notification,
+  });
+
+  final Notification notification;
+
+  @override
+  State<NotificationTile> createState() => _NotificationTileState();
+}
+
+class _NotificationTileState extends State<NotificationTile> {
+  bool loadingPost = false;
+
+  String getFullActionDescription(Notification notification) {
+    switch (notification.notificationType.type) {
+      case NotificationTypes.mention:
+        return "mentioned you in ${notification.notificationType.data["path"]}";
+      case NotificationTypes.star:
+        return "starred your ${notification.notificationType.data["path"]}";
+      case NotificationTypes.poke:
+        return "poked you";
+      case NotificationTypes.like:
+        return "liked your post ${notification.notificationType.data["blockHeight"]}";
+      case NotificationTypes.comment:
+        return "commented your post ${notification.notificationType.data["blockHeight"]}";
+      case NotificationTypes.follow:
+        return "followed you";
+      case NotificationTypes.unfollow:
+        return "unfollowed you";
+      case NotificationTypes.repost:
+        return "reposted your post ${notification.notificationType.data["blockHeight"]}";
+      case NotificationTypes.unknown:
+        return "unknown";
+    }
+  }
+
+  Future<void> loadPostToTempPostsList() async {
+    try {
+      setState(() {
+        loadingPost = true;
+      });
+      final userListController = Modular.get<UserListController>();
+      final AuthController authController = Modular.get<AuthController>();
+      final PostsController postsController = Modular.get<PostsController>();
+
+      if (userListController.state.loadingState == UserListState.loaded) {
+        final fullAccountInfo = userListController.state
+            .getUserByAccountId(accountId: authController.state.accountId);
+        await postsController.loadAndAddSinglePostIfNotExistToTempList(
+          accountInfo: fullAccountInfo.generalAccountInfo,
+          blockHeight: widget.notification.notificationType.data["blockHeight"],
+        );
+      } else {
+        final accountInfo = await userListController.nearSocialApi
+            .getGeneralAccountInfo(accountId: authController.state.accountId);
+
+        await postsController.loadAndAddSinglePostIfNotExistToTempList(
+          accountInfo: accountInfo,
+          blockHeight: widget.notification.notificationType.data["blockHeight"],
+        );
+      }
+    } catch (err) {
+      rethrow;
+    } finally {
+      if (mounted) {
+        setState(() {
+          loadingPost = false;
+        });
+      }
+    }
+  }
+
+  bool postIsLoaded(Posts posts) {
+    final accountId = Modular.get<AuthController>().state.accountId;
+    return posts.temporaryPosts.any(
+      (element) =>
+          element.blockHeight ==
+              widget.notification.notificationType.data["blockHeight"] &&
+          element.authorInfo.accountId == accountId,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final PostsController postsController = Modular.get<PostsController>();
+    return StreamBuilder(
+        stream: postsController.stream,
+        builder: (context, snapshot) {
+          return ListTile(
+            onTap: () async {
+              HapticFeedback.lightImpact();
+              await Modular.get<UserListController>()
+                  .addGeneralAccountInfoIfNotExists(
+                      generalAccountInfo: widget.notification.authorInfo);
+              Modular.to.pushNamed(
+                ".${Routes.home.userPage}?accountId=${widget.notification.authorInfo.accountId}",
+              );
+            },
+            leading: Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: NearNetworkImage(
+                imageUrl: widget.notification.authorInfo.profileImageLink,
+                errorPlaceholder: Image.asset(
+                  NearAssets.standartAvatar,
+                  fit: BoxFit.cover,
+                ),
+                placeholder: Stack(
+                  children: [
+                    Image.asset(
+                      NearAssets.standartAvatar,
+                      fit: BoxFit.cover,
+                    ),
+                    const Positioned.fill(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            title: Text.rich(
+              TextSpan(text: widget.notification.authorInfo.name, children: [
+                TextSpan(
+                  text: " @${widget.notification.authorInfo.accountId}",
+                  style: const TextStyle(color: Colors.grey),
+                )
+              ]),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LayoutBuilder(builder: (context, constraints) {
+                  return Row(
+                    children: [
+                      SizedBox(
+                        width: constraints.maxWidth * .8,
+                        child: Text.rich(
+                          softWrap: true,
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: getFullActionDescription(
+                                    widget.notification),
+                                style: TextStyle(fontSize: 16.sp),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      if (widget.notification.notificationType.type ==
+                              NotificationTypes.like ||
+                          widget.notification.notificationType.type ==
+                              NotificationTypes.repost ||
+                          widget.notification.notificationType.type ==
+                              NotificationTypes.comment)
+                        if (!loadingPost)
+                          IconButton(
+                            onPressed: () async {
+                              HapticFeedback.lightImpact();
+                              if (postIsLoaded(postsController.state)) {
+                                final AuthController authController =
+                                    Modular.get<AuthController>();
+                                Modular.get<PostsController>()
+                                    .changePostsChannelToTemporary();
+                                await Modular.to
+                                    .pushNamed(
+                                  ".${Routes.home.postPage}?accountId=${authController.state.accountId}&blockHeight=${widget.notification.notificationType.data["blockHeight"]}&postsViewMode=${PostsViewMode.temporary.index}",
+                                )
+                                    .then(
+                                  (_) {
+                                    Modular.get<PostsController>()
+                                        .changePostsChannelToMain();
+                                  },
+                                );
+                              } else {
+                                loadPostToTempPostsList();
+                              }
+                            },
+                            icon: const Icon(Icons.open_in_new),
+                            style: IconButton.styleFrom(
+                                visualDensity: VisualDensity.compact,
+                                foregroundColor:
+                                    postIsLoaded(postsController.state)
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Colors.black),
+                          )
+                        else
+                          const SpinnerLoadingIndicator(
+                            size: 20,
+                          ),
+                      const Spacer(),
+                    ],
+                  );
+                }),
+                SizedBox(width: 10.w),
+                Text(
+                  DateFormat('hh:mm a MMM dd, yyyy')
+                      .format(widget.notification.date),
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12.sp,
+                  ),
+                )
+              ],
+            ),
+          );
+        });
   }
 }
