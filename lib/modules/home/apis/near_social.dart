@@ -322,30 +322,35 @@ class NearSocialApi {
   }
 
   Set<Like> _convertToLikes(List<Map<String, dynamic>> data) {
-    Map<String, int> likeCounts = {};
-    Map<String, int> unlikeCounts = {};
+    Map<String, Map<String, dynamic>> lastRecordOfUser = {};
 
     for (var item in data) {
       String accountId = item["accountId"];
       String type = item["value"]["type"];
+      int blockHeight = item["blockHeight"];
 
-      if (type == "like") {
-        likeCounts[accountId] = (likeCounts[accountId] ?? 0) + 1;
-      } else if (type == "unlike") {
-        unlikeCounts[accountId] = (unlikeCounts[accountId] ?? 0) + 1;
+      if (lastRecordOfUser[accountId] == null) {
+        lastRecordOfUser[accountId] = {
+          "type": type,
+          "blockHeight": blockHeight
+        };
+      } else {
+        if (lastRecordOfUser[accountId]!["blockHeight"] < blockHeight) {
+          lastRecordOfUser[accountId] = {
+            "type": type,
+            "blockHeight": blockHeight
+          };
+        }
       }
     }
 
     Set<Like> result = {};
 
-    for (var accountId in likeCounts.keys) {
-      int likeCount = likeCounts[accountId] ?? 0;
-      int unlikeCount = unlikeCounts[accountId] ?? 0;
-
-      if (likeCount > unlikeCount) {
-        result.add(Like(accountId: accountId));
+    lastRecordOfUser.forEach((key, value) {
+      if (value["type"] == "like") {
+        result.add(Like(accountId: key));
       }
-    }
+    });
 
     return result;
   }
