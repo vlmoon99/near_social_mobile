@@ -10,6 +10,7 @@ import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
@@ -91,8 +92,24 @@ class CommentCard extends StatelessWidget {
               rawText: comment.commentBody.text.trim(),
             ),
             if (comment.commentBody.mediaLink != null) ...[
-              NearNetworkImage(
-                imageUrl: comment.commentBody.mediaLink!,
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  Navigator.push(
+                    Modular.routerDelegate.navigatorKey.currentContext!,
+                    MaterialPageRoute(
+                      builder: (context) => ImageFullScreen(
+                        imageUrl: comment.commentBody.mediaLink!,
+                      ),
+                    ),
+                  );
+                },
+                child: Hero(
+                  tag: comment.commentBody.mediaLink!,
+                  child: NearNetworkImage(
+                    imageUrl: comment.commentBody.mediaLink!,
+                  ),
+                ),
               ),
             ],
             Row(
