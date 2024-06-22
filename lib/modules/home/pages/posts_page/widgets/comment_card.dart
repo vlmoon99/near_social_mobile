@@ -15,11 +15,18 @@ import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 
 class CommentCard extends StatelessWidget {
-  const CommentCard({super.key, required this.comment, required this.post, required this.postsViewMode});
+  const CommentCard({
+    super.key,
+    required this.comment,
+    required this.post,
+    required this.postsViewMode,
+    this.postsOfAccountId,
+  });
 
   final Comment comment;
   final Post post;
   final PostsViewMode postsViewMode;
+  final String? postsOfAccountId;
 
   @override
   Widget build(BuildContext context) {
@@ -100,6 +107,7 @@ class CommentCard extends StatelessWidget {
                       builder: (context) {
                         return Dialog(
                           child: CreateCommentDialog(
+                            postsOfAccountId: postsOfAccountId,
                             postsViewMode: postsViewMode,
                             descriptionTitle: Text.rich(
                               style: TextStyle(fontSize: 14.sp),
@@ -140,6 +148,7 @@ class CommentCard extends StatelessWidget {
                       publicKey: authController.state.publicKey,
                       privateKey: authController.state.privateKey,
                       postsViewMode: postsViewMode,
+                      postsOfAccountId: postsOfAccountId,
                     );
                   },
                 ),

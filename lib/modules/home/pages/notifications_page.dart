@@ -66,12 +66,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   @override
-  void dispose() {
-    Modular.get<PostsController>().changePostsChannelToMain();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final NotificationsController notificationsController =
         Modular.get<NotificationsController>();
@@ -320,17 +314,8 @@ class _NotificationTileState extends State<NotificationTile> {
                               if (postIsLoaded(postsController.state)) {
                                 final AuthController authController =
                                     Modular.get<AuthController>();
-                                Modular.get<PostsController>()
-                                    .changePostsChannelToTemporary();
-                                await Modular.to
-                                    .pushNamed(
+                                await Modular.to.pushNamed(
                                   ".${Routes.home.postPage}?accountId=${authController.state.accountId}&blockHeight=${widget.notification.notificationType.data["blockHeight"]}&postsViewMode=${PostsViewMode.temporary.index}",
-                                )
-                                    .then(
-                                  (_) {
-                                    Modular.get<PostsController>()
-                                        .changePostsChannelToMain();
-                                  },
                                 );
                               } else {
                                 loadPostToTempPostsList();

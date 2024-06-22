@@ -19,12 +19,14 @@ class CreateCommentDialog extends StatefulWidget {
     required this.descriptionTitle,
     this.initialText = "",
     required this.postsViewMode,
+    this.postsOfAccountId,
   });
 
   final Post post;
   final Widget descriptionTitle;
   final String initialText;
   final PostsViewMode postsViewMode;
+  final String? postsOfAccountId;
 
   @override
   State<CreateCommentDialog> createState() => _CreateCommentDialogState();
@@ -188,6 +190,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                         accountId: widget.post.authorInfo.accountId,
                         blockHeight: widget.post.blockHeight,
                         postsViewMode: widget.postsViewMode,
+                        postsOfAccountId: widget.postsOfAccountId,
                       );
                     },
                   );

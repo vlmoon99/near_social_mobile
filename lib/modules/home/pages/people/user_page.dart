@@ -41,10 +41,8 @@ class _UserPageState extends State<UserPage>
         _generalProfileInfoTimer.pause();
         await Modular.get<UserListController>()
             .reloadUserInfo(accountId: widget.accountId);
-        await Modular.get<PostsController>().updatePostsOfAccount(
-          postsOfAccountId: widget.accountId,
-          postsViewMode: PostsViewMode.account,
-        );
+        await Modular.get<PostsController>()
+            .updatePostsOfAccount(postsOfAccountId: widget.accountId);
         _generalProfileInfoTimer.start();
       },
     );
@@ -160,19 +158,13 @@ class _UserPageState extends State<UserPage>
           .allMetadataLoaded) {
         await userListController.loadAdditionalMetadata(
             accountId: widget.accountId);
-        if (mounted) {
-          await postsController.changePostsChannelToAccount(
-            widget.accountId,
+        if (postsController.state.postsOfAccounts[widget.accountId] == null) {
+          await postsController.loadPosts(
+            postsViewMode: PostsViewMode.account,
+            postsOfAccountId: widget.accountId,
           );
-          _generalProfileInfoTimer.start();
         }
-      } else {
-        if (mounted) {
-          await postsController.changePostsChannelToAccount(
-            widget.accountId,
-          );
-          _generalProfileInfoTimer.start();
-        }
+        _generalProfileInfoTimer.start();
       }
     });
   }
@@ -182,9 +174,6 @@ class _UserPageState extends State<UserPage>
     _generalProfileInfoTimer.cancel();
     _nftsUpdatingTimer?.cancel();
     _widgetsUpdatingTimer?.cancel();
-    Modular.get<PostsController>().changePostsChannelToMain(
-      widget.accountId,
-    );
     super.dispose();
   }
 

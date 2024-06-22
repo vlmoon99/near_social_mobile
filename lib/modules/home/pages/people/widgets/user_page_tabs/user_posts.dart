@@ -28,10 +28,12 @@ class _UserPostsViewState extends State<UserPostsView> {
     return StreamBuilder(
       stream: postsController.stream,
       builder: (context, snapshot) {
-        final posts = postsController.state.posts;
-        if (postsController.state.mainPosts.isEmpty) {
+        if (postsController.state.postsOfAccounts[widget.accountIdOfUser] ==
+            null) {
           return const Center(child: SpinnerLoadingIndicator());
         }
+        final posts =
+            postsController.state.postsOfAccounts[widget.accountIdOfUser] ?? [];
         if (posts.isEmpty) {
           return const Center(child: Text('No posts yet'));
         }
@@ -78,6 +80,7 @@ class _UserPostsViewState extends State<UserPostsView> {
             return PostCard(
               post: posts[index],
               postsViewMode: PostsViewMode.account,
+              postsOfAccountId: widget.accountIdOfUser,
             );
           },
           itemCount: posts.length + 1,

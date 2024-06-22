@@ -97,15 +97,6 @@ class _ScaleAnimatedIconButtonState extends State<ScaleAnimatedIconButton>
                         width: widget.size.w,
                         height: widget.size.w,
                       )),
-            // icon: Transform.scale(
-            //   scale: _animation.value,
-            //   child: SvgPicture.asset(
-            //     widget.iconPath,
-            //     color: widget.activated ? widget.activatedColor : Colors.grey,
-            //     width: widget.size.w,
-            //     height: widget.size.w,
-            //   ),
-            // ),
             style: const ButtonStyle(
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),

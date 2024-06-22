@@ -17,22 +17,27 @@ import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 
 class PostPage extends StatelessWidget {
-  const PostPage(
-      {super.key,
-      required this.accountId,
-      required this.blockHeight,
-      required this.postsViewMode});
+  const PostPage({
+    super.key,
+    required this.accountId,
+    required this.blockHeight,
+    required this.postsViewMode,
+    String? postsOfAccountId,
+  }) : postsOfAccountId = postsOfAccountId == '' ? null : postsOfAccountId;
 
   final String accountId;
   final int blockHeight;
   final PostsViewMode postsViewMode;
+  final String? postsOfAccountId;
 
   @override
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
     final PostsController postsController = Modular.get<PostsController>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (postsController.state.posts.firstWhere((element) {
+      final posts = postsController.getPostsDueToPostsViewMode(
+          postsViewMode, postsOfAccountId);
+      if (posts.firstWhere((element) {
             return element.blockHeight == blockHeight &&
                 element.authorInfo.accountId == accountId;
           }).commentList ==
@@ -41,12 +46,14 @@ class PostPage extends StatelessWidget {
           accountId: accountId,
           blockHeight: blockHeight,
           postsViewMode: postsViewMode,
+          postsOfAccountId: postsOfAccountId,
         );
       } else {
         postsController.updateCommentsOfPost(
           accountId: accountId,
           blockHeight: blockHeight,
           postsViewMode: postsViewMode,
+          postsOfAccountId: postsOfAccountId,
         );
       }
     });
@@ -56,12 +63,9 @@ class PostPage extends StatelessWidget {
         child: StreamBuilder(
             stream: postsController.stream,
             builder: (context, snapshot) {
-              if (!postsController.state.posts.any((element) =>
-                  element.blockHeight == blockHeight &&
-                  element.authorInfo.accountId == accountId)) {
-                return const SizedBox();
-              }
-              final post = postsController.state.posts.firstWhere((element) =>
+              final posts = postsController.getPostsDueToPostsViewMode(
+                  postsViewMode, postsOfAccountId);
+              final post = posts.firstWhere((element) =>
                   element.blockHeight == blockHeight &&
                   element.authorInfo.accountId == accountId);
               return ListView(
@@ -131,6 +135,7 @@ class PostPage extends StatelessWidget {
                               return Dialog(
                                 child: CreateCommentDialog(
                                   postsViewMode: postsViewMode,
+                                  postsOfAccountId: postsOfAccountId,
                                   descriptionTitle: Text.rich(
                                     style: TextStyle(fontSize: 14.sp),
                                     TextSpan(
@@ -175,6 +180,7 @@ class PostPage extends StatelessWidget {
                               publicKey: publicKey,
                               privateKey: privateKey,
                               postsViewMode: postsViewMode,
+                              postsOfAccountId: postsOfAccountId,
                             );
                           } catch (err) {
                             final exc = AppExceptions(
@@ -247,6 +253,7 @@ class PostPage extends StatelessWidget {
                                   publicKey: publicKey,
                                   privateKey: privateKey,
                                   postsViewMode: postsViewMode,
+                                  postsOfAccountId: postsOfAccountId,
                                 );
                               } catch (err) {
                                 final exc = AppExceptions(
@@ -287,6 +294,7 @@ class PostPage extends StatelessWidget {
                             comment: comment,
                             post: post,
                             postsViewMode: postsViewMode,
+                            postsOfAccountId: postsOfAccountId,
                           ),
                         )
                         .toList()
