@@ -9,7 +9,9 @@ import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/comment
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_comment_dialog_body.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
+import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
@@ -71,30 +73,42 @@ class PostPage extends StatelessWidget {
               return ListView(
                 padding: REdgeInsets.all(15),
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 40.w,
-                        height: 40.w,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: NearNetworkImage(
-                          imageUrl: post.authorInfo.profileImageLink,
-                          errorPlaceholder: Image.asset(
-                            NearAssets.standartAvatar,
-                            fit: BoxFit.cover,
+                  InkWell(
+                    onTap: () async {
+                      HapticFeedback.lightImpact();
+                      await Modular.get<UserListController>()
+                          .addGeneralAccountInfoIfNotExists(
+                        generalAccountInfo: post.authorInfo,
+                      );
+                      Modular.to.pushNamed(
+                        ".${Routes.home.userPage}?accountId=${post.authorInfo.accountId}",
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40.w,
+                          height: 40.w,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: NearNetworkImage(
+                            imageUrl: post.authorInfo.profileImageLink,
+                            errorPlaceholder: Image.asset(
+                              NearAssets.standartAvatar,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(width: 10.w),
-                      Expanded(
-                        child: Text(
-                          "${post.authorInfo.name} @${post.authorInfo.accountId}",
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(
+                            "${post.authorInfo.name} @${post.authorInfo.accountId}",
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   SizedBox(height: 5.h),
                   RawTextToContentFormatter(

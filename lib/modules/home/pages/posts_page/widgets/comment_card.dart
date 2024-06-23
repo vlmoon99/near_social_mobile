@@ -9,7 +9,9 @@ import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_comment_dialog_body.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
+import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
@@ -49,43 +51,55 @@ class CommentCard extends StatelessWidget {
                 ),
               ),
             ),
-            Row(
-              children: [
-                Container(
-                  width: 40.w,
-                  height: 40.w,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: NearNetworkImage(
-                    imageUrl: comment.authorInfo.profileImageLink,
-                    errorPlaceholder: Image.asset(
-                      NearAssets.standartAvatar,
-                      fit: BoxFit.cover,
+            InkWell(
+              onTap: () async {
+                HapticFeedback.lightImpact();
+                await Modular.get<UserListController>()
+                    .addGeneralAccountInfoIfNotExists(
+                  generalAccountInfo: comment.authorInfo,
+                );
+                Modular.to.pushNamed(
+                  ".${Routes.home.userPage}?accountId=${comment.authorInfo.accountId}",
+                );
+              },
+              child: Row(
+                children: [
+                  Container(
+                    width: 40.w,
+                    height: 40.w,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
                     ),
-                    placeholder: Stack(
-                      children: [
-                        Image.asset(
-                          NearAssets.standartAvatar,
-                          fit: BoxFit.cover,
-                        ),
-                        const Positioned.fill(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 6,
+                    clipBehavior: Clip.antiAlias,
+                    child: NearNetworkImage(
+                      imageUrl: comment.authorInfo.profileImageLink,
+                      errorPlaceholder: Image.asset(
+                        NearAssets.standartAvatar,
+                        fit: BoxFit.cover,
+                      ),
+                      placeholder: Stack(
+                        children: [
+                          Image.asset(
+                            NearAssets.standartAvatar,
+                            fit: BoxFit.cover,
                           ),
-                        ),
-                      ],
+                          const Positioned.fill(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 6,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(width: 10.w),
-                Expanded(
-                  child: Text(
-                    "${comment.authorInfo.name} @${comment.authorInfo.accountId}",
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      "${comment.authorInfo.name} @${comment.authorInfo.accountId}",
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             SizedBox(height: 10.h),
             RawTextToContentFormatter(
