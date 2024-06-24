@@ -26,27 +26,68 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   bool allNotificationsLoaded = false;
   bool moreNotificationsLoading = false;
+  List<Map<String, int>> postsAddedToLoad = [];
 
-  String getFullActionDescription(Notification notification) {
-    switch (notification.notificationType.type) {
-      case NotificationTypes.mention:
-        return "mentioned you in ${notification.notificationType.data["path"]}";
-      case NotificationTypes.star:
-        return "starred your ${notification.notificationType.data["path"]}";
-      case NotificationTypes.poke:
-        return "poked you";
-      case NotificationTypes.like:
-        return "liked your post ${notification.notificationType.data["blockHeight"]}";
-      case NotificationTypes.comment:
-        return "commented your post ${notification.notificationType.data["blockHeight"]}";
-      case NotificationTypes.follow:
-        return "followed you";
-      case NotificationTypes.unfollow:
-        return "unfollowed you";
-      case NotificationTypes.repost:
-        return "reposter your post ${notification.notificationType.data["blockHeight"]}";
-      case NotificationTypes.unknown:
-        return "unknown";
+  Future<void> loadPostForNotificationTempList(
+      Notification notification) async {
+    final typeOfNotification = notification.notificationType.type;
+    if (!(typeOfNotification == NotificationTypes.like ||
+        typeOfNotification == NotificationTypes.repost ||
+        typeOfNotification == NotificationTypes.mention)) {
+      return;
+    }
+    final PostsController postsController = Modular.get<PostsController>();
+    final pathParts =
+        (notification.notificationType.data["path"] as String).split("/");
+    final String accountIdOfPost = pathParts.first;
+    final int blockHeightOfPost =
+        notification.notificationType.data["blockHeight"];
+
+    if (postsAddedToLoad.any(
+      (element) =>
+          element.keys.first == accountIdOfPost &&
+          element.values.first == blockHeightOfPost,
+    )) {
+      return;
+    }
+
+    postsAddedToLoad.add({accountIdOfPost: blockHeightOfPost});
+
+    if (postsController.state.temporaryPosts.any(
+      (element) =>
+          element.blockHeight == blockHeightOfPost &&
+          element.authorInfo.accountId == accountIdOfPost,
+    )) {
+      return;
+    }
+
+    final UserListController userListController =
+        Modular.get<UserListController>();
+
+    try {
+      if (userListController.state.loadingState == UserListState.loaded) {
+        final fullAccountInfo = userListController.state
+            .getUserByAccountId(accountId: accountIdOfPost);
+        await postsController.loadAndAddSinglePostIfNotExistToTempList(
+          accountInfo: fullAccountInfo.generalAccountInfo,
+          blockHeight: blockHeightOfPost,
+        );
+      } else {
+        final accountInfo = await userListController.nearSocialApi
+            .getGeneralAccountInfo(accountId: accountIdOfPost);
+
+        await postsController.loadAndAddSinglePostIfNotExistToTempList(
+          accountInfo: accountInfo,
+          blockHeight: blockHeightOfPost,
+        );
+      }
+    } catch (err) {
+      postsAddedToLoad.removeWhere(
+        (element) =>
+            element.keys.first == accountIdOfPost &&
+            element.values.first == blockHeightOfPost,
+      );
+      rethrow;
     }
   }
 
@@ -82,10 +123,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
           onRefresh: () async {
             final AuthController authController = Modular.get<AuthController>();
             final accountId = authController.state.accountId;
-            return notificationsController.loadNotifications(
+            await notificationsController.loadNotifications(
               accountId: accountId,
               loadingIndicator: false,
             );
+            for (var notification
+                in notificationsController.state.notifications) {
+              loadPostForNotificationTempList(notification);
+            }
           },
           child: ListView.builder(
             itemBuilder: (context, index) {
@@ -133,6 +178,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               }
               final notification =
                   notificationsController.state.notifications[index];
+              loadPostForNotificationTempList(notification);
               return NotificationTile(notification: notification);
             },
             itemCount: notificationsController.state.notifications.length + 1,
@@ -231,124 +277,120 @@ class _NotificationTileState extends State<NotificationTile> {
   Widget build(BuildContext context) {
     final PostsController postsController = Modular.get<PostsController>();
     return StreamBuilder(
-        stream: postsController.stream,
-        builder: (context, snapshot) {
-          return ListTile(
-            onTap: () async {
-              HapticFeedback.lightImpact();
-              await Modular.get<UserListController>()
-                  .addGeneralAccountInfoIfNotExists(
-                      generalAccountInfo: widget.notification.authorInfo);
-              Modular.to.pushNamed(
-                ".${Routes.home.userPage}?accountId=${widget.notification.authorInfo.accountId}",
-              );
-            },
-            leading: Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
+      stream: postsController.stream,
+      builder: (context, snapshot) {
+        return ListTile(
+          onTap: () async {
+            HapticFeedback.lightImpact();
+            await Modular.get<UserListController>()
+                .addGeneralAccountInfoIfNotExists(
+                    generalAccountInfo: widget.notification.authorInfo);
+            Modular.to.pushNamed(
+              ".${Routes.home.userPage}?accountId=${widget.notification.authorInfo.accountId}",
+            );
+          },
+          leading: Container(
+            width: 40.w,
+            height: 40.w,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: NearNetworkImage(
+              imageUrl: widget.notification.authorInfo.profileImageLink,
+              errorPlaceholder: Image.asset(
+                NearAssets.standartAvatar,
+                fit: BoxFit.cover,
               ),
-              clipBehavior: Clip.antiAlias,
-              child: NearNetworkImage(
-                imageUrl: widget.notification.authorInfo.profileImageLink,
-                errorPlaceholder: Image.asset(
-                  NearAssets.standartAvatar,
-                  fit: BoxFit.cover,
-                ),
-                placeholder: Stack(
+              placeholder: Stack(
+                children: [
+                  Image.asset(
+                    NearAssets.standartAvatar,
+                    fit: BoxFit.cover,
+                  ),
+                  const Positioned.fill(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 6,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          title: Text.rich(
+            TextSpan(text: widget.notification.authorInfo.name, children: [
+              TextSpan(
+                text: " @${widget.notification.authorInfo.accountId}",
+                style: const TextStyle(color: Colors.grey),
+              )
+            ]),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LayoutBuilder(builder: (context, constraints) {
+                return Row(
                   children: [
-                    Image.asset(
-                      NearAssets.standartAvatar,
-                      fit: BoxFit.cover,
-                    ),
-                    const Positioned.fill(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 6,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            title: Text.rich(
-              TextSpan(text: widget.notification.authorInfo.name, children: [
-                TextSpan(
-                  text: " @${widget.notification.authorInfo.accountId}",
-                  style: const TextStyle(color: Colors.grey),
-                )
-              ]),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                LayoutBuilder(builder: (context, constraints) {
-                  return Row(
-                    children: [
-                      SizedBox(
-                        width: constraints.maxWidth * .8,
-                        child: Text.rich(
-                          softWrap: true,
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: getFullActionDescription(
-                                    widget.notification),
-                                style: TextStyle(fontSize: 16.sp),
-                              ),
-                            ],
-                          ),
+                    SizedBox(
+                      width: constraints.maxWidth * .8,
+                      child: Text.rich(
+                        softWrap: true,
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text:
+                                  getFullActionDescription(widget.notification),
+                              style: TextStyle(fontSize: 16.sp),
+                            ),
+                          ],
                         ),
                       ),
-                      const Spacer(),
-                      if (widget.notification.notificationType.type ==
-                              NotificationTypes.like ||
-                          widget.notification.notificationType.type ==
-                              NotificationTypes.repost ||
-                          widget.notification.notificationType.type ==
-                              NotificationTypes.comment)
-                        if (!loadingPost)
-                          IconButton(
-                            onPressed: () async {
-                              HapticFeedback.lightImpact();
-                              if (postIsLoaded(postsController.state)) {
-                                final AuthController authController =
-                                    Modular.get<AuthController>();
-                                await Modular.to.pushNamed(
-                                  ".${Routes.home.postPage}?accountId=${authController.state.accountId}&blockHeight=${widget.notification.notificationType.data["blockHeight"]}&postsViewMode=${PostsViewMode.temporary.index}",
-                                );
-                              } else {
-                                loadPostToTempPostsList();
-                              }
-                            },
-                            icon: const Icon(Icons.open_in_new),
-                            style: IconButton.styleFrom(
-                                visualDensity: VisualDensity.compact,
-                                foregroundColor:
-                                    postIsLoaded(postsController.state)
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Colors.black),
-                          )
-                        else
-                          const SpinnerLoadingIndicator(
-                            size: 20,
+                    ),
+                    const Spacer(),
+                    if (widget.notification.notificationType.type ==
+                            NotificationTypes.like ||
+                        widget.notification.notificationType.type ==
+                            NotificationTypes.repost ||
+                        widget.notification.notificationType.type ==
+                            NotificationTypes.comment)
+                      if (postIsLoaded(postsController.state))
+                        IconButton(
+                          onPressed: () async {
+                            HapticFeedback.lightImpact();
+                            final AuthController authController =
+                                Modular.get<AuthController>();
+                            await Modular.to.pushNamed(
+                              ".${Routes.home.postPage}?accountId=${authController.state.accountId}&blockHeight=${widget.notification.notificationType.data["blockHeight"]}&postsViewMode=${PostsViewMode.temporary.index}",
+                            );
+                          },
+                          icon: const Icon(Icons.open_in_new),
+                          style: IconButton.styleFrom(
+                            visualDensity: VisualDensity.compact,
+                            foregroundColor:
+                                Theme.of(context).colorScheme.primary,
                           ),
-                      const Spacer(),
-                    ],
-                  );
-                }),
-                SizedBox(width: 10.w),
-                Text(
-                  DateFormat('hh:mm a MMM dd, yyyy')
-                      .format(widget.notification.date),
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 12.sp,
-                  ),
-                )
-              ],
-            ),
-          );
-        });
+                        )
+                      else
+                        const SpinnerLoadingIndicator(
+                          size: 20,
+                        ),
+                    const Spacer(),
+                  ],
+                );
+              }),
+              SizedBox(width: 10.w),
+              Text(
+                DateFormat('hh:mm a MMM dd, yyyy')
+                    .format(widget.notification.date),
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 12.sp,
+                ),
+              )
+            ],
+          ),
+        );
+      },
+    );
   }
 }
