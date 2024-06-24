@@ -130,7 +130,7 @@ class _UserPageState extends State<UserPage>
                 () async {
                   _widgetsUpdatingTimer?.pause();
                   if (user.widgetList != null) {
-                    userListController.loadWidgetsOfAccount(
+                    await userListController.loadWidgetsOfAccount(
                       accountId: widget.accountId,
                     );
                   }
