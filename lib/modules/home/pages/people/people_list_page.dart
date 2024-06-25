@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/config/constants.dart';
@@ -12,6 +13,7 @@ import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.d
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class PeopleListPage extends StatefulWidget {
   const PeopleListPage({super.key});
@@ -38,16 +40,7 @@ class _PeopleListPageState extends State<PeopleListPage> {
       final UserListController userListController =
           Modular.get<UserListController>();
       if (userListController.state.loadingState == UserListState.initial) {
-        runZonedGuarded(() {
-          userListController.loadUsers();
-        }, (error, stack) {
-          final AppExceptions appException = AppExceptions(
-            messageForUser: "Error occurred. Please try later.",
-            messageForDev: error.toString(),
-            statusCode: AppErrorCodes.nearSocialApiError,
-          );
-          Modular.get<Catcher>().exceptionsHandler.add(appException);
-        });
+        userListController.loadUsers();
       }
     });
   }
@@ -67,7 +60,7 @@ class _PeopleListPageState extends State<PeopleListPage> {
           stream: userListController.stream,
           builder: (context, snapshot) {
             if (userListController.state.loadingState != UserListState.loaded) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: SpinnerLoadingIndicator());
             }
             final users = searchController.text != ""
                 ? userListController.state.users
@@ -108,6 +101,7 @@ class _PeopleListPageState extends State<PeopleListPage> {
                 final user = users[index - 1];
                 return ListTile(
                   onTap: () {
+                    HapticFeedback.lightImpact();
                     Modular.to.pushNamed(
                       ".${Routes.home.userPage}?accountId=${user.generalAccountInfo.accountId}",
                     );
@@ -121,9 +115,22 @@ class _PeopleListPageState extends State<PeopleListPage> {
                     clipBehavior: Clip.antiAlias,
                     child: NearNetworkImage(
                       imageUrl: user.generalAccountInfo.profileImageLink,
-                      placeholder: Image.asset(
+                      errorPlaceholder: Image.asset(
                         NearAssets.standartAvatar,
                         fit: BoxFit.cover,
+                      ),
+                      placeholder: Stack(
+                        children: [
+                          Image.asset(
+                            NearAssets.standartAvatar,
+                            fit: BoxFit.cover,
+                          ),
+                          const Positioned.fill(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 6,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

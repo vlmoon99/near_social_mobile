@@ -1,13 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/near_widget_info.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widgets/near_widget_tile.dart';
 import 'package:near_social_mobile/modules/home/vms/near_widgets/near_widgets_controller.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class NearWidgetListPage extends StatefulWidget {
   const NearWidgetListPage({super.key});
@@ -24,16 +21,7 @@ class _NearWidgetListPageState extends State<NearWidgetListPage> {
       final NearWidgetsController nearWidgetsController =
           Modular.get<NearWidgetsController>();
       if (nearWidgetsController.state.status == NearWidgetStatus.initial) {
-        runZonedGuarded(() {
-          nearWidgetsController.getNearWidgets();
-        }, (error, stack) {
-          final AppExceptions appException = AppExceptions(
-            messageForUser: "Error occurred. Please try later.",
-            messageForDev: error.toString(),
-            statusCode: AppErrorCodes.nearSocialApiError,
-          );
-          Modular.get<Catcher>().exceptionsHandler.add(appException);
-        });
+        nearWidgetsController.getNearWidgets();
       }
     });
   }
@@ -62,7 +50,7 @@ class _NearWidgetListPageState extends State<NearWidgetListPage> {
           stream: nearWidgetsController.stream,
           builder: (context, _) {
             if (nearWidgetsController.state.status != NearWidgetStatus.loaded) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: SpinnerLoadingIndicator());
             }
             final List<NearWidgetInfo> nearWidgets = searchController.text != ""
                 ? nearWidgetsController.state.widgetList
@@ -109,4 +97,3 @@ class _NearWidgetListPageState extends State<NearWidgetListPage> {
     );
   }
 }
-

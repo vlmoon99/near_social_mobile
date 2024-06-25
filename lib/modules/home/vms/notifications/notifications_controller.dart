@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart' hide Notification;
 import 'package:near_social_mobile/modules/home/apis/models/notification.dart';

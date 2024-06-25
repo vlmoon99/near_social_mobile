@@ -1,5 +1,4 @@
 class SecureStorageKeys {
-  static const exceptions = 'exceptions';
   static const authInfo = 'auth_info';
   static const cryptographicKey = 'cryptographic_key';
   static const additionalCryptographicKeys = 'additional_cryptographic_keys';

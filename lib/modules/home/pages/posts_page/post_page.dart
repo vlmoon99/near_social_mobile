@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -9,40 +7,57 @@ import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/comment_card.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_comment_dialog_body.dart';
+import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
+import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/routes/routes.dart';
+import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 
 class PostPage extends StatelessWidget {
-  const PostPage(
-      {super.key, required this.accountId, required this.blockHeight});
+  const PostPage({
+    super.key,
+    required this.accountId,
+    required this.blockHeight,
+    required this.postsViewMode,
+    String? postsOfAccountId,
+  }) : postsOfAccountId = postsOfAccountId == '' ? null : postsOfAccountId;
 
   final String accountId;
   final int blockHeight;
+  final PostsViewMode postsViewMode;
+  final String? postsOfAccountId;
 
   @override
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
     final PostsController postsController = Modular.get<PostsController>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      runZonedGuarded(
-        () {
-          postsController.loadCommentsOfPost(
-            accountId: accountId,
-            blockHeight: blockHeight,
-          );
-        },
-        (error, stack) {
-          final AppExceptions appException = AppExceptions(
-            messageForUser: "Error occurred. Please try later.",
-            messageForDev: error.toString(),
-            statusCode: AppErrorCodes.nearSocialApiError,
-          );
-          Modular.get<Catcher>().exceptionsHandler.add(appException);
-        },
-      );
+      final posts = postsController.getPostsDueToPostsViewMode(
+          postsViewMode, postsOfAccountId);
+      if (posts.firstWhere((element) {
+            return element.blockHeight == blockHeight &&
+                element.authorInfo.accountId == accountId;
+          }).commentList ==
+          null) {
+        postsController.loadCommentsOfPost(
+          accountId: accountId,
+          blockHeight: blockHeight,
+          postsViewMode: postsViewMode,
+          postsOfAccountId: postsOfAccountId,
+        );
+      } else {
+        postsController.updateCommentsOfPost(
+          accountId: accountId,
+          blockHeight: blockHeight,
+          postsViewMode: postsViewMode,
+          postsOfAccountId: postsOfAccountId,
+        );
+      }
     });
 
     return Scaffold(
@@ -50,45 +65,76 @@ class PostPage extends StatelessWidget {
         child: StreamBuilder(
             stream: postsController.stream,
             builder: (context, snapshot) {
-              final post = postsController.state.posts.firstWhere(
-                (element) =>
-                    element.blockHeight == blockHeight &&
-                    element.authorInfo.accountId == accountId,
-              );
+              final posts = postsController.getPostsDueToPostsViewMode(
+                  postsViewMode, postsOfAccountId);
+              final post = posts.firstWhere((element) =>
+                  element.blockHeight == blockHeight &&
+                  element.authorInfo.accountId == accountId);
               return ListView(
                 padding: REdgeInsets.all(15),
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 40.w,
-                        height: 40.w,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: NearNetworkImage(
-                          imageUrl: post.authorInfo.profileImageLink,
-                          placeholder: Image.asset(
-                            NearAssets.standartAvatar,
-                            fit: BoxFit.cover,
+                  InkWell(
+                    onTap: () async {
+                      HapticFeedback.lightImpact();
+                      await Modular.get<UserListController>()
+                          .addGeneralAccountInfoIfNotExists(
+                        generalAccountInfo: post.authorInfo,
+                      );
+                      Modular.to.pushNamed(
+                        ".${Routes.home.userPage}?accountId=${post.authorInfo.accountId}",
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40.w,
+                          height: 40.w,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: NearNetworkImage(
+                            imageUrl: post.authorInfo.profileImageLink,
+                            errorPlaceholder: Image.asset(
+                              NearAssets.standartAvatar,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(width: 10.w),
-                      Expanded(
-                        child: Text(
-                          "${post.authorInfo.name} @${post.authorInfo.accountId}",
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(
+                            "${post.authorInfo.name} @${post.authorInfo.accountId}",
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   SizedBox(height: 5.h),
-                  Text(
-                    post.postBody.text.trim(),
+                  RawTextToContentFormatter(
+                    rawText: post.postBody.text.trim(),
                   ),
+                  SizedBox(height: 10.h),
                   if (post.postBody.mediaLink != null) ...[
-                    NearNetworkImage(imageUrl: post.postBody.mediaLink!),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.push(
+                          Modular.routerDelegate.navigatorKey.currentContext!,
+                          MaterialPageRoute(
+                            builder: (context) => ImageFullScreen(
+                              imageUrl: post.postBody.mediaLink!,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Hero(
+                        tag: post.postBody.mediaLink!,
+                        child: NearNetworkImage(
+                          imageUrl: post.postBody.mediaLink!,
+                        ),
+                      ),
+                    ),
                   ],
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -96,11 +142,14 @@ class PostPage extends StatelessWidget {
                       TwoStatesIconButton(
                         iconPath: NearAssets.commentIcon,
                         onPressed: () async {
+                          HapticFeedback.lightImpact();
                           showDialog(
                             context: context,
                             builder: (context) {
                               return Dialog(
                                 child: CreateCommentDialog(
+                                  postsViewMode: postsViewMode,
+                                  postsOfAccountId: postsOfAccountId,
                                   descriptionTitle: Text.rich(
                                     style: TextStyle(fontSize: 14.sp),
                                     TextSpan(
@@ -131,6 +180,7 @@ class PostPage extends StatelessWidget {
                               authController.state.accountId,
                         ),
                         onPressed: () async {
+                          HapticFeedback.lightImpact();
                           final String accountId =
                               authController.state.accountId;
                           final String publicKey =
@@ -143,6 +193,8 @@ class PostPage extends StatelessWidget {
                               accountId: accountId,
                               publicKey: publicKey,
                               privateKey: privateKey,
+                              postsViewMode: postsViewMode,
+                              postsOfAccountId: postsOfAccountId,
                             );
                           } catch (err) {
                             final exc = AppExceptions(
@@ -150,11 +202,11 @@ class PostPage extends StatelessWidget {
                               messageForDev: err.toString(),
                               statusCode: AppErrorCodes.flutterchainError,
                             );
-                            Modular.get<Catcher>().exceptionsHandler.add(exc);
+                            throw exc;
                           }
                         },
                       ),
-                      ScaleAnimatedIconButtonWithCounter (
+                      ScaleAnimatedIconButtonWithCounter(
                         iconPath: NearAssets.repostIcon,
                         count: post.repostList.length,
                         activated: post.repostList.any(
@@ -164,6 +216,7 @@ class PostPage extends StatelessWidget {
                         ),
                         activatedColor: Colors.green,
                         onPressed: () async {
+                          HapticFeedback.lightImpact();
                           final String accountId =
                               authController.state.accountId;
                           final String publicKey =
@@ -188,12 +241,14 @@ class PostPage extends StatelessWidget {
                                   TextButton(
                                     child: const Text("Yes"),
                                     onPressed: () {
+                                      HapticFeedback.lightImpact();
                                       Modular.to.pop(true);
                                     },
                                   ),
                                   TextButton(
                                     child: const Text("No"),
                                     onPressed: () {
+                                      HapticFeedback.lightImpact();
                                       Modular.to.pop(false);
                                     },
                                   ),
@@ -211,6 +266,8 @@ class PostPage extends StatelessWidget {
                                   accountId: accountId,
                                   publicKey: publicKey,
                                   privateKey: privateKey,
+                                  postsViewMode: postsViewMode,
+                                  postsOfAccountId: postsOfAccountId,
                                 );
                               } catch (err) {
                                 final exc = AppExceptions(
@@ -218,9 +275,7 @@ class PostPage extends StatelessWidget {
                                   messageForDev: err.toString(),
                                   statusCode: AppErrorCodes.flutterchainError,
                                 );
-                                Modular.get<Catcher>()
-                                    .exceptionsHandler
-                                    .add(exc);
+                                throw exc;
                               }
                             },
                           );
@@ -229,6 +284,7 @@ class PostPage extends StatelessWidget {
                       TwoStatesIconButton(
                         iconPath: NearAssets.shareIcon,
                         onPressed: () async {
+                          HapticFeedback.lightImpact();
                           final nearSocialApi = Modular.get<NearSocialApi>();
                           final urlOfPost = nearSocialApi.getUrlOfPost(
                             accountId: post.authorInfo.accountId,
@@ -251,12 +307,14 @@ class PostPage extends StatelessWidget {
                           (comment) => CommentCard(
                             comment: comment,
                             post: post,
+                            postsViewMode: postsViewMode,
+                            postsOfAccountId: postsOfAccountId,
                           ),
                         )
                         .toList()
                   ] else ...[
                     const Center(
-                      child: CircularProgressIndicator(),
+                      child: SpinnerLoadingIndicator(),
                     )
                   ],
                 ],

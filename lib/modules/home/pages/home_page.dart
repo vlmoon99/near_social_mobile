@@ -1,6 +1,6 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -80,6 +80,7 @@ class _HomePageState extends State<HomePage> {
                         ? Theme.of(context).primaryColor
                         : null,
                     onPressed: () {
+                      HapticFeedback.lightImpact();
                       Modular.to.navigate(".${Routes.home.postsFeed}");
                     },
                   ),
@@ -89,6 +90,7 @@ class _HomePageState extends State<HomePage> {
                         ? Theme.of(context).primaryColor
                         : null,
                     onPressed: () {
+                      HapticFeedback.lightImpact();
                       Modular.to.navigate(".${Routes.home.widgetsListPage}");
                     },
                   ),
@@ -98,6 +100,7 @@ class _HomePageState extends State<HomePage> {
                         ? Theme.of(context).primaryColor
                         : null,
                     onPressed: () {
+                      HapticFeedback.lightImpact();
                       Modular.to.navigate(".${Routes.home.peopleListPage}");
                     },
                   ),
@@ -108,6 +111,7 @@ class _HomePageState extends State<HomePage> {
                             ? Theme.of(context).primaryColor
                             : null,
                     onPressed: () {
+                      HapticFeedback.lightImpact();
                       Modular.to.navigate(".${Routes.home.notificationsPage}");
                     },
                   ),
@@ -117,6 +121,7 @@ class _HomePageState extends State<HomePage> {
                         ? Theme.of(context).primaryColor
                         : null,
                     onPressed: () {
+                      HapticFeedback.lightImpact();
                       Modular.to.navigate(".${Routes.home.homeMenu}");
                     },
                   ),

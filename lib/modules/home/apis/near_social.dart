@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_data.dart';
@@ -20,6 +21,7 @@ import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
+import 'package:near_social_mobile/services/dio_connectivity_retry_interceptor/retry_interceptor.dart';
 
 class NearSocialApi {
   final Dio _dio = Dio();
@@ -27,16 +29,20 @@ class NearSocialApi {
 
   NearSocialApi({required NearBlockChainService nearBlockChainService})
       : _nearBlockChainService = nearBlockChainService {
-    _dio.interceptors.add(
+    _dio.interceptors.addAll([
       RetryInterceptor(
         dio: _dio,
         logPrint: log,
-        retries: 60,
+        retries: 5,
         retryDelays: [
-          ...List.generate(60, (index) => const Duration(seconds: 1))
+          ...List.generate(5, (index) => const Duration(seconds: 1))
         ],
       ),
-    );
+      RetryOnConnectionChangeInterceptor(
+        dio: _dio,
+        connectivity: Connectivity(),
+      ),
+    ]);
   }
 
   final _ipfsMediaHosting = "https://ipfs.near.social/ipfs/";
@@ -316,30 +322,35 @@ class NearSocialApi {
   }
 
   Set<Like> _convertToLikes(List<Map<String, dynamic>> data) {
-    Map<String, int> likeCounts = {};
-    Map<String, int> unlikeCounts = {};
+    Map<String, Map<String, dynamic>> lastRecordOfUser = {};
 
     for (var item in data) {
       String accountId = item["accountId"];
       String type = item["value"]["type"];
+      int blockHeight = item["blockHeight"];
 
-      if (type == "like") {
-        likeCounts[accountId] = (likeCounts[accountId] ?? 0) + 1;
-      } else if (type == "unlike") {
-        unlikeCounts[accountId] = (unlikeCounts[accountId] ?? 0) + 1;
+      if (lastRecordOfUser[accountId] == null) {
+        lastRecordOfUser[accountId] = {
+          "type": type,
+          "blockHeight": blockHeight
+        };
+      } else {
+        if (lastRecordOfUser[accountId]!["blockHeight"] < blockHeight) {
+          lastRecordOfUser[accountId] = {
+            "type": type,
+            "blockHeight": blockHeight
+          };
+        }
       }
     }
 
     Set<Like> result = {};
 
-    for (var accountId in likeCounts.keys) {
-      int likeCount = likeCounts[accountId] ?? 0;
-      int unlikeCount = unlikeCounts[accountId] ?? 0;
-
-      if (likeCount > unlikeCount) {
-        result.add(Like(accountId: accountId));
+    lastRecordOfUser.forEach((key, value) {
+      if (value["type"] == "like") {
+        result.add(Like(accountId: key));
       }
-    }
+    });
 
     return result;
   }
@@ -406,30 +417,30 @@ class NearSocialApi {
       final List<Comment> comments = [];
 
       for (final info in commentsInfoCreation) {
-        final CommentBody commentBody = await _getCommentContent(
-          accountId: info.accountId,
-          blockHeight: info.blockHeight,
-        );
-        final date = await getDateOfBlockHeight(
-          blockHeight: info.blockHeight,
-        );
+        // final CommentBody commentBody = await getCommentContent(
+        //   accountId: info.accountId,
+        //   blockHeight: info.blockHeight,
+        // );
+        // final date = await getDateOfBlockHeight(
+        //   blockHeight: info.blockHeight,
+        // );
 
         final authorInfo = await getGeneralAccountInfo(
           accountId: info.accountId,
         );
 
-        final likes = await _getLikesOfComment(
-          accountId: info.accountId,
-          blockHeight: info.blockHeight,
-        );
+        // final likes = await getLikesOfComment(
+        //   accountId: info.accountId,
+        //   blockHeight: info.blockHeight,
+        // );
 
         comments.add(
           Comment(
             authorInfo: authorInfo,
             blockHeight: info.blockHeight,
-            commentBody: commentBody,
-            date: date,
-            likeList: likes,
+            commentBody: CommentBody(text: "Loading...", mediaLink: null),
+            date: DateTime.now(),
+            likeList: {},
           ),
         );
       }
@@ -481,7 +492,7 @@ class NearSocialApi {
     }
   }
 
-  Future<CommentBody> _getCommentContent(
+  Future<CommentBody> getCommentContent(
       {required String accountId, required int blockHeight}) async {
     try {
       final data = {
@@ -511,7 +522,7 @@ class NearSocialApi {
     }
   }
 
-  Future<Set<Like>> _getLikesOfComment(
+  Future<Set<Like>> getLikesOfComment(
       {required String accountId, required int blockHeight}) async {
     try {
       final data = {
@@ -530,7 +541,8 @@ class NearSocialApi {
         ),
         data: data,
       );
-      final likes = _convertToLikes(List<Map<String, dynamic>>.from(response.data));
+      final likes =
+          _convertToLikes(List<Map<String, dynamic>>.from(response.data));
 
       return likes;
     } catch (err) {

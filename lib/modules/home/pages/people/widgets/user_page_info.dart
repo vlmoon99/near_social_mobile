@@ -8,10 +8,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
-import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/shared_widgets/expandable_wiget.dart';
+import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -24,6 +26,7 @@ class UserPageMainInfo extends StatelessWidget {
       if (pair.key == "twitter") {
         return TextButton.icon(
           onPressed: () {
+            HapticFeedback.lightImpact();
             final url = Uri.parse("https://twitter.com/${pair.value}");
             launchUrl(url);
           },
@@ -36,6 +39,7 @@ class UserPageMainInfo extends StatelessWidget {
       } else if (pair.key == "github") {
         return TextButton.icon(
           onPressed: () {
+            HapticFeedback.lightImpact();
             final url = Uri.parse("https://github.com/${pair.value}");
             launchUrl(url);
           },
@@ -48,6 +52,7 @@ class UserPageMainInfo extends StatelessWidget {
       } else if (pair.key == "telegram") {
         return TextButton.icon(
           onPressed: () {
+            HapticFeedback.lightImpact();
             final url = Uri.parse("https://t.me/${pair.value}");
             launchUrl(url);
           },
@@ -60,6 +65,7 @@ class UserPageMainInfo extends StatelessWidget {
       } else if (pair.key == "website") {
         return TextButton.icon(
           onPressed: () {
+            HapticFeedback.lightImpact();
             final url = Uri.parse("https://${pair.value}");
             launchUrl(url);
           },
@@ -84,8 +90,8 @@ class UserPageMainInfo extends StatelessWidget {
     return StreamBuilder(
         stream: userListController.stream,
         builder: (context, snapshot) {
-          final user = userListController.state.users.firstWhere((element) =>
-              element.generalAccountInfo.accountId == accountIdOfUser);
+          final user = userListController.state
+              .getUserByAccountId(accountId: accountIdOfUser);
           return Column(
             children: [
               SizedBox(
@@ -94,12 +100,30 @@ class UserPageMainInfo extends StatelessWidget {
                 child: Stack(
                   alignment: Alignment.topCenter,
                   children: [
-                    SizedBox(
-                      height: .25.sh,
-                      width: double.infinity,
-                      child: NearNetworkImage(
-                        imageUrl: user.generalAccountInfo.backgroundImageLink,
-                        placeholder: Container(color: AppColors.lightSurface),
+                    GestureDetector(
+                      onTap: () {
+                        if (user
+                            .generalAccountInfo.backgroundImageLink.isEmpty) {
+                          return;
+                        }
+                        Navigator.push(
+                          Modular.routerDelegate.navigatorKey.currentContext!,
+                          MaterialPageRoute(
+                            builder: (context) => ImageFullScreen(
+                              imageUrl:
+                                  user.generalAccountInfo.backgroundImageLink,
+                            ),
+                          ),
+                        );
+                      },
+                      child: SizedBox(
+                        height: .25.sh,
+                        width: double.infinity,
+                        child: NearNetworkImage(
+                          imageUrl: user.generalAccountInfo.backgroundImageLink,
+                          errorPlaceholder:
+                              Container(color: AppColors.lightSurface),
+                        ),
                       ),
                     ),
                     Positioned(
@@ -107,23 +131,41 @@ class UserPageMainInfo extends StatelessWidget {
                       left: 30.w,
                       width: .2.sh,
                       height: .2.sh,
-                      child: Container(
-                        padding: REdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          border: Border.all(color: Colors.black, width: 1),
-                        ),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (user
+                              .generalAccountInfo.profileImageLink.isEmpty) {
+                            return;
+                          }
+                          Navigator.push(
+                            Modular.routerDelegate.navigatorKey.currentContext!,
+                            MaterialPageRoute(
+                              builder: (context) => ImageFullScreen(
+                                imageUrl:
+                                    user.generalAccountInfo.profileImageLink,
+                              ),
+                            ),
+                          );
+                        },
                         child: Container(
-                          decoration: const BoxDecoration(
+                          padding: REdgeInsets.all(8),
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
+                            color: Colors.white,
+                            border: Border.all(color: Colors.black, width: 1),
                           ),
-                          clipBehavior: Clip.antiAlias,
-                          child: NearNetworkImage(
-                            imageUrl: user.generalAccountInfo.profileImageLink,
-                            placeholder: Image.asset(
-                              NearAssets.standartAvatar,
-                              fit: BoxFit.cover,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: NearNetworkImage(
+                              imageUrl:
+                                  user.generalAccountInfo.profileImageLink,
+                              errorPlaceholder: Image.asset(
+                                NearAssets.standartAvatar,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ),
@@ -163,6 +205,7 @@ class UserPageMainInfo extends StatelessWidget {
                         ),
                         IconButton(
                           onPressed: () {
+                            HapticFeedback.lightImpact();
                             Clipboard.setData(
                               ClipboardData(
                                 text: user.generalAccountInfo.accountId,
@@ -219,6 +262,7 @@ class UserPageMainInfo extends StatelessWidget {
                                       authController.state.accountId)
                                   ? ElevatedButton(
                                       onPressed: () {
+                                        HapticFeedback.lightImpact();
                                         requestToUnfollowAccount(context);
                                       },
                                       style: ButtonStyle(
@@ -249,6 +293,7 @@ class UserPageMainInfo extends StatelessWidget {
                                     )
                                   : ElevatedButton(
                                       onPressed: () {
+                                        HapticFeedback.lightImpact();
                                         requestToFollowAccount(context);
                                       },
                                       style: ButtonStyle(
@@ -274,43 +319,26 @@ class UserPageMainInfo extends StatelessWidget {
                             ),
                           ElevatedButton(
                             onPressed: () {
-                              runZonedGuarded(
-                                () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text("Poking user...")));
-                                  Modular.get<NearSocialApi>()
-                                      .pokeAccount(
-                                    accountIdToPoke: accountIdOfUser,
-                                    accountId: authController.state.accountId,
-                                    publicKey: authController.state.publicKey,
-                                    privateKey: authController.state.privateKey,
-                                  )
-                                      .then((_) {
-                                    ScaffoldMessenger.of(context)
-                                        .hideCurrentSnackBar();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content:
-                                            Text("Poked @$accountIdOfUser!"),
-                                      ),
-                                    );
-                                  });
-                                },
-                                (error, stack) {
-                                  final AppExceptions appException =
-                                      AppExceptions(
-                                    messageForUser:
-                                        "Error occurred poking user. Please try later.",
-                                    messageForDev: error.toString(),
-                                    statusCode:
-                                        AppErrorCodes.nearSocialApiError,
-                                  );
-                                  Modular.get<Catcher>()
-                                      .exceptionsHandler
-                                      .add(appException);
-                                },
-                              );
+                              HapticFeedback.lightImpact();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text("Poking user...")));
+                              Modular.get<NearSocialApi>()
+                                  .pokeAccount(
+                                accountIdToPoke: accountIdOfUser,
+                                accountId: authController.state.accountId,
+                                publicKey: authController.state.publicKey,
+                                privateKey: authController.state.privateKey,
+                              )
+                                  .then((_) {
+                                ScaffoldMessenger.of(context)
+                                    .hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Poked @$accountIdOfUser!"),
+                                  ),
+                                );
+                              });
                             },
                             child: Text(
                               "👈 Poke",
@@ -418,12 +446,17 @@ class UserPageMainInfo extends StatelessWidget {
                           })
                         ],
                       ),
-                      if (user.generalAccountInfo.description != "")
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10).r,
-                          child: Text(user.generalAccountInfo.description),
+                    ],
+                    if (user.generalAccountInfo.description.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10).r,
+                        child: CollapseWidget(
+                          children: RawTextToContentFormatter(
+                            rawText: user.generalAccountInfo.description,
+                            imageHeight: 0.2.sh,
+                          ),
                         ),
-                    ]
+                      ),
                   ],
                 ),
               ),
@@ -444,31 +477,25 @@ class UserPageMainInfo extends StatelessWidget {
         return AlertDialog(
           content: Text(
             "Are you sure you want to unfollow $accountIdOfUser?",
+            style: TextStyle(fontSize: 16.sp),
           ),
           actions: [
             TextButton(
               onPressed: () async {
-                runZonedGuarded(() {
-                  userListController.unfollowAccount(
-                    accountIdToUnfollow: accountIdOfUser,
-                    accountId: authController.state.accountId,
-                    publicKey: authController.state.publicKey,
-                    privateKey: authController.state.privateKey,
-                  );
-                  Modular.to.pop();
-                }, (error, stack) {
-                  final AppExceptions appException = AppExceptions(
-                    messageForUser: "Error occurred. Please try later.",
-                    messageForDev: error.toString(),
-                    statusCode: AppErrorCodes.nearSocialApiError,
-                  );
-                  Modular.get<Catcher>().exceptionsHandler.add(appException);
-                });
+                HapticFeedback.lightImpact();
+                userListController.unfollowAccount(
+                  accountIdToUnfollow: accountIdOfUser,
+                  accountId: authController.state.accountId,
+                  publicKey: authController.state.publicKey,
+                  privateKey: authController.state.privateKey,
+                );
+                Modular.to.pop();
               },
               child: const Text("Yes"),
             ),
             TextButton(
               onPressed: () {
+                HapticFeedback.lightImpact();
                 Modular.to.pop();
               },
               child: const Text("No"),
@@ -491,31 +518,25 @@ class UserPageMainInfo extends StatelessWidget {
         return AlertDialog(
           content: Text(
             "Are you sure you want to follow $accountIdOfUser?",
+            style: TextStyle(fontSize: 16.sp),
           ),
           actions: [
             TextButton(
               onPressed: () async {
-                runZonedGuarded(() {
-                  userListController.followAccount(
-                    accountIdToFollow: accountIdOfUser,
-                    accountId: authController.state.accountId,
-                    publicKey: authController.state.publicKey,
-                    privateKey: authController.state.privateKey,
-                  );
-                  Modular.to.pop();
-                }, (error, stack) {
-                  final AppExceptions appException = AppExceptions(
-                    messageForUser: "Error occurred. Please try later.",
-                    messageForDev: error.toString(),
-                    statusCode: AppErrorCodes.nearSocialApiError,
-                  );
-                  Modular.get<Catcher>().exceptionsHandler.add(appException);
-                });
+                HapticFeedback.lightImpact();
+                userListController.followAccount(
+                  accountIdToFollow: accountIdOfUser,
+                  accountId: authController.state.accountId,
+                  publicKey: authController.state.publicKey,
+                  privateKey: authController.state.privateKey,
+                );
+                Modular.to.pop();
               },
               child: const Text("Yes"),
             ),
             TextButton(
               onPressed: () {
+                HapticFeedback.lightImpact();
                 Modular.to.pop();
               },
               child: const Text("No"),

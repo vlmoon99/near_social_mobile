@@ -1,12 +1,11 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/services/crypto_storage_service.dart';
@@ -34,46 +33,48 @@ class DecryptionPageForLoginnedUser extends StatelessWidget {
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
     return Scaffold(
-      body: SizedBox(
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  final bool authenticated =
-                      await LocalAuthService().authenticate(
-                    requestAuthMessage: 'Please authenticate to decrypt data',
-                  );
-                  if (!authenticated) return;
-                  await decryptDataAndLogin();
-                } on AppExceptions catch (err) {
-                  final catcher = Modular.get<Catcher>();
-                  catcher.exceptionsHandler.add(err);
-                } catch (err) {
-                  log(err.toString());
-                }
-              },
-              child: const Text("Decrypt"),
-            ),
-            SizedBox(height: 20.h),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  await authController.logout();
-                  Modular.to.navigate(Routes.auth.getModule());
-                } on AppExceptions catch (err) {
-                  final catcher = Modular.get<Catcher>();
-                  catcher.exceptionsHandler.add(err);
-                } catch (err) {
-                  log(err.toString());
-                }
-              },
-              child: const Text("Logout"),
-            ),
-          ],
+      body: SafeArea(
+        child: SizedBox(
+          width: double.infinity,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned.fill(
+                child: Image.asset(
+                  "assets/media/images/near_social_backgorund.png",
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      HapticFeedback.lightImpact();
+                      final bool authenticated =
+                          await LocalAuthService().authenticate(
+                        requestAuthMessage:
+                            'Please authenticate to decrypt data',
+                      );
+                      if (!authenticated) return;
+                      await decryptDataAndLogin();
+                    },
+                    child: const Text("Decrypt"),
+                  ),
+                  SizedBox(height: 20.h),
+                  ElevatedButton(
+                    onPressed: () async {
+                      HapticFeedback.lightImpact();
+                      await authController.logout();
+                      Modular.to.navigate(Routes.auth.getModule());
+                    },
+                    child: const Text("Logout"),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

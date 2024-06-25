@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
@@ -15,7 +16,10 @@ Future<void> checkForJailbreak() async {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.pop(context);
+            },
             child: const Text('OK'),
           ),
         ],

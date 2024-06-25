@@ -1,14 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
@@ -63,6 +61,7 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
               children: [
                 ElevatedButton.icon(
                   onPressed: () async {
+                    HapticFeedback.lightImpact();
                     final ImagePicker picker = ImagePicker();
                     final XFile? file =
                         await picker.pickImage(source: ImageSource.gallery);
@@ -106,6 +105,7 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
                             child: FittedBox(
                               child: IconButton(
                                 onPressed: () {
+                                  HapticFeedback.lightImpact();
                                   setState(() {
                                     filepathOfMedia = null;
                                   });
@@ -136,63 +136,57 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
             children: [
               ElevatedButton(
                 onPressed: () async {
-                  runZonedGuarded(() async {
-                    final nearSocialApi = Modular.get<NearSocialApi>();
-                    final AuthController authController =
-                        Modular.get<AuthController>();
+                  HapticFeedback.lightImpact();
+                  final nearSocialApi = Modular.get<NearSocialApi>();
+                  final AuthController authController =
+                      Modular.get<AuthController>();
 
-                    final String accountId = authController.state.accountId;
-                    final String publicKey = authController.state.publicKey;
-                    final String privateKey = authController.state.privateKey;
+                  final String accountId = authController.state.accountId;
+                  final String publicKey = authController.state.publicKey;
+                  final String privateKey = authController.state.privateKey;
 
-                    String? cidOfMedia;
-                    if (filepathOfMedia != null) {
-                      cidOfMedia =
-                          await nearSocialApi.uploadFileToNearFileHosting(
-                        filepath: filepathOfMedia!,
-                      );
-                    }
+                  String? cidOfMedia;
+                  if (filepathOfMedia != null) {
+                    cidOfMedia =
+                        await nearSocialApi.uploadFileToNearFileHosting(
+                      filepath: filepathOfMedia!,
+                    );
+                  }
 
-                    final PostBody postBody = PostBody(
+                  final PostBody postBody = PostBody(
+                    text: _textEditingController.text,
+                    mediaLink: cidOfMedia,
+                  );
+
+                  if (postBody.text == "" && postBody.mediaLink == null) {
+                    throw Exception("Empty text and mediaLink");
+                  }
+                  nearSocialApi
+                      .createPost(
+                    accountId: accountId,
+                    publicKey: publicKey,
+                    privateKey: privateKey,
+                    postBody: PostBody(
                       text: _textEditingController.text,
                       mediaLink: cidOfMedia,
-                    );
-
-                    if (postBody.text == "" && postBody.mediaLink == null) {
-                      throw Exception("Empty text and mediaLink");
-                    }
-                    nearSocialApi
-                        .createPost(
-                      accountId: accountId,
-                      publicKey: publicKey,
-                      privateKey: privateKey,
-                      postBody: PostBody(
-                        text: _textEditingController.text,
-                        mediaLink: cidOfMedia,
-                      ),
-                    )
-                        .then((_) {
-                      Modular.get<PostsController>().loadPosts();
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Your post will be added soon."),
-                      ),
-                    );
-                    Modular.to.pop();
-                  }, (error, stack) {
-                    final AppExceptions appException = AppExceptions(
-                      messageForUser: error.toString(),
-                      messageForDev: error.toString(),
-                      statusCode: AppErrorCodes.nearSocialApiError,
-                    );
-                    Modular.get<Catcher>().exceptionsHandler.add(appException);
+                    ),
+                  )
+                      .then((_) {
+                    Modular.get<PostsController>()
+                        .loadPosts(postsViewMode: PostsViewMode.main);
                   });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Your post will be added soon."),
+                    ),
+                  );
+                  Modular.to.pop();
                 },
                 child: const Text("Send"),
               ),
               ElevatedButton(
                 onPressed: () {
+                  HapticFeedback.lightImpact();
                   Modular.to.pop();
                 },
                 child: const Text("Cancel"),

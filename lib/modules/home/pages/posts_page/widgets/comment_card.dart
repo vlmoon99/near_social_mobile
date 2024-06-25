@@ -1,23 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_comment_dialog_body.dart';
+import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
+import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/routes/routes.dart';
+import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 
 class CommentCard extends StatelessWidget {
-  const CommentCard({super.key, required this.comment, required this.post});
+  const CommentCard({
+    super.key,
+    required this.comment,
+    required this.post,
+    required this.postsViewMode,
+    this.postsOfAccountId,
+  });
 
   final Comment comment;
   final Post post;
+  final PostsViewMode postsViewMode;
+  final String? postsOfAccountId;
 
   @override
   Widget build(BuildContext context) {
@@ -39,38 +51,79 @@ class CommentCard extends StatelessWidget {
                 ),
               ),
             ),
-            Row(
-              children: [
-                Container(
-                  width: 40.w,
-                  height: 40.w,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: NearNetworkImage(
-                    imageUrl: comment.authorInfo.profileImageLink,
-                    placeholder: Image.asset(
-                      NearAssets.standartAvatar,
-                      fit: BoxFit.cover,
+            InkWell(
+              onTap: () async {
+                HapticFeedback.lightImpact();
+                await Modular.get<UserListController>()
+                    .addGeneralAccountInfoIfNotExists(
+                  generalAccountInfo: comment.authorInfo,
+                );
+                Modular.to.pushNamed(
+                  ".${Routes.home.userPage}?accountId=${comment.authorInfo.accountId}",
+                );
+              },
+              child: Row(
+                children: [
+                  Container(
+                    width: 40.w,
+                    height: 40.w,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: NearNetworkImage(
+                      imageUrl: comment.authorInfo.profileImageLink,
+                      errorPlaceholder: Image.asset(
+                        NearAssets.standartAvatar,
+                        fit: BoxFit.cover,
+                      ),
+                      placeholder: Stack(
+                        children: [
+                          Image.asset(
+                            NearAssets.standartAvatar,
+                            fit: BoxFit.cover,
+                          ),
+                          const Positioned.fill(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 6,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(width: 10.w),
-                Expanded(
-                  child: Text(
-                    "${comment.authorInfo.name} @${comment.authorInfo.accountId}",
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      "${comment.authorInfo.name} @${comment.authorInfo.accountId}",
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             SizedBox(height: 10.h),
-            Text(
-              comment.commentBody.text.trim(),
+            RawTextToContentFormatter(
+              rawText: comment.commentBody.text.trim(),
             ),
             if (comment.commentBody.mediaLink != null) ...[
-              NearNetworkImage(
-                imageUrl: comment.commentBody.mediaLink!,
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  Navigator.push(
+                    Modular.routerDelegate.navigatorKey.currentContext!,
+                    MaterialPageRoute(
+                      builder: (context) => ImageFullScreen(
+                        imageUrl: comment.commentBody.mediaLink!,
+                      ),
+                    ),
+                  );
+                },
+                child: Hero(
+                  tag: comment.commentBody.mediaLink!,
+                  child: NearNetworkImage(
+                    imageUrl: comment.commentBody.mediaLink!,
+                  ),
+                ),
               ),
             ],
             Row(
@@ -79,11 +132,14 @@ class CommentCard extends StatelessWidget {
                 TwoStatesIconButton(
                   iconPath: NearAssets.commentIcon,
                   onPressed: () {
+                    HapticFeedback.lightImpact();
                     showDialog(
                       context: context,
                       builder: (context) {
                         return Dialog(
                           child: CreateCommentDialog(
+                            postsOfAccountId: postsOfAccountId,
+                            postsViewMode: postsViewMode,
                             descriptionTitle: Text.rich(
                               style: TextStyle(fontSize: 14.sp),
                               TextSpan(
@@ -115,24 +171,16 @@ class CommentCard extends StatelessWidget {
                         element.accountId == authController.state.accountId,
                   ),
                   onPressed: () async {
-                    try {
-                      await Modular.get<PostsController>().likeComment(
-                        post: post,
-                        comment: comment,
-                        accountId: authController.state.accountId,
-                        publicKey: authController.state.publicKey,
-                        privateKey: authController.state.privateKey,
-                      );
-                    } catch (err) {
-                      final AppExceptions appException = AppExceptions(
-                        messageForUser: "Error occurred. Please try later.",
-                        messageForDev: err.toString(),
-                        statusCode: AppErrorCodes.nearSocialApiError,
-                      );
-                      Modular.get<Catcher>()
-                          .exceptionsHandler
-                          .add(appException);
-                    }
+                    HapticFeedback.lightImpact();
+                    await Modular.get<PostsController>().likeComment(
+                      post: post,
+                      comment: comment,
+                      accountId: authController.state.accountId,
+                      publicKey: authController.state.publicKey,
+                      privateKey: authController.state.privateKey,
+                      postsViewMode: postsViewMode,
+                      postsOfAccountId: postsOfAccountId,
+                    );
                   },
                 ),
               ],

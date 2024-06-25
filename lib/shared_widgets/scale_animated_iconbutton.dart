@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -59,13 +60,16 @@ class _ScaleAnimatedIconButtonState extends State<ScaleAnimatedIconButton>
         builder: (context, _) {
           return IconButton(
             onPressed: () async {
+              HapticFeedback.lightImpact();
               _animationController.repeat();
               try {
                 await widget.onPressed();
               } catch (err) {
                 rethrow;
               } finally {
-                _animationController.reset();
+                if (mounted) {
+                  _animationController.reset();
+                }
               }
             },
             icon: _animationController.isAnimating
@@ -93,15 +97,6 @@ class _ScaleAnimatedIconButtonState extends State<ScaleAnimatedIconButton>
                         width: widget.size.w,
                         height: widget.size.w,
                       )),
-            // icon: Transform.scale(
-            //   scale: _animation.value,
-            //   child: SvgPicture.asset(
-            //     widget.iconPath,
-            //     color: widget.activated ? widget.activatedColor : Colors.grey,
-            //     width: widget.size.w,
-            //     height: widget.size.w,
-            //   ),
-            // ),
             style: const ButtonStyle(
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),

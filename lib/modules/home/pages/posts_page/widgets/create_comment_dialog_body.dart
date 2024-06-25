@@ -1,14 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
@@ -20,11 +18,15 @@ class CreateCommentDialog extends StatefulWidget {
     required this.post,
     required this.descriptionTitle,
     this.initialText = "",
+    required this.postsViewMode,
+    this.postsOfAccountId,
   });
 
   final Post post;
   final Widget descriptionTitle;
   final String initialText;
+  final PostsViewMode postsViewMode;
+  final String? postsOfAccountId;
 
   @override
   State<CreateCommentDialog> createState() => _CreateCommentDialogState();
@@ -73,6 +75,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
               children: [
                 ElevatedButton.icon(
                   onPressed: () async {
+                    HapticFeedback.lightImpact();
                     final ImagePicker picker = ImagePicker();
                     final XFile? file =
                         await picker.pickImage(source: ImageSource.gallery);
@@ -116,6 +119,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                             child: FittedBox(
                               child: IconButton(
                                 onPressed: () {
+                                  HapticFeedback.lightImpact();
                                   setState(() {
                                     filepathOfMedia = null;
                                   });
@@ -146,67 +150,62 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
             children: [
               ElevatedButton(
                 onPressed: () async {
-                  runZonedGuarded(() async {
-                    final nearSocialApi = Modular.get<NearSocialApi>();
-                    final AuthController authController =
-                        Modular.get<AuthController>();
-                    final String accountId = authController.state.accountId;
-                    final String publicKey = authController.state.publicKey;
-                    final String privateKey = authController.state.privateKey;
+                  HapticFeedback.lightImpact();
+                  final nearSocialApi = Modular.get<NearSocialApi>();
+                  final AuthController authController =
+                      Modular.get<AuthController>();
+                  final String accountId = authController.state.accountId;
+                  final String publicKey = authController.state.publicKey;
+                  final String privateKey = authController.state.privateKey;
 
-                    String? cidOfMedia;
-                    if (filepathOfMedia != null) {
-                      cidOfMedia =
-                          await nearSocialApi.uploadFileToNearFileHosting(
-                        filepath: filepathOfMedia!,
+                  String? cidOfMedia;
+                  if (filepathOfMedia != null) {
+                    cidOfMedia =
+                        await nearSocialApi.uploadFileToNearFileHosting(
+                      filepath: filepathOfMedia!,
+                    );
+                  }
+
+                  final PostBody postBody = PostBody(
+                    text: _textEditingController.text,
+                    mediaLink: cidOfMedia,
+                  );
+
+                  if (postBody.text == "" && postBody.mediaLink == null) {
+                    throw Exception("Empty text and mediaLink");
+                  }
+
+                  nearSocialApi
+                      .comentThePost(
+                    accountIdOfPost: widget.post.authorInfo.accountId,
+                    blockHeight: widget.post.blockHeight,
+                    accountId: accountId,
+                    publicKey: publicKey,
+                    privateKey: privateKey,
+                    postBody: postBody,
+                  )
+                      .then(
+                    (_) {
+                      Modular.get<PostsController>().updateCommentsOfPost(
+                        accountId: widget.post.authorInfo.accountId,
+                        blockHeight: widget.post.blockHeight,
+                        postsViewMode: widget.postsViewMode,
+                        postsOfAccountId: widget.postsOfAccountId,
                       );
-                    }
-
-                    final PostBody postBody = PostBody(
-                      text: _textEditingController.text,
-                      mediaLink: cidOfMedia,
-                    );
-
-                    if (postBody.text == "" && postBody.mediaLink == null) {
-                      throw Exception("Empty text and mediaLink");
-                    }
-
-                    nearSocialApi
-                        .comentThePost(
-                      accountIdOfPost: widget.post.authorInfo.accountId,
-                      blockHeight: widget.post.blockHeight,
-                      accountId: accountId,
-                      publicKey: publicKey,
-                      privateKey: privateKey,
-                      postBody: postBody,
-                    )
-                        .then(
-                      (_) {
-                        Modular.get<PostsController>().loadCommentsOfPost(
-                          accountId: widget.post.authorInfo.accountId,
-                          blockHeight: widget.post.blockHeight,
-                        );
-                      },
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Your comment will be added soon"),
-                      ),
-                    );
-                    Modular.to.pop();
-                  }, (error, stack) {
-                    final AppExceptions appException = AppExceptions(
-                      messageForUser: error.toString(),
-                      messageForDev: error.toString(),
-                      statusCode: AppErrorCodes.nearSocialApiError,
-                    );
-                    Modular.get<Catcher>().exceptionsHandler.add(appException);
-                  });
+                    },
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Your comment will be added soon"),
+                    ),
+                  );
+                  Modular.to.pop();
                 },
                 child: const Text("Send"),
               ),
               ElevatedButton(
                 onPressed: () {
+                  HapticFeedback.lightImpact();
                   Modular.to.pop();
                 },
                 child: const Text("Cancel"),

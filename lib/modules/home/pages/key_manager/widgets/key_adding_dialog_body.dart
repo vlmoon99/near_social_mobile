@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutterchain/flutterchain_lib/models/core/wallet.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:intl/intl.dart';
-import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class KeyAddingDialogBody extends StatefulWidget {
   const KeyAddingDialogBody({
@@ -34,6 +34,7 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
   String derivationPath = "";
 
   Future<void> addKey() async {
+    HapticFeedback.lightImpact();
     final NearSocialApi nearSocialApi = Modular.get<NearSocialApi>();
     final AuthController authController = Modular.get<AuthController>();
     try {
@@ -83,19 +84,11 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
           accessKeyName: keyName,
           privateKeyInfo: privateKeyInfo,
         );
-        setState(() {
-          addingKeyProcessLoading = false;
-        });
         Modular.to.pop();
       }
     } catch (err) {
-      final catcher = Modular.get<Catcher>();
-      final appException = AppExceptions(
-        messageForUser: "Failed to add key",
-        messageForDev: err.toString(),
-        statusCode: AppErrorCodes.storageError,
-      );
-      catcher.exceptionsHandler.add(appException);
+      rethrow;
+    } finally {
       setState(() {
         addingKeyProcessLoading = false;
       });
@@ -263,7 +256,7 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
                   )
                 else
                   const Center(
-                    child: CircularProgressIndicator(),
+                    child: SpinnerLoadingIndicator(),
                   ),
               ],
             ),

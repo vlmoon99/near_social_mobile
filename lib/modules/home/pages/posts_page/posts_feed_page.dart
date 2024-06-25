@@ -1,13 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_post_dialog_body.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/post_card.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
+import 'package:rxdart/rxdart.dart';
 
 class PostsFeedPage extends StatefulWidget {
   const PostsFeedPage({super.key});
@@ -18,21 +19,13 @@ class PostsFeedPage extends StatefulWidget {
 
 class _PostsFeedPageState extends State<PostsFeedPage> {
   final _scrollController = ScrollController();
+  final _postsLoaderDebouncer = StreamController();
 
   void _onScroll() async {
     final postsConroller = Modular.get<PostsController>();
     if (_isBottom &&
         postsConroller.state.status != PostLoadingStatus.loadingMorePosts) {
-      runZonedGuarded(() {
-        postsConroller.loadMorePosts();
-      }, (error, stack) {
-        final AppExceptions appException = AppExceptions(
-          messageForUser: "Error occurred. Please try later.",
-          messageForDev: error.toString(),
-          statusCode: AppErrorCodes.nearSocialApiError,
-        );
-        Modular.get<Catcher>().exceptionsHandler.add(appException);
-      });
+      postsConroller.loadMorePosts(postsViewMode: PostsViewMode.main);
     }
   }
 
@@ -46,7 +39,12 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
+    _scrollController.addListener(() {
+      _postsLoaderDebouncer.add(null);
+    });
+    _postsLoaderDebouncer.stream
+        .debounceTime(const Duration(milliseconds: 300))
+        .listen((_) => _onScroll());
   }
 
   @override
@@ -55,16 +53,7 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final PostsController postsController = Modular.get<PostsController>();
       if (postsController.state.status == PostLoadingStatus.initial) {
-        runZonedGuarded(() {
-          postsController.loadPosts();
-        }, (error, stack) {
-          final AppExceptions appException = AppExceptions(
-            messageForUser: "Error occurred. Please try later.",
-            messageForDev: error.toString(),
-            statusCode: AppErrorCodes.nearSocialApiError,
-          );
-          Modular.get<Catcher>().exceptionsHandler.add(appException);
-        });
+        postsController.loadPosts(postsViewMode: PostsViewMode.main);
       }
     });
   }
@@ -74,6 +63,7 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
     _scrollController
       ..removeListener(_onScroll)
       ..dispose();
+    _postsLoaderDebouncer.close();
     super.dispose();
   }
 
@@ -87,9 +77,10 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
           final postsState = postsController.state;
           if (postsState.status == PostLoadingStatus.loaded ||
               postsState.status == PostLoadingStatus.loadingMorePosts) {
-            return RefreshIndicator(
+            return RefreshIndicator.adaptive(
               onRefresh: () async {
-                return postsController.loadPosts();
+                return postsController.loadPosts(
+                    postsViewMode: PostsViewMode.main);
               },
               child: ListView.builder(
                 controller: _scrollController,
@@ -98,11 +89,14 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
                   final post = postsState.posts[index];
                   return Column(
                     children: [
-                      PostCard(post: post),
+                      PostCard(
+                        post: post,
+                        postsViewMode: PostsViewMode.main,
+                      ),
                       if (postsController.state.status ==
                               PostLoadingStatus.loadingMorePosts &&
                           index == postsState.posts.length - 1) ...[
-                        const Center(child: CircularProgressIndicator()),
+                        const Center(child: SpinnerLoadingIndicator()),
                       ]
                     ],
                   );
@@ -112,12 +106,13 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
             );
           }
           return const Center(
-            child: CircularProgressIndicator(),
+            child: SpinnerLoadingIndicator(),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          HapticFeedback.lightImpact();
           showDialog(
             context: context,
             builder: (context) {

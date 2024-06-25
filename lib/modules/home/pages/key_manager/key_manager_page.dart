@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/pages/key_manager/widgets/access_key_info_card.dart';
@@ -15,8 +15,15 @@ class KeyManagerPage extends StatelessWidget {
     final AuthController authController = Modular.get<AuthController>();
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Access Keys"),
+        title: Text(
+          "Access Keys",
+          style: TextStyle(
+            fontSize: 20.sp,
+          ),
+        ),
         centerTitle: true,
+        leadingWidth: 0,
+        leading: const SizedBox.shrink(),
       ),
       body: SafeArea(
         child: StreamBuilder<AuthInfo>(
@@ -44,6 +51,7 @@ class KeyManagerPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          HapticFeedback.lightImpact();
           showDialog(
             context: context,
             builder: (context) {
@@ -58,4 +66,3 @@ class KeyManagerPage extends StatelessWidget {
     );
   }
 }
-

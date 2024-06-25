@@ -7,6 +7,7 @@ import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
@@ -15,8 +16,14 @@ import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 
 class PostCard extends StatelessWidget {
-  const PostCard({super.key, required this.post});
+  const PostCard(
+      {super.key,
+      required this.post,
+      required this.postsViewMode,
+      this.postsOfAccountId});
   final Post post;
+  final PostsViewMode postsViewMode;
+  final String? postsOfAccountId;
 
   @override
   Widget build(BuildContext context) {
@@ -24,8 +31,9 @@ class PostCard extends StatelessWidget {
     final PostsController postsController = Modular.get<PostsController>();
     return GestureDetector(
       onTap: () {
+        HapticFeedback.lightImpact();
         Modular.to.pushNamed(
-          ".${Routes.home.postPage}?accountId=${post.authorInfo.accountId}&blockHeight=${post.blockHeight}",
+          ".${Routes.home.postPage}?accountId=${post.authorInfo.accountId}&blockHeight=${post.blockHeight}&postsViewMode=${postsViewMode.index}&postsOfAccountId=${postsOfAccountId ?? ""}",
         );
       },
       child: Card(
@@ -71,9 +79,22 @@ class PostCard extends StatelessWidget {
                       clipBehavior: Clip.antiAlias,
                       child: NearNetworkImage(
                         imageUrl: post.authorInfo.profileImageLink,
-                        placeholder: Image.asset(
+                        errorPlaceholder: Image.asset(
                           NearAssets.standartAvatar,
                           fit: BoxFit.cover,
+                        ),
+                        placeholder: Stack(
+                          children: [
+                            Image.asset(
+                              NearAssets.standartAvatar,
+                              fit: BoxFit.cover,
+                            ),
+                            const Positioned.fill(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 6,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -83,8 +104,12 @@ class PostCard extends StatelessWidget {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         children: [
-                          Text(
-                            post.postBody.text.trim(),
+                          RawTextToContentFormatter(
+                            rawText: post.postBody.text.trim(),
+                            selectable: false,
+                            tappable: false,
+                            heroAnimForImages: false,
+                            loadImages: false,
                           ),
                           if (post.postBody.mediaLink != null) ...[
                             NearNetworkImage(
@@ -108,6 +133,7 @@ class PostCard extends StatelessWidget {
                           element.accountId == authController.state.accountId,
                     ),
                     onPressed: () async {
+                      HapticFeedback.lightImpact();
                       final String accountId = authController.state.accountId;
                       final String publicKey = authController.state.publicKey;
                       final String privateKey = authController.state.privateKey;
@@ -117,6 +143,8 @@ class PostCard extends StatelessWidget {
                           accountId: accountId,
                           publicKey: publicKey,
                           privateKey: privateKey,
+                          postsViewMode: postsViewMode,
+                          postsOfAccountId: postsOfAccountId,
                         );
                       } catch (err) {
                         final exc = AppExceptions(
@@ -124,7 +152,7 @@ class PostCard extends StatelessWidget {
                           messageForDev: err.toString(),
                           statusCode: AppErrorCodes.flutterchainError,
                         );
-                        Modular.get<Catcher>().exceptionsHandler.add(exc);
+                        throw exc;
                       }
                     },
                     count: post.likeList.length,
@@ -138,6 +166,7 @@ class PostCard extends StatelessWidget {
                     ),
                     activatedColor: Colors.green,
                     onPressed: () async {
+                      HapticFeedback.lightImpact();
                       final String accountId = authController.state.accountId;
                       final String publicKey = authController.state.publicKey;
                       final String privateKey = authController.state.privateKey;
@@ -159,12 +188,14 @@ class PostCard extends StatelessWidget {
                               TextButton(
                                 child: const Text("Yes"),
                                 onPressed: () {
+                                  HapticFeedback.lightImpact();
                                   Modular.to.pop(true);
                                 },
                               ),
                               TextButton(
                                 child: const Text("No"),
                                 onPressed: () {
+                                  HapticFeedback.lightImpact();
                                   Modular.to.pop(false);
                                 },
                               ),
@@ -182,14 +213,16 @@ class PostCard extends StatelessWidget {
                               accountId: accountId,
                               publicKey: publicKey,
                               privateKey: privateKey,
+                              postsViewMode: postsViewMode,
+                              postsOfAccountId: postsOfAccountId,
                             );
                           } catch (err) {
                             final exc = AppExceptions(
-                              messageForUser: "Failed to like post",
+                              messageForUser: "Failed to repost post",
                               messageForDev: err.toString(),
                               statusCode: AppErrorCodes.flutterchainError,
                             );
-                            Modular.get<Catcher>().exceptionsHandler.add(exc);
+                            throw exc;
                           }
                         },
                       );
@@ -198,6 +231,7 @@ class PostCard extends StatelessWidget {
                   TwoStatesIconButton(
                     iconPath: NearAssets.shareIcon,
                     onPressed: () async {
+                      HapticFeedback.lightImpact();
                       final nearSocialApi = Modular.get<NearSocialApi>();
                       final urlOfPost = nearSocialApi.getUrlOfPost(
                         accountId: post.authorInfo.accountId,
