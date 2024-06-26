@@ -65,6 +65,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'bos-notifications-777.appspot.com',
     androidClientId:
         '1098516707870-jb69slbfmqsktij84auujq73at5rnmm7.apps.googleusercontent.com',
-    iosBundleId: 'com.vlmoon.nearsocialnotifications',
+    iosBundleId: 'com.vlmoon.nearsocialmobile',
   );
 }

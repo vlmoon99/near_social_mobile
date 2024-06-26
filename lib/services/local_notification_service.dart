@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class LocalNotificationService {
-  static const channelId = "com.vlmoon.nearsocialnotifications";
+  static const channelId = "com.vlmoon.nearsocialmobile";
   static const channelName = "nearsocialnotifications";
   static const channelIdImp = "high_importance_channel";
   static const channelNameImp = "High Importance Notifications";

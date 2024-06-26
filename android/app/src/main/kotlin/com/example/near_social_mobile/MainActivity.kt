@@ -1,4 +1,4 @@
-package com.vlmoon.nearsocialnotifications
+package com.vlmoon.nearsocialmobile
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 
