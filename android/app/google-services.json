@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:1098516707870:android:f41ed46d93d540482e8c0f",
         "android_client_info": {
-          "package_name": "com.example.near_social_mobile"
+          "package_name": "com.vlmoon.nearsocialmobile"
         }
       },
       "oauth_client": [
@@ -34,7 +34,7 @@
               "client_id": "1098516707870-25j1nbbkgqh40gjon85niov76m82qqm9.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.vlmoon.nearsocialnotifications"
+                "bundle_id": "com.vlmoon.nearsocialmobile"
               }
             }
           ]
