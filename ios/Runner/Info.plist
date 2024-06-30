@@ -54,11 +54,13 @@
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs camera access to scan QR codes</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Why is my app authenticating using face id?</string>
+	<string>This app needs FaceID to encrypt and decrypt private data</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to the photo library to send images</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
   	<string>sms</string>
   	<string>tel</string>
-</array>
+	</array>
 </dict>
 </plist>
