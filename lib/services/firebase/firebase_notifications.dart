@@ -15,9 +15,14 @@ class FirebaseNotificationService {
     final DocumentReference currentUserReference =
         FirebaseFirestore.instance.collection('users').doc(uid);
 
-    await currentUserReference.update({
-      'subscriptions': FieldValue.arrayUnion([accountId]),
-    });
+    try {
+      await currentUserReference.update({
+        'subscriptions': FieldValue.arrayUnion([accountId]),
+      });
+    } catch (err) {
+      await subscribeToNotifications(accountId);
+      return;
+    }
 
     final isThisAccountIdChannelExist = (await FirebaseFirestore.instance
                 .collection('subscriptions_channels')
