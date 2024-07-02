@@ -24,7 +24,9 @@ class LoadingBarrier extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SpinnerLoadingIndicator(),
+              const SpinnerLoadingIndicator(
+                color: Colors.white,
+              ),
               if (message != null) ...[
                 const SizedBox(height: 16),
                 Text(
