@@ -39,7 +39,7 @@ class LoadingBarrier extends StatelessWidget {
                     Text(
                       message!,
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 14,
                       ),
                     ),
                   ]

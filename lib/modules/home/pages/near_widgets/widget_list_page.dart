@@ -72,7 +72,7 @@ class _NearWidgetListPageState extends State<NearWidgetListPage> {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20).r,
                     child: SizedBox(
-                      height: 60.w,
+                      height: 60.h,
                       child: Row(
                         children: [
                           Expanded(

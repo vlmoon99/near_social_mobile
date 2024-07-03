@@ -81,7 +81,7 @@ class _PeopleListPageState extends State<PeopleListPage> {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20).r,
                     child: SizedBox(
-                      height: 60.w,
+                      height: 60.h,
                       child: Row(
                         children: [
                           Expanded(
@@ -107,8 +107,8 @@ class _PeopleListPageState extends State<PeopleListPage> {
                     );
                   },
                   leading: Container(
-                    width: 40.w,
-                    height: 40.w,
+                    width: 40.h,
+                    height: 40.h,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                     ),

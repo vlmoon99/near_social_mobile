@@ -14,8 +14,9 @@ class NearWidgetTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: SizedBox.square(
-        dimension: 50.w,
+      leading: SizedBox(
+        width: 40.h,
+        height: 40.h,
         child: NearNetworkImage(
           imageUrl: nearWidget.imageUrl,
           errorPlaceholder: Image.asset(NearAssets.widgetPlaceholder),

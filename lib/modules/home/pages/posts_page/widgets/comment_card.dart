@@ -47,7 +47,7 @@ class CommentCard extends StatelessWidget {
                 DateFormat('hh:mm a MMM dd, yyyy').format(comment.date),
                 style: TextStyle(
                   color: Colors.grey.shade600,
-                  fontSize: 12.sp,
+                  fontSize: 12,
                 ),
               ),
             ),
@@ -65,8 +65,8 @@ class CommentCard extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    width: 40.w,
-                    height: 40.w,
+                    width: 35.h,
+                    height: 35.h,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                     ),

@@ -185,7 +185,7 @@ class UserPageMainInfo extends StatelessWidget {
                           ? user.generalAccountInfo.name
                           : "No Name",
                       style: TextStyle(
-                        fontSize: 22.sp,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -193,14 +193,14 @@ class UserPageMainInfo extends StatelessWidget {
                       children: [
                         Icon(
                           CupertinoIcons.person_fill,
-                          size: 16.sp,
+                          size: 16.h,
                         ),
                         SizedBox(width: 5.w),
                         Flexible(
                           child: Text(
                             "@${user.generalAccountInfo.accountId}",
                             style: TextStyle(
-                                fontSize: 16.sp, fontWeight: FontWeight.w400),
+                                fontSize: 16, fontWeight: FontWeight.w400),
                           ),
                         ),
                         IconButton(
@@ -220,8 +220,8 @@ class UserPageMainInfo extends StatelessWidget {
                           },
                           icon: SvgPicture.asset(
                             "assets/media/icons/copy_icon.svg",
-                            height: 14.sp,
-                            width: 14.sp,
+                            height: 14.h,
+                            width: 14.h,
                           ),
                         ),
                         SizedBox(width: 10.w),
@@ -287,7 +287,7 @@ class UserPageMainInfo extends StatelessWidget {
                                       child: Text(
                                         "Following",
                                         style: TextStyle(
-                                          fontSize: 16.sp,
+                                          fontSize: 16,
                                         ),
                                       ),
                                     )
@@ -311,7 +311,7 @@ class UserPageMainInfo extends StatelessWidget {
                                       child: Text(
                                         "Follow",
                                         style: TextStyle(
-                                          fontSize: 16.sp,
+                                          fontSize: 16,
                                           fontWeight: FontWeight.w400,
                                         ),
                                       ),
@@ -342,7 +342,7 @@ class UserPageMainInfo extends StatelessWidget {
                             },
                             child: Text(
                               "👈 Poke",
-                              style: TextStyle(fontSize: 16.sp),
+                              style: TextStyle(fontSize: 16),
                             ),
                           ),
                         ],
@@ -353,7 +353,7 @@ class UserPageMainInfo extends StatelessWidget {
                         Text.rich(
                           TextSpan(
                             style: TextStyle(
-                              fontSize: 16.sp,
+                              fontSize: 16,
                             ),
                             children: [
                               TextSpan(
@@ -371,7 +371,7 @@ class UserPageMainInfo extends StatelessWidget {
                         Text.rich(
                           TextSpan(
                             style: TextStyle(
-                              fontSize: 16.sp,
+                              fontSize: 16,
                             ),
                             children: [
                               TextSpan(

@@ -9,7 +9,7 @@ class TwoStatesIconButton extends StatelessWidget {
     this.iconActivatedPath,
     required this.onPressed,
     this.activated = false,
-    this.size = 20,
+    this.size = 16,
     this.activatedColor = Colors.red,
   });
 
@@ -29,15 +29,15 @@ class TwoStatesIconButton extends StatelessWidget {
           icon: iconActivatedPath != null && activated
               ? SvgPicture.asset(
                   iconActivatedPath!,
-                  width: size.w,
-                  height: size.w,
+                  width: size.h,
+                  height: size.h,
                   color: activatedColor,
                 )
               : SvgPicture.asset(
                   iconPath,
                   color: activated ? activatedColor : Colors.grey,
-                  width: size.w,
-                  height: size.w,
+                  width: size.h,
+                  height: size.h,
                 ),
           style: const ButtonStyle(
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,

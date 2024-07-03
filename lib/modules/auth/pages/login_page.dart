@@ -50,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       Container(
                         padding: const EdgeInsets.all(16.0).r,
-                        width: .6.sw,
+                        width: 250.h,
                         decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.background,
                             borderRadius: BorderRadius.circular(10).r,
@@ -65,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Text.rich(
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 18.sp,
+                            fontSize: 20,
                           ),
                           TextSpan(
                             children: [
@@ -77,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                               TextSpan(
-                                style: TextStyle(fontSize: 14.sp),
+                                style: TextStyle(fontSize: 16),
                                 text:
                                     "This is the technical version of the Near Social mobile application. It is intended for testing purposes and may contain bugs",
                               ),

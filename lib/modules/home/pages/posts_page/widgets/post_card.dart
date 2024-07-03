@@ -48,7 +48,7 @@ class PostCard extends StatelessWidget {
                   DateFormat('hh:mm a MMM dd, yyyy').format(post.date),
                   style: TextStyle(
                     color: Colors.grey.shade600,
-                    fontSize: 12.sp,
+                    fontSize: 12,
                   ),
                 ),
               ),
@@ -71,8 +71,8 @@ class PostCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 40.w,
-                      height: 40.w,
+                      width: 35.h,
+                      height: 35.h,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                       ),

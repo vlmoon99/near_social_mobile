@@ -70,7 +70,7 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
             SizedBox(width: 10.w),
             Text(
               LocalizationsStrings.home.title,
-              style: TextStyle(fontSize: 20.sp),
+              style: const TextStyle(fontSize: 20),
             ).tr(),
           ],
         ),
@@ -93,7 +93,7 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
                         text: "Attention!\n",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 24.0.sp,
+                          fontSize: 24.0,
                         ),
                       ),
                       const TextSpan(
@@ -103,7 +103,7 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
                     ],
                   ),
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15.sp),
+                  style: TextStyle(fontSize: 15),
                 ),
               ),
               SizedBox(height: 20.h),

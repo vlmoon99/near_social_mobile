@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -68,7 +67,7 @@ class _HomePageState extends State<HomePage> {
           ),
           body: const RouterOutlet(),
           bottomNavigationBar: BottomAppBar(
-            height: 60.w,
+            height: 50.h,
             padding: EdgeInsets.zero,
             child: NavigationListener(builder: (context, _) {
               return Row(
