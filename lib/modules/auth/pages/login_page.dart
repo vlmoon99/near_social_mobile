@@ -138,7 +138,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
-        if (true)
+        if (isLoading)
           const LoadingBarrier(
             message: "Testnet account creation...",
           ),
