@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 
 class WidgetsPropsSettingsDialogBody extends StatefulWidget {
   const WidgetsPropsSettingsDialogBody({
@@ -82,7 +83,8 @@ class _WidgetsPropsSettingsDialogBodyState
             ),
           ),
           SizedBox(height: 5.h),
-          ElevatedButton(
+          CustomButton(
+            primary: true,
             onPressed: () {
               widget.navigateFunction(
                 """'${_textEditingController.text}'""",
@@ -90,8 +92,14 @@ class _WidgetsPropsSettingsDialogBodyState
               );
               Modular.to.pop();
             },
-            child: const Text("Open widget"),
+            child: const Text(
+              "Open widget",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
+          SizedBox(height: 5.h),
         ],
       ),
     );

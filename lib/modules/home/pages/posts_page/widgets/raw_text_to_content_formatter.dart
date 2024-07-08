@@ -6,6 +6,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:near_social_mobile/utils/near_widget_opener_interface.dart';
@@ -136,8 +137,8 @@ class RawTextToContentFormatter extends StatelessWidget {
                   return AlertDialog(
                     title: Text.rich(
                       TextSpan(
-                        style: TextStyle(
-                          fontSize: 20.sp,
+                        style: const TextStyle(
+                          fontSize: 20,
                         ),
                         text: "Do you want to open ?\n",
                         children: [
@@ -151,23 +152,30 @@ class RawTextToContentFormatter extends StatelessWidget {
                         ],
                       ),
                     ),
+                    actionsAlignment: MainAxisAlignment.spaceEvenly,
                     actions: [
-                      TextButton(
+                      CustomButton(
+                        primary: true,
                         onPressed: () {
-                          HapticFeedback.lightImpact();
+                          Modular.to.pop(true);
+                        },
+                        child: const Text(
+                          "Open",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      CustomButton(
+                        onPressed: () {
                           Modular.to.pop(false);
                         },
                         child: const Text(
                           "Cancel",
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          Modular.to.pop(true);
-                        },
-                        child: const Text("Open"),
                       ),
                     ],
                   );

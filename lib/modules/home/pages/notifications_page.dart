@@ -13,6 +13,7 @@ import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart'
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
@@ -139,11 +140,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   padding: const EdgeInsets.all(20),
                   child: moreNotificationsLoading
                       ? const Center(child: SpinnerLoadingIndicator())
-                      : ElevatedButton(
+                      : CustomButton(
                           onPressed: allNotificationsLoaded
                               ? null
                               : () async {
-                                  HapticFeedback.lightImpact();
                                   try {
                                     setState(() {
                                       moreNotificationsLoading = true;
@@ -170,9 +170,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                     });
                                   }
                                 },
-                          child: allNotificationsLoaded
-                              ? const Text("No more notifications")
-                              : const Text("Load more notifications"),
+                          child: Text(
+                            allNotificationsLoaded
+                                ? "No more notifications"
+                                : "Load more notifications",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                 );
               }
@@ -281,7 +286,6 @@ class _NotificationTileState extends State<NotificationTile> {
       builder: (context, snapshot) {
         return ListTile(
           onTap: () async {
-            HapticFeedback.lightImpact();
             await Modular.get<UserListController>()
                 .addGeneralAccountInfoIfNotExists(
                     generalAccountInfo: widget.notification.authorInfo);
@@ -356,7 +360,6 @@ class _NotificationTileState extends State<NotificationTile> {
                       if (postIsLoaded(postsController.state))
                         IconButton(
                           onPressed: () async {
-                            HapticFeedback.lightImpact();
                             final AuthController authController =
                                 Modular.get<AuthController>();
                             await Modular.to.pushNamed(

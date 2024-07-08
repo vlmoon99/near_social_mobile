@@ -3,7 +3,6 @@ import 'dart:developer';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -17,6 +16,7 @@ import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/services/crypto_storage_service.dart';
 import 'package:near_social_mobile/services/crypto_service.dart';
 import 'package:near_social_mobile/services/local_auth_service.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 
 class EncryptionScreen extends StatefulWidget {
   const EncryptionScreen({super.key, required this.authorizationCredentials});
@@ -86,7 +86,7 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
             children: [
               Padding(
                 padding: REdgeInsets.symmetric(horizontal: 24),
-                child: Text.rich(
+                child: const Text.rich(
                   TextSpan(
                     children: [
                       TextSpan(
@@ -96,7 +96,7 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
                           fontSize: 24.0,
                         ),
                       ),
-                      const TextSpan(
+                      TextSpan(
                         text:
                             "To protect your authentication data, it will be encrypted and secured with a password. For this to work, device protection must be enabled on your device.",
                       ),
@@ -107,9 +107,9 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
                 ),
               ),
               SizedBox(height: 20.h),
-              ElevatedButton(
+              CustomButton(
+                primary: true,
                 onPressed: () async {
-                  HapticFeedback.lightImpact();
                   final bool authenticated =
                       await LocalAuthService().authenticate(
                     requestAuthMessage: 'Please authenticate to encrypt data',
@@ -118,7 +118,12 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
                   await encryptDataAndLogin();
                   Modular.to.navigate(Routes.home.getModule());
                 },
-                child: const Text("Encrypt"),
+                child: const Text(
+                  "Encrypt",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               )
             ],
           ),

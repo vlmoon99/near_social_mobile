@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class KeyAddingDialogBody extends StatefulWidget {
@@ -34,7 +35,6 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
   String derivationPath = "";
 
   Future<void> addKey() async {
-    HapticFeedback.lightImpact();
     final NearSocialApi nearSocialApi = Modular.get<NearSocialApi>();
     final AuthController authController = Modular.get<AuthController>();
     try {
@@ -105,8 +105,11 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
             "Add new key",
-            style: Theme.of(context).textTheme.titleMedium,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
+          SizedBox(height: 10.h),
           Container(
             padding: const EdgeInsets.all(10).r,
             decoration: BoxDecoration(
@@ -130,10 +133,10 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
               },
             ),
           ),
-          SizedBox(height: 10.w),
+          SizedBox(height: 10.h),
           ConstrainedBox(
             constraints: BoxConstraints(
-              maxHeight: 250.w,
+              maxHeight: 210.h,
               maxWidth: double.infinity,
             ),
             child: Column(
@@ -150,6 +153,7 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
                       ),
                     ),
                   ],
+                  dividerColor: Colors.black.withOpacity(.1),
                 ),
                 Flexible(
                   child: TabBarView(
@@ -159,7 +163,7 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          SizedBox(height: 10.w),
+                          SizedBox(height: 10.h),
                           Container(
                             padding: const EdgeInsets.all(10).r,
                             decoration: BoxDecoration(
@@ -169,7 +173,7 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
                             child: TextFormField(
                               initialValue: "",
                               decoration: const InputDecoration.collapsed(
-                                hintText: "Write key",
+                                hintText: "Private key",
                               ),
                               validator: (value) {
                                 if (_tabController.index == 1) {
@@ -191,7 +195,7 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          SizedBox(height: 10.w),
+                          SizedBox(height: 10.h),
                           Container(
                             padding: const EdgeInsets.all(10).r,
                             decoration: BoxDecoration(
@@ -217,7 +221,7 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
                               },
                             ),
                           ),
-                          SizedBox(height: 10.w),
+                          SizedBox(height: 10.h),
                           Container(
                             padding: const EdgeInsets.all(10).r,
                             decoration: BoxDecoration(
@@ -250,9 +254,15 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
                   ),
                 ),
                 if (!addingKeyProcessLoading)
-                  ElevatedButton(
+                  CustomButton(
+                    primary: true,
                     onPressed: addKey,
-                    child: const Text("Add"),
+                    child: const Text(
+                      "Add",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   )
                 else
                   const Center(

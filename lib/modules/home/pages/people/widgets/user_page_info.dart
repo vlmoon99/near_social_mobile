@@ -12,6 +12,7 @@ import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/expandable_wiget.dart';
 import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
@@ -184,7 +185,7 @@ class UserPageMainInfo extends StatelessWidget {
                       user.generalAccountInfo.name != ""
                           ? user.generalAccountInfo.name
                           : "No Name",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
@@ -199,8 +200,10 @@ class UserPageMainInfo extends StatelessWidget {
                         Flexible(
                           child: Text(
                             "@${user.generalAccountInfo.accountId}",
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w400),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
                         ),
                         IconButton(
@@ -233,19 +236,19 @@ class UserPageMainInfo extends StatelessWidget {
                             ))
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 5,
+                              horizontal: 10,
                               vertical: 2,
                             ).r,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(5).r,
-                              color: AppColors.lightSurface.withOpacity(.5),
+                              color: NEARColors.slate,
                             ),
                             child: Text(
                               "Follows you",
                               style: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w300,
-                                color: AppColors.onlightSurface,
+                                color: NEARColors.white,
                               ),
                             ),
                           ),
@@ -257,67 +260,34 @@ class UserPageMainInfo extends StatelessWidget {
                           if (user.followers != null)
                             RPadding(
                               padding: const EdgeInsets.only(right: 10),
-                              child: user.followers!.any((follower) =>
-                                      follower.accountId ==
-                                      authController.state.accountId)
-                                  ? ElevatedButton(
-                                      onPressed: () {
-                                        HapticFeedback.lightImpact();
+                              child: Builder(
+                                builder: (_) {
+                                  final inFollowerList = user.followers!.any(
+                                    (follower) =>
+                                        follower.accountId ==
+                                        authController.state.accountId,
+                                  );
+                                  return CustomButton(
+                                    primary: !inFollowerList,
+                                    onPressed: () {
+                                      if (inFollowerList) {
                                         requestToUnfollowAccount(context);
-                                      },
-                                      style: ButtonStyle(
-                                        backgroundColor:
-                                            MaterialStatePropertyAll(
-                                                Theme.of(context)
-                                                    .colorScheme
-                                                    .onPrimary),
-                                        foregroundColor:
-                                            MaterialStatePropertyAll(
-                                                Theme.of(context)
-                                                    .colorScheme
-                                                    .primary),
-                                        side: MaterialStatePropertyAll(
-                                          BorderSide(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        "Following",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    )
-                                  : ElevatedButton(
-                                      onPressed: () {
-                                        HapticFeedback.lightImpact();
+                                      } else {
                                         requestToFollowAccount(context);
-                                      },
-                                      style: ButtonStyle(
-                                        backgroundColor:
-                                            MaterialStatePropertyAll(
-                                                Theme.of(context)
-                                                    .colorScheme
-                                                    .primary),
-                                        foregroundColor:
-                                            MaterialStatePropertyAll(
-                                                Theme.of(context)
-                                                    .colorScheme
-                                                    .onPrimary),
-                                      ),
-                                      child: Text(
-                                        "Follow",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                        ),
+                                      }
+                                    },
+                                    child: Text(
+                                      inFollowerList ? "Following" : "Follow",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
+                                  );
+                                },
+                              ),
                             ),
-                          ElevatedButton(
+                          CustomButton(
+                            primary: true,
                             onPressed: () {
                               HapticFeedback.lightImpact();
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -340,9 +310,11 @@ class UserPageMainInfo extends StatelessWidget {
                                 );
                               });
                             },
-                            child: Text(
+                            child: const Text(
                               "👈 Poke",
-                              style: TextStyle(fontSize: 16),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
@@ -352,7 +324,7 @@ class UserPageMainInfo extends StatelessWidget {
                       children: [
                         Text.rich(
                           TextSpan(
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                             ),
                             children: [
@@ -370,7 +342,7 @@ class UserPageMainInfo extends StatelessWidget {
                         SizedBox(width: 10.w),
                         Text.rich(
                           TextSpan(
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                             ),
                             children: [
@@ -392,7 +364,8 @@ class UserPageMainInfo extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ...linkTreeList(
-                              linkTree: user.generalAccountInfo.linktree)
+                              linkTree: user.generalAccountInfo.linktree),
+                          SizedBox(height: 10.h),
                         ],
                       ),
                     Wrap(
@@ -475,14 +448,13 @@ class UserPageMainInfo extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          content: Text(
-            "Are you sure you want to unfollow $accountIdOfUser?",
-            style: TextStyle(fontSize: 16.sp),
-          ),
+          content: Text("Are you sure you want to unfollow $accountIdOfUser?",
+              style: const TextStyle(fontSize: 16)),
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
           actions: [
-            TextButton(
+            CustomButton(
+              primary: true,
               onPressed: () async {
-                HapticFeedback.lightImpact();
                 userListController.unfollowAccount(
                   accountIdToUnfollow: accountIdOfUser,
                   accountId: authController.state.accountId,
@@ -491,14 +463,23 @@ class UserPageMainInfo extends StatelessWidget {
                 );
                 Modular.to.pop();
               },
-              child: const Text("Yes"),
+              child: const Text(
+                "Yes",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-            TextButton(
+            CustomButton(
               onPressed: () {
-                HapticFeedback.lightImpact();
                 Modular.to.pop();
               },
-              child: const Text("No"),
+              child: const Text(
+                "No",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );
@@ -516,14 +497,13 @@ class UserPageMainInfo extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          content: Text(
-            "Are you sure you want to follow $accountIdOfUser?",
-            style: TextStyle(fontSize: 16.sp),
-          ),
+          content: Text("Are you sure you want to follow $accountIdOfUser?",
+              style: const TextStyle(fontSize: 16)),
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
           actions: [
-            TextButton(
+            CustomButton(
+              primary: true,
               onPressed: () async {
-                HapticFeedback.lightImpact();
                 userListController.followAccount(
                   accountIdToFollow: accountIdOfUser,
                   accountId: authController.state.accountId,
@@ -532,14 +512,23 @@ class UserPageMainInfo extends StatelessWidget {
                 );
                 Modular.to.pop();
               },
-              child: const Text("Yes"),
+              child: const Text(
+                "Yes",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-            TextButton(
+            CustomButton(
               onPressed: () {
-                HapticFeedback.lightImpact();
                 Modular.to.pop();
               },
-              child: const Text("No"),
+              child: const Text(
+                "No",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );

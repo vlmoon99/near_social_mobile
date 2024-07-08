@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
@@ -46,17 +47,19 @@ ThemeData get appTheme => ThemeData(
         foregroundColor: NEARColors.white,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(
-            AppColors.primary,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          side: const BorderSide(
+            color: Color(0xff4c5155),
           ),
-          // side: const MaterialStatePropertyAll(
-          //   BorderSide(
-          //     color: Color(0xff4c5155),
-          //   ),
-          // ),
-          foregroundColor:
-              const MaterialStatePropertyAll(AppColors.onlightSurface),
+          foregroundColor: AppColors.onlightSurface,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8).r),
+          enableFeedback: true,
         ),
       ),
       bottomAppBarTheme: const BottomAppBarTheme(

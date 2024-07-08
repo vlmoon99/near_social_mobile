@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:rxdart/rxdart.dart';
 
 class AppExceptions {
@@ -46,15 +47,21 @@ class Catcher {
   ) {
     showDialog(
       builder: (context) => AlertDialog(
-        title: const Text('Error'),
+        title: const Text('Error!'),
+        actionsAlignment: MainAxisAlignment.center,
         content: Text(exception.messageForUser),
         actions: [
-          TextButton(
+          CustomButton(
+            primary: true,
             onPressed: () {
-              HapticFeedback.lightImpact();
               Navigator.pop(context);
             },
-            child: const Text('OK'),
+            child: const Text(
+              'OK',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),

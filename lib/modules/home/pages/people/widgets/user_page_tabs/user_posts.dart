@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/post_card.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class UserPostsView extends StatefulWidget {
@@ -44,11 +45,11 @@ class _UserPostsViewState extends State<UserPostsView> {
             if (index == posts.length) {
               return loadingMorePosts
                   ? const Center(child: SpinnerLoadingIndicator())
-                  : ElevatedButton(
+                  : CustomButton(
+                      primary: true,
                       onPressed: allPostsLoaded
                           ? null
                           : () async {
-                              HapticFeedback.lightImpact();
                               try {
                                 setState(() {
                                   loadingMorePosts = true;
@@ -72,9 +73,12 @@ class _UserPostsViewState extends State<UserPostsView> {
                                 });
                               }
                             },
-                      child: allPostsLoaded
-                          ? const Text("No more posts")
-                          : const Text("Load more posts"),
+                      child: Text(
+                        allPostsLoaded ? "No more posts" : "Load more posts",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     );
             }
             return PostCard(

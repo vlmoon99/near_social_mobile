@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -10,6 +9,7 @@ import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/services/crypto_storage_service.dart';
 import 'package:near_social_mobile/services/local_auth_service.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 
 class DecryptionPageForLoginnedUser extends StatelessWidget {
   const DecryptionPageForLoginnedUser({super.key});
@@ -39,19 +39,17 @@ class DecryptionPageForLoginnedUser extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Positioned.fill(
-                child: Image.asset(
-                  "assets/media/images/near_social_backgorund.png",
-                  fit: BoxFit.cover,
-                ),
+              Image.asset(
+                "assets/media/images/near_social_backgorund.png",
+                fit: BoxFit.contain,
               ),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  ElevatedButton(
+                  CustomButton(
+                    primary: true,
                     onPressed: () async {
-                      HapticFeedback.lightImpact();
                       final bool authenticated =
                           await LocalAuthService().authenticate(
                         requestAuthMessage:
@@ -60,16 +58,25 @@ class DecryptionPageForLoginnedUser extends StatelessWidget {
                       if (!authenticated) return;
                       await decryptDataAndLogin();
                     },
-                    child: const Text("Decrypt"),
+                    child: const Text(
+                      "Decrypt",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                   SizedBox(height: 20.h),
-                  ElevatedButton(
+                  CustomButton(
                     onPressed: () async {
-                      HapticFeedback.lightImpact();
                       await authController.logout();
                       Modular.to.navigate(Routes.auth.getModule());
                     },
-                    child: const Text("Logout"),
+                    child: const Text(
+                      "Logout",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),

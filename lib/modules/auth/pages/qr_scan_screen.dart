@@ -66,6 +66,7 @@ class _QRReaderScreenState extends State<QRReaderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
+        top: false,
         child: QRView(
           key: qrKey,
           onQRViewCreated: _onQRViewCreated,
@@ -75,7 +76,7 @@ class _QRReaderScreenState extends State<QRReaderScreen> {
             borderRadius: 10,
             borderLength: 30,
             borderWidth: 10,
-            cutOutSize: 300.w,
+            cutOutSize: 300.h,
           ),
         ),
       ),

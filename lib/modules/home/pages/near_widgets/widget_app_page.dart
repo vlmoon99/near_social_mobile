@@ -2,6 +2,7 @@ import 'package:bos_gateway_viewer/bos_gateway_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 
 class NearWidget extends StatelessWidget {
   const NearWidget({
@@ -49,11 +50,17 @@ class NearWidget extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 20.0.w),
-                ElevatedButton(
+                CustomButton(
+                  primary: true,
                   onPressed: () {
                     overlayEntry.remove();
                   },
-                  child: const Text('Close'),
+                  child: const Text(
+                    'Close',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),

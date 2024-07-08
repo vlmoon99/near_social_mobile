@@ -11,6 +11,7 @@ import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 
 class CreatePostDialog extends StatefulWidget {
   const CreatePostDialog({
@@ -37,7 +38,7 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
             "Create post",
             style: TextStyle(fontSize: 18.sp),
           ),
-          SizedBox(height: 5.h),
+          SizedBox(height: 10.h),
           Container(
             padding: const EdgeInsets.all(10).r,
             decoration: BoxDecoration(
@@ -48,95 +49,102 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
               controller: _textEditingController,
               maxLines: 10,
               decoration: const InputDecoration.collapsed(
-                hintText: "Write your comment here...",
+                hintText: "Write your post here...",
               ),
             ),
           ),
           SizedBox(height: 10.h),
-          SizedBox(
-            height: 60.w,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    HapticFeedback.lightImpact();
-                    final ImagePicker picker = ImagePicker();
-                    final XFile? file =
-                        await picker.pickImage(source: ImageSource.gallery);
-                    if (file == null) {
-                      return;
-                    }
-                    setState(() {
-                      filepathOfMedia = file.path;
-                    });
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text("Add media"),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              CustomButton(
+                primary: true,
+                onPressed: () async {
+                  final ImagePicker picker = ImagePicker();
+                  final XFile? file =
+                      await picker.pickImage(source: ImageSource.gallery);
+                  if (file == null) {
+                    return;
+                  }
+                  setState(() {
+                    filepathOfMedia = file.path;
+                  });
+                },
+                child: Row(
+                  children: [
+                    const Icon(Icons.add),
+                    SizedBox(width: 5.h),
+                    const Text(
+                      "Add media",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                if (filepathOfMedia != null)
-                  SizedBox(
-                    width: 60.w,
-                    height: 60.w,
-                    child: Stack(
-                      alignment: Alignment.bottomLeft,
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          height: 50.w,
-                          width: 50.w,
-                          decoration: BoxDecoration(
-                            color: Colors.black12,
-                            borderRadius: BorderRadius.circular(10).r,
-                          ),
-                          clipBehavior: Clip.hardEdge,
-                          child: Image.file(
-                            File(filepathOfMedia!),
-                            fit: BoxFit.cover,
-                          ),
+              ),
+              if (filepathOfMedia != null)
+                SizedBox(
+                  width: 60.h,
+                  height: 60.h,
+                  child: Stack(
+                    alignment: Alignment.bottomLeft,
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        height: 50.h,
+                        width: 50.h,
+                        decoration: BoxDecoration(
+                          color: Colors.black12,
+                          borderRadius: BorderRadius.circular(10).r,
                         ),
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: SizedBox(
-                            width: 30.w,
-                            height: 30.w,
-                            child: FittedBox(
-                              child: IconButton(
-                                onPressed: () {
-                                  HapticFeedback.lightImpact();
-                                  setState(() {
-                                    filepathOfMedia = null;
-                                  });
-                                },
-                                icon: const Icon(Icons.close),
-                                color: Colors.red,
-                                style: const ButtonStyle(
-                                  backgroundColor: MaterialStatePropertyAll(
-                                    Colors.white,
-                                  ),
-                                  shadowColor:
-                                      MaterialStatePropertyAll(Colors.black),
-                                  elevation: MaterialStatePropertyAll(2),
+                        clipBehavior: Clip.hardEdge,
+                        child: Image.file(
+                          File(filepathOfMedia!),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: SizedBox(
+                          width: 30.h,
+                          height: 30.h,
+                          child: FittedBox(
+                            child: IconButton(
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  filepathOfMedia = null;
+                                });
+                              },
+                              icon: const Icon(Icons.close),
+                              color: Colors.red,
+                              style: const ButtonStyle(
+                                backgroundColor: MaterialStatePropertyAll(
+                                  Colors.white,
                                 ),
+                                shadowColor:
+                                    MaterialStatePropertyAll(Colors.black),
+                                elevation: MaterialStatePropertyAll(2),
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
-          SizedBox(height: 5.h),
+          SizedBox(height: 10.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              ElevatedButton(
+              CustomButton(
+                primary: true,
                 onPressed: () async {
-                  HapticFeedback.lightImpact();
                   final nearSocialApi = Modular.get<NearSocialApi>();
                   final AuthController authController =
                       Modular.get<AuthController>();
@@ -182,14 +190,23 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
                   );
                   Modular.to.pop();
                 },
-                child: const Text("Send"),
+                child: const Text(
+                  "Send",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-              ElevatedButton(
+              CustomButton(
                 onPressed: () {
-                  HapticFeedback.lightImpact();
                   Modular.to.pop();
                 },
-                child: const Text("Cancel"),
+                child: const Text(
+                  "Cancel",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           )

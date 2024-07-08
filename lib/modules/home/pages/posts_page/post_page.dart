@@ -12,6 +12,7 @@ import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart'
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
@@ -231,22 +232,32 @@ class PostPage extends StatelessWidget {
                             context: context,
                             builder: (context) {
                               return AlertDialog(
-                                title: const Text(
-                                  "Repost",
-                                ),
+                                title: const Text("Repost"),
                                 content: const Text(
                                   "Are you sure you want to repost this post?",
                                 ),
+                                actionsAlignment: MainAxisAlignment.spaceEvenly,
                                 actions: [
-                                  TextButton(
-                                    child: const Text("Yes"),
+                                  CustomButton(
+                                    primary: true,
+                                    child: const Text(
+                                      "Yes",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                     onPressed: () {
                                       HapticFeedback.lightImpact();
                                       Modular.to.pop(true);
                                     },
                                   ),
-                                  TextButton(
-                                    child: const Text("No"),
+                                  CustomButton(
+                                    child: const Text(
+                                      "No",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                     onPressed: () {
                                       HapticFeedback.lightImpact();
                                       Modular.to.pop(false);

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 
 class HomeMenuPage extends StatelessWidget {
   const HomeMenuPage({super.key});
@@ -36,21 +37,34 @@ class HomeMenuPage extends StatelessWidget {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text("Are you sure you want to logout?"),
+                  title: const Text(
+                    "Are you sure you want to logout?",
+                    textAlign: TextAlign.center,
+                  ),
+                  actionsAlignment: MainAxisAlignment.spaceEvenly,
                   actions: [
-                    TextButton(
-                      child: const Text("Yes"),
+                    CustomButton(
+                      primary: true,
                       onPressed: () {
-                        HapticFeedback.lightImpact();
                         Modular.to.pop(true);
                       },
+                      child: const Text(
+                        "Yes",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    TextButton(
-                      child: const Text("No"),
+                    CustomButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
                         Modular.to.pop(false);
                       },
+                      child: const Text(
+                        "No",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),

@@ -7,6 +7,7 @@ import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_se
 import 'package:near_social_mobile/modules/vms/core/models/authorization_credentials.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/services/testnet_service.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/loading_barrier.dart';
 import 'package:near_social_mobile/utils/check_for_jailbreak.dart';
 
@@ -62,14 +63,14 @@ class _LoginPageState extends State<LoginPage> {
                                 offset: const Offset(0, 3),
                               ),
                             ]),
-                        child: Text.rich(
+                        child: const Text.rich(
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 20,
                           ),
                           TextSpan(
                             children: [
-                              const TextSpan(
+                              TextSpan(
                                 text: "Attention!\n",
                                 style: TextStyle(
                                   color: Colors.red,
@@ -86,9 +87,9 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       SizedBox(height: 30.h),
-                      ElevatedButton(
+                      CustomButton(
+                        primary: true,
                         onPressed: () async {
-                          HapticFeedback.lightImpact();
                           await Modular.get<NearBlockChainService>()
                               .setBlockchainNetworkEnvironment(
                             newUrl: NearBlockChainNetworkUrls.listOfUrls
@@ -97,12 +98,17 @@ class _LoginPageState extends State<LoginPage> {
                           Modular.to.pushNamed(
                               Routes.auth.getRoute(Routes.auth.qrReader));
                         },
-                        child: const Text("Login with QR code"),
+                        child: const Text(
+                          "Login with QR code",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 20),
-                      ElevatedButton(
+                      CustomButton(
+                        primary: true,
                         onPressed: () async {
-                          HapticFeedback.lightImpact();
                           try {
                             setState(() {
                               isLoading = true;
@@ -129,7 +135,12 @@ class _LoginPageState extends State<LoginPage> {
                             });
                           }
                         },
-                        child: const Text("Login with testnet"),
+                        child: const Text(
+                          "Login with testnet",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),

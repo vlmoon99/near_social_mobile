@@ -36,12 +36,7 @@ class LoadingBarrier extends StatelessWidget {
                   const SpinnerLoadingIndicator(),
                   if (message != null) ...[
                     const SizedBox(height: 16),
-                    Text(
-                      message!,
-                      style: TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
+                    Text(message!),
                   ]
                 ],
               ),

@@ -101,7 +101,6 @@ class _PeopleListPageState extends State<PeopleListPage> {
                 final user = users[index - 1];
                 return ListTile(
                   onTap: () {
-                    HapticFeedback.lightImpact();
                     Modular.to.pushNamed(
                       ".${Routes.home.userPage}?accountId=${user.generalAccountInfo.accountId}",
                     );

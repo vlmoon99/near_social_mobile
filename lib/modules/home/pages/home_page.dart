@@ -6,7 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutterchain/flutterchain_lib/constants/chains/near_blockchain_network_urls.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/modules/home/pages/decryption_page_for_loggined_user.dart';
+import 'package:near_social_mobile/modules/auth/pages/decryption_page_for_loggined_user.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/models/auth_info.dart';
 import 'package:near_social_mobile/routes/routes.dart';

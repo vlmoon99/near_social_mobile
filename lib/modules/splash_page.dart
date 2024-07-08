@@ -53,16 +53,16 @@ class SplashPage extends StatelessWidget {
           children: [
             SvgPicture.asset(
               'assets/media/icons/near_social_logo.svg',
-              width: 50.w,
-              height: 50.w,
+              width: 50.h,
+              height: 50.h,
             ),
-            SizedBox(height: 20.w),
+            SizedBox(height: 20.h),
             AnimatedTextKit(
               animatedTexts: [
                 TypewriterAnimatedText(
                   'Near Social',
-                  textStyle: TextStyle(
-                    fontSize: 32.0.sp,
+                  textStyle: const TextStyle(
+                    fontSize: 32.0,
                     fontWeight: FontWeight.bold,
                   ),
                   speed: const Duration(milliseconds: 75),
