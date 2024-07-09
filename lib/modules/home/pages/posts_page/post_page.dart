@@ -85,30 +85,54 @@ class PostPage extends StatelessWidget {
                         ".${Routes.home.userPage}?accountId=${post.authorInfo.accountId}",
                       );
                     },
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 35.h,
-                          height: 35.h,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          child: NearNetworkImage(
-                            imageUrl: post.authorInfo.profileImageLink,
-                            errorPlaceholder: Image.asset(
-                              NearAssets.standartAvatar,
-                              fit: BoxFit.cover,
+                    child: SizedBox(
+                      height: 36.h,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 35.h,
+                            height: 35.h,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10).r,
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: NearNetworkImage(
+                              imageUrl: post.authorInfo.profileImageLink,
+                              errorPlaceholder: Image.asset(
+                                NearAssets.standartAvatar,
+                                fit: BoxFit.cover,
+                              ),
+                              placeholder: Image.asset(
+                                NearAssets.standartAvatar,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                          child: Text(
-                            "${post.authorInfo.name} @${post.authorInfo.accountId}",
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (post.authorInfo.name != "")
+                                  Text(
+                                    post.authorInfo.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                Text(
+                                  "@${post.authorInfo.accountId}",
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   SizedBox(height: 5.h),

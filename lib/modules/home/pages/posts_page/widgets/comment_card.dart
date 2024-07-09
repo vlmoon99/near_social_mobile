@@ -62,43 +62,54 @@ class CommentCard extends StatelessWidget {
                   ".${Routes.home.userPage}?accountId=${comment.authorInfo.accountId}",
                 );
               },
-              child: Row(
-                children: [
-                  Container(
-                    width: 35.h,
-                    height: 35.h,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: NearNetworkImage(
-                      imageUrl: comment.authorInfo.profileImageLink,
-                      errorPlaceholder: Image.asset(
-                        NearAssets.standartAvatar,
-                        fit: BoxFit.cover,
+              child: SizedBox(
+                height: 36.h,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 35.h,
+                      height: 35.h,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10).r,
                       ),
-                      placeholder: Stack(
+                      clipBehavior: Clip.antiAlias,
+                      child: NearNetworkImage(
+                        imageUrl: comment.authorInfo.profileImageLink,
+                        errorPlaceholder: Image.asset(
+                          NearAssets.standartAvatar,
+                          fit: BoxFit.cover,
+                        ),
+                        placeholder: Image.asset(
+                          NearAssets.standartAvatar,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Image.asset(
-                            NearAssets.standartAvatar,
-                            fit: BoxFit.cover,
-                          ),
-                          const Positioned.fill(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 6,
+                          if (post.authorInfo.name != "")
+                            Text(
+                              comment.authorInfo.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
+                          Text(
+                            "@${comment.authorInfo.accountId}",
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ],
                       ),
                     ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Text(
-                      "${comment.authorInfo.name} @${comment.authorInfo.accountId}",
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             SizedBox(height: 10.h),

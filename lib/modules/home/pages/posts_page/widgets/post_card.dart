@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
@@ -15,6 +14,7 @@ import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
+import 'package:near_social_mobile/utils/date_to_string.dart';
 
 class PostCard extends StatelessWidget {
   const PostCard(
@@ -38,6 +38,10 @@ class PostCard extends StatelessWidget {
         );
       },
       child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0).r,
+        ),
+        elevation: 5,
         child: Padding(
           padding: REdgeInsets.all(10.0),
           child: Column(
@@ -46,7 +50,7 @@ class PostCard extends StatelessWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
-                  DateFormat('hh:mm a MMM dd, yyyy').format(post.date),
+                  formatDateDependingOnCurrentTime(post.date),
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 12,
@@ -58,24 +62,17 @@ class PostCard extends StatelessWidget {
                   "Reposted by ${post.reposterInfo?.name ?? ""} @${post.reposterInfo!.accountId}",
                   style: TextStyle(color: Colors.grey.shade600),
                 ),
+                SizedBox(height: 5.h),
               ],
-              RPadding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Text(
-                    "${post.authorInfo.name} @${post.authorInfo.accountId}"),
-              ),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: 200.h,
-                ),
+              SizedBox(
+                height: 36.h,
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       width: 35.h,
                       height: 35.h,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10).r,
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: NearNetworkImage(
@@ -84,42 +81,59 @@ class PostCard extends StatelessWidget {
                           NearAssets.standartAvatar,
                           fit: BoxFit.cover,
                         ),
-                        placeholder: Stack(
-                          children: [
-                            Image.asset(
-                              NearAssets.standartAvatar,
-                              fit: BoxFit.cover,
-                            ),
-                            const Positioned.fill(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 6,
-                              ),
-                            ),
-                          ],
+                        placeholder: Image.asset(
+                          NearAssets.standartAvatar,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
                     SizedBox(width: 10.w),
                     Expanded(
-                      child: ListView(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          RawTextToContentFormatter(
-                            rawText: post.postBody.text.trim(),
-                            selectable: false,
-                            tappable: false,
-                            heroAnimForImages: false,
-                            loadImages: false,
-                          ),
-                          if (post.postBody.mediaLink != null) ...[
-                            NearNetworkImage(
-                              imageUrl: post.postBody.mediaLink!,
+                          if (post.authorInfo.name != "")
+                            Text(
+                              post.authorInfo.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ],
+                          Text(
+                            "@${post.authorInfo.accountId}",
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
                         ],
                       ),
                     ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 10.h),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: 200.h,
+                ),
+                child: ListView(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    RawTextToContentFormatter(
+                      rawText: post.postBody.text.trim(),
+                      selectable: false,
+                      tappable: false,
+                      heroAnimForImages: false,
+                      loadImages: false,
+                    ),
+                    if (post.postBody.mediaLink != null) ...[
+                      NearNetworkImage(
+                        imageUrl: post.postBody.mediaLink!,
+                      ),
+                    ],
                   ],
                 ),
               ),
