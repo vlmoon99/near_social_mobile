@@ -200,10 +200,7 @@ class PostsController {
         case PostsViewMode.main:
           {
             _streamController.add(
-              state.copyWith(
-                posts: newPosts,
-                status: PostLoadingStatus.loaded,
-              ),
+              state.copyWith(posts: newPosts),
             );
             break;
           }
@@ -211,30 +208,41 @@ class PostsController {
           {
             _streamController.add(
               state.copyWith(
-                postsOfAccounts: Map.of(state.postsOfAccounts)
-                  ..[postsOfAccountId!] = newPosts,
-                status: PostLoadingStatus.loaded,
-              ),
+                  postsOfAccounts: Map.of(state.postsOfAccounts)
+                    ..[postsOfAccountId!] = newPosts),
             );
             break;
           }
         case PostsViewMode.temporary:
           {
             _streamController.add(
-              state.copyWith(
-                temporaryPosts: newPosts,
-                status: PostLoadingStatus.loaded,
-              ),
+              state.copyWith(temporaryPosts: newPosts),
             );
             break;
           }
       }
 
-      for (var indexOfPost = (newPosts.length - posts.length - 1);
-          indexOfPost < newPosts.length;
-          indexOfPost++) {
-        _loadPostsDataAsync(indexOfPost, postsViewMode, postsOfAccountId);
+      final summaryPosts = getPostsDueToPostsViewMode(
+        postsViewMode,
+        postsOfAccountId,
+      );
+      for (var i = 0; i < summaryPosts.length; i++) {
+        final post = summaryPosts[i];
+        if (post.postBody.text == "Loading" ||
+            post.authorInfo.profileImageLink == "") {
+          _loadPostsDataAsync(i, postsViewMode, postsOfAccountId).then(
+            (_) {
+              log("Completed loading post: $i");
+            },
+          );
+        }
       }
+
+      _streamController.add(
+        state.copyWith(
+          status: PostLoadingStatus.loaded,
+        ),
+      );
 
       return posts;
     } catch (err) {

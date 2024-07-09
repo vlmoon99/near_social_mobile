@@ -127,7 +127,7 @@ class PostCard extends StatelessWidget {
                       selectable: false,
                       tappable: false,
                       heroAnimForImages: false,
-                      loadImages: false,
+                      // loadImages: false,
                     ),
                     if (post.postBody.mediaLink != null) ...[
                       NearNetworkImage(
