@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutterchain/flutterchain_lib/constants/chains/near_blockchain_network_urls.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
+import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/auth/pages/decryption_page_for_loggined_user.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/models/auth_info.dart';
@@ -47,6 +46,22 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  int currentIndex(String currentRoute) {
+    if (currentRoute.contains(Routes.home.postsFeed)) {
+      return 0;
+    } else if (currentRoute.contains(Routes.home.widgetsListPage)) {
+      return 1;
+    } else if (currentRoute.contains(Routes.home.peopleListPage)) {
+      return 2;
+    } else if (currentRoute.contains(Routes.home.notificationsPage)) {
+      return 3;
+    } else if (currentRoute.contains(Routes.home.homeMenu)) {
+      return 4;
+    } else {
+      return 0;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
@@ -66,68 +81,60 @@ class _HomePageState extends State<HomePage> {
             centerTitle: true,
           ),
           body: const RouterOutlet(),
-          bottomNavigationBar: BottomAppBar(
-            height: 50.h,
-            padding: EdgeInsets.zero,
-            child: NavigationListener(builder: (context, _) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.feed),
-                    color: Modular.to.path.endsWith(Routes.home.postsFeed)
-                        ? Theme.of(context).primaryColor
-                        : null,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      Modular.to.navigate(".${Routes.home.postsFeed}");
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.widgets),
-                    color: Modular.to.path.endsWith(Routes.home.widgetsListPage)
-                        ? Theme.of(context).primaryColor
-                        : null,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      Modular.to.navigate(".${Routes.home.widgetsListPage}");
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.people),
-                    color: Modular.to.path.endsWith(Routes.home.peopleListPage)
-                        ? Theme.of(context).primaryColor
-                        : null,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      Modular.to.navigate(".${Routes.home.peopleListPage}");
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications),
-                    color:
-                        Modular.to.path.endsWith(Routes.home.notificationsPage)
-                            ? Theme.of(context).primaryColor
-                            : null,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      Modular.to.navigate(".${Routes.home.notificationsPage}");
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.menu),
-                    color: Modular.to.path.endsWith(Routes.home.homeMenu)
-                        ? Theme.of(context).primaryColor
-                        : null,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      Modular.to.navigate(".${Routes.home.homeMenu}");
-                    },
-                  ),
-                ],
-              );
-            }),
-          ),
+          bottomNavigationBar: NavigationListener(builder: (_, __) {
+            return BottomNavigationBar(
+              backgroundColor: NEARColors.black,
+              selectedItemColor: Theme.of(context).primaryColor,
+              unselectedItemColor: NEARColors.white,
+              type: BottomNavigationBarType.fixed,
+              currentIndex: currentIndex(Modular.to.path),
+              items: const [
+                BottomNavigationBarItem(
+                  backgroundColor: NEARColors.black,
+                  icon: Icon(Icons.feed),
+                  label: "Feed",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.widgets),
+                  label: "Widgets",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.people),
+                  label: "Users",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.notifications),
+                  label: "Alerts",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.menu),
+                  label: "Menu",
+                ),
+              ],
+              onTap: (value) {
+                switch (value) {
+                  case 0:
+                    Modular.to.navigate(".${Routes.home.postsFeed}");
+                    break;
+                  case 1:
+                    Modular.to.navigate(".${Routes.home.widgetsListPage}");
+                    break;
+                  case 2:
+                    Modular.to.navigate(".${Routes.home.peopleListPage}");
+                    break;
+                  case 3:
+                    Modular.to.navigate(".${Routes.home.notificationsPage}");
+                    break;
+                  case 4:
+                    Modular.to.navigate(".${Routes.home.homeMenu}");
+                    break;
+                  default:
+                    Modular.to.navigate(".${Routes.home.postsFeed}");
+                    break;
+                }
+              },
+            );
+          }),
         );
       },
     );
