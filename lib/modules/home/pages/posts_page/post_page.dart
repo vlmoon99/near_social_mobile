@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/config/constants.dart';
+import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/comment_card.dart';
@@ -118,15 +119,23 @@ class PostPage extends StatelessWidget {
                                 if (post.authorInfo.name != "")
                                   Text(
                                     post.authorInfo.name,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 Text(
                                   "@${post.authorInfo.accountId}",
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
+                                  style: post.authorInfo.name != ""
+                                      ? const TextStyle(
+                                          color: NEARColors.gray,
+                                          fontSize: 13,
+                                        )
+                                      : const TextStyle(
+                                          fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
