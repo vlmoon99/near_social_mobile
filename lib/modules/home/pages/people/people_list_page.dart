@@ -1,18 +1,9 @@
-// ignore_for_file: unused_import
-
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/exceptions/exceptions.dart';
-import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/home/pages/people/widgets/user_tile.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
-import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
-import 'package:near_social_mobile/routes/routes.dart';
-import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
+import 'package:near_social_mobile/shared_widgets/search_textfield.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class PeopleListPage extends StatefulWidget {
@@ -76,68 +67,20 @@ class _PeopleListPageState extends State<PeopleListPage> {
                     .toList()
                 : userListController.state.users;
             return ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 15).r,
               itemBuilder: (context, index) {
                 if (index == 0) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20).r,
+                    padding: const EdgeInsets.symmetric(vertical: 15).r,
                     child: SizedBox(
-                      height: 60.h,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: searchController,
-                              decoration: const InputDecoration.collapsed(
-                                hintText: "Search",
-                              ),
-                            ),
-                          ),
-                        ],
+                      height: 40.h,
+                      child: CustomSearchBar(
+                        searchController: searchController,
                       ),
                     ),
                   );
                 }
-
-                final user = users[index - 1];
-                return ListTile(
-                  onTap: () {
-                    Modular.to.pushNamed(
-                      ".${Routes.home.userPage}?accountId=${user.generalAccountInfo.accountId}",
-                    );
-                  },
-                  leading: Container(
-                    width: 40.h,
-                    height: 40.h,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: NearNetworkImage(
-                      imageUrl: user.generalAccountInfo.profileImageLink,
-                      errorPlaceholder: Image.asset(
-                        NearAssets.standartAvatar,
-                        fit: BoxFit.cover,
-                      ),
-                      placeholder: Stack(
-                        children: [
-                          Image.asset(
-                            NearAssets.standartAvatar,
-                            fit: BoxFit.cover,
-                          ),
-                          const Positioned.fill(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 6,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  title: user.generalAccountInfo.name != ""
-                      ? Text(user.generalAccountInfo.name)
-                      : null,
-                  subtitle: Text("@${user.generalAccountInfo.accountId}"),
-                );
+                return UserTile(user: users[index - 1]);
               },
               itemCount: users.length + 1,
             );
