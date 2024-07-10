@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
@@ -16,6 +15,7 @@ import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
+import 'package:near_social_mobile/utils/date_to_string.dart';
 
 class CommentCard extends StatelessWidget {
   const CommentCard({
@@ -35,6 +35,10 @@ class CommentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
     return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0).r,
+      ),
+      elevation: 5,
       child: RPadding(
         padding: const EdgeInsets.only(top: 15, left: 15, right: 15),
         child: Column(
@@ -44,7 +48,7 @@ class CommentCard extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: Text(
-                DateFormat('hh:mm a MMM dd, yyyy').format(comment.date),
+                formatDateDependingOnCurrentTime(comment.date),
                 style: TextStyle(
                   color: Colors.grey.shade600,
                   fontSize: 12,
