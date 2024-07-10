@@ -9,23 +9,30 @@ import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
+import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
+import 'package:near_social_mobile/shared_widgets/loading_page_with_after_navigation.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:near_social_mobile/utils/date_to_string.dart';
 
 class PostCard extends StatelessWidget {
-  const PostCard(
-      {super.key,
-      required this.post,
-      required this.postsViewMode,
-      this.postsOfAccountId});
+  const PostCard({
+    super.key,
+    required this.post,
+    required this.postsViewMode,
+    this.postsOfAccountId,
+    this.allowToNavigateToPostAuthorPage = true,
+    this.allowToNavigateToReposterAuthorPage = true,
+  });
   final Post post;
   final PostsViewMode postsViewMode;
   final String? postsOfAccountId;
+  final bool allowToNavigateToPostAuthorPage;
+  final bool allowToNavigateToReposterAuthorPage;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +42,7 @@ class PostCard extends StatelessWidget {
       onTap: () {
         HapticFeedback.lightImpact();
         Modular.to.pushNamed(
-          ".${Routes.home.postPage}?accountId=${post.authorInfo.accountId}&blockHeight=${post.blockHeight}&postsViewMode=${postsViewMode.index}&postsOfAccountId=${postsOfAccountId ?? ""}",
+          ".${Routes.home.postPage}?accountId=${post.authorInfo.accountId}&blockHeight=${post.blockHeight}&postsViewMode=${postsViewMode.index}&postsOfAccountId=${postsOfAccountId ?? ""}&allowToNavigateToPostAuthorPage=$allowToNavigateToPostAuthorPage",
         );
       },
       child: Card(
@@ -59,66 +66,105 @@ class PostCard extends StatelessWidget {
                 ),
               ),
               if (post.reposterInfo != null) ...[
-                Text(
-                  "Reposted by ${post.reposterInfo?.name ?? ""} @${post.reposterInfo!.accountId}",
-                  style: TextStyle(color: Colors.grey.shade600),
-                ),
-                SizedBox(height: 5.h),
-              ],
-              SizedBox(
-                height: 36.h,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 35.h,
-                      height: 35.h,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10).r,
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: NearNetworkImage(
-                        imageUrl: post.authorInfo.profileImageLink,
-                        errorPlaceholder: Image.asset(
-                          NearAssets.standartAvatar,
-                          fit: BoxFit.cover,
-                        ),
-                        placeholder: Image.asset(
-                          NearAssets.standartAvatar,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 10.h),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (post.authorInfo.name != "")
-                            Text(
-                              post.authorInfo.name,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 2,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                InkWell(
+                  onTap: allowToNavigateToReposterAuthorPage
+                      ? () async {
+                          HapticFeedback.lightImpact();
+                          Navigator.push(
+                            Modular.routerDelegate.navigatorKey.currentContext!,
+                            MaterialPageRoute(
+                              builder: (context) => LoadingPageWithNavigation(
+                                function: () async {
+                                  await Modular.get<UserListController>()
+                                      .loadAndAddGeneralAccountInfoIfNotExists(
+                                    accountId: post.reposterInfo!.accountId,
+                                  );
+                                },
+                                route:
+                                    ".${Routes.home.userPage}?accountId=${post.reposterInfo!.accountId}",
                               ),
                             ),
-                          Text(
-                            "@${post.authorInfo.accountId}",
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: post.authorInfo.name != ""
-                                ? const TextStyle(
-                                    color: NEARColors.gray,
-                                    fontSize: 13,
-                                  )
-                                : const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
+                          );
+                        }
+                      : null,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 3).r,
+                    child: Text(
+                      "Reposted by ${post.reposterInfo?.name ?? ""} @${post.reposterInfo!.accountId}",
+                      style: TextStyle(color: Colors.grey.shade600),
                     ),
-                  ],
+                  ),
+                ),
+              ],
+              InkWell(
+                onTap: allowToNavigateToPostAuthorPage
+                    ? () async {
+                        HapticFeedback.lightImpact();
+                        await Modular.get<UserListController>()
+                            .addGeneralAccountInfoIfNotExists(
+                          generalAccountInfo: post.authorInfo,
+                        );
+                        Modular.to.pushNamed(
+                          ".${Routes.home.userPage}?accountId=${post.authorInfo.accountId}",
+                        );
+                      }
+                    : null,
+                child: SizedBox(
+                  height: 36.h,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 35.h,
+                        height: 35.h,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10).r,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: NearNetworkImage(
+                          imageUrl: post.authorInfo.profileImageLink,
+                          errorPlaceholder: Image.asset(
+                            NearAssets.standartAvatar,
+                            fit: BoxFit.cover,
+                          ),
+                          placeholder: Image.asset(
+                            NearAssets.standartAvatar,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10.h),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (post.authorInfo.name != "")
+                              Text(
+                                post.authorInfo.name,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            Text(
+                              "@${post.authorInfo.accountId}",
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: post.authorInfo.name != ""
+                                  ? const TextStyle(
+                                      color: NEARColors.gray,
+                                      fontSize: 13,
+                                    )
+                                  : const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               SizedBox(height: 10.h),

@@ -71,6 +71,10 @@ class HomeModule extends Module {
         postsViewMode: PostsViewMode
             .values[int.parse(r.args.queryParams['postsViewMode'] as String)],
         postsOfAccountId: r.args.queryParams['postsOfAccountId'] ?? "",
+        allowToNavigateToPostAuthorPage: bool.parse(
+                r.args.queryParams['allowToNavigateToPostAuthorPage']
+                    as String) as bool? ??
+            true,
       ),
     );
     r.child(

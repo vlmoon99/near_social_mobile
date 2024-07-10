@@ -57,7 +57,27 @@ class UserListController {
       ]));
     }
   }
-  
+
+  Future<void> loadAndAddGeneralAccountInfoIfNotExists(
+      {required String accountId}) async {
+    final indexOfUser = state.users.indexWhere(
+      (element) => element.generalAccountInfo.accountId == accountId,
+    );
+    if (indexOfUser == -1) {
+      _streamController.add(
+        state.copyWith(
+          users: [
+            FullUserInfo(
+              generalAccountInfo: await nearSocialApi.getGeneralAccountInfo(
+                  accountId: accountId),
+            ),
+            ...state.users
+          ],
+        ),
+      );
+    }
+  }
+
   Future<void> loadAdditionalMetadata({required String accountId}) async {
     try {
       final indexOfUser = state.users.indexWhere(

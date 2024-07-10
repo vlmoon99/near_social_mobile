@@ -28,11 +28,13 @@ class PostsController {
   Future<void> loadPosts(
       {String? postsOfAccountId, required PostsViewMode postsViewMode}) async {
     try {
-      _streamController.add(
-        state.copyWith(
-          status: PostLoadingStatus.loading,
-        ),
-      );
+      if (postsViewMode == PostsViewMode.main) {
+        _streamController.add(
+          state.copyWith(
+            status: PostLoadingStatus.loading,
+          ),
+        );
+      }
 
       final List<Post> posts = await nearSocialApi.getPosts(
         targetAccounts: postsOfAccountId == null ? null : [postsOfAccountId],
@@ -60,7 +62,6 @@ class PostsController {
               state.copyWith(
                 postsOfAccounts: Map.of(state.postsOfAccounts)
                   ..[postsOfAccountId!] = posts,
-                status: PostLoadingStatus.loaded,
               ),
             );
             for (var indexOfPost = 0;
@@ -107,9 +108,6 @@ class PostsController {
     final repostList = await nearSocialApi.getRepostsOfPost(
         accountId: accountInfo.accountId, blockHeight: blockHeight);
 
-    // if (state.postsViewMode != PostsViewMode.temporary) {
-    //   return;
-    // }
     _streamController.add(
       state.copyWith(
         temporaryPosts: [
@@ -230,11 +228,7 @@ class PostsController {
         final post = summaryPosts[i];
         if (post.postBody.text == "Loading" ||
             post.authorInfo.profileImageLink == "") {
-          _loadPostsDataAsync(i, postsViewMode, postsOfAccountId).then(
-            (_) {
-              log("Completed loading post: $i");
-            },
-          );
+          _loadPostsDataAsync(i, postsViewMode, postsOfAccountId);
         }
       }
 
@@ -846,83 +840,6 @@ class PostsController {
         postsOfAccountId: postsOfAccountId,
       );
     } catch (err) {
-      // if (isLiked) {
-      //   if (state.postsViewMode != postsViewMode) {
-      //     if (postsViewMode == PostsViewMode.main) {
-      //       _streamController.add(
-      //         state.copyWith(
-      //           mainPosts: List.of(state.mainPosts)
-      //             ..[indexOfPost] = state.mainPosts[indexOfPost].copyWith(
-      //               commentList: List.from(
-      //                   state.mainPosts[indexOfPost].commentList ?? [])
-      //                 ..[indexOfComment] = comment.copyWith(
-      //                   likeList: comment.likeList
-      //                     ..add(
-      //                       Like(
-      //                         accountId: accountId,
-      //                       ),
-      //                     ),
-      //                 ),
-      //             ),
-      //         ),
-      //       );
-      //     }
-      //     return;
-      //   }
-      //   _streamController.add(
-      //     state.copyWith(
-      //       posts: List.of(state.posts)
-      //         ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-      //           commentList:
-      //               List.from(state.posts[indexOfPost].commentList ?? [])
-      //                 ..[indexOfComment] = comment.copyWith(
-      //                   likeList: comment.likeList
-      //                     ..add(
-      //                       Like(
-      //                         accountId: accountId,
-      //                       ),
-      //                     ),
-      //                 ),
-      //         ),
-      //     ),
-      //   );
-      // } else {
-      //   if (state.postsViewMode != postsViewMode) {
-      //     if (postsViewMode == PostsViewMode.main) {
-      //       _streamController.add(
-      //         state.copyWith(
-      //           mainPosts: List.of(state.mainPosts)
-      //             ..[indexOfPost] = state.mainPosts[indexOfPost].copyWith(
-      //               commentList: List.from(
-      //                   state.mainPosts[indexOfPost].commentList ?? [])
-      //                 ..[indexOfComment] = comment.copyWith(
-      //                   likeList: comment.likeList
-      //                     ..removeWhere(
-      //                       (element) => element.accountId == accountId,
-      //                     ),
-      //                 ),
-      //             ),
-      //         ),
-      //       );
-      //     }
-      //     return;
-      //   }
-      //   _streamController.add(
-      //     state.copyWith(
-      //       posts: List.of(state.posts)
-      //         ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-      //           commentList:
-      //               List.from(state.posts[indexOfPost].commentList ?? [])
-      //                 ..[indexOfComment] = comment.copyWith(
-      //                   likeList: comment.likeList
-      //                     ..removeWhere(
-      //                       (element) => element.accountId == accountId,
-      //                     ),
-      //                 ),
-      //         ),
-      //     ),
-      //   );
-      // }
       rethrow;
     }
   }
@@ -956,15 +873,6 @@ class PostsController {
         postsOfAccountId: postsOfAccountId,
       );
     } catch (err) {
-      // _streamController.add(
-      //   state.copyWith(
-      //     posts: List.of(state.posts)
-      //       ..[indexOfPost] = state.posts[indexOfPost].copyWith(
-      //         repostList: Set.of(post.repostList)
-      //           ..removeWhere((element) => element.accountId == accountId),
-      //       ),
-      //   ),
-      // );
       rethrow;
     }
   }

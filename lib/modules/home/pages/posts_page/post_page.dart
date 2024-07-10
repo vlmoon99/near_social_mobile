@@ -27,12 +27,14 @@ class PostPage extends StatelessWidget {
     required this.blockHeight,
     required this.postsViewMode,
     String? postsOfAccountId,
+    this.allowToNavigateToPostAuthorPage = true,
   }) : postsOfAccountId = postsOfAccountId == '' ? null : postsOfAccountId;
 
   final String accountId;
   final int blockHeight;
   final PostsViewMode postsViewMode;
   final String? postsOfAccountId;
+  final bool allowToNavigateToPostAuthorPage;
 
   @override
   Widget build(BuildContext context) {
@@ -76,16 +78,18 @@ class PostPage extends StatelessWidget {
                 padding: REdgeInsets.all(15),
                 children: [
                   InkWell(
-                    onTap: () async {
-                      HapticFeedback.lightImpact();
-                      await Modular.get<UserListController>()
-                          .addGeneralAccountInfoIfNotExists(
-                        generalAccountInfo: post.authorInfo,
-                      );
-                      Modular.to.pushNamed(
-                        ".${Routes.home.userPage}?accountId=${post.authorInfo.accountId}",
-                      );
-                    },
+                    onTap: allowToNavigateToPostAuthorPage
+                        ? () async {
+                            HapticFeedback.lightImpact();
+                            await Modular.get<UserListController>()
+                                .addGeneralAccountInfoIfNotExists(
+                              generalAccountInfo: post.authorInfo,
+                            );
+                            Modular.to.pushNamed(
+                              ".${Routes.home.userPage}?accountId=${post.authorInfo.accountId}",
+                            );
+                          }
+                        : null,
                     child: SizedBox(
                       height: 36.h,
                       child: Row(
