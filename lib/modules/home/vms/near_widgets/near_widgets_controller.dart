@@ -22,7 +22,15 @@ class NearWidgetsController {
           status: NearWidgetStatus.loaded,
           widgetList: nearWidgets
             ..sort(
-              (a, b) => b.blockHeight.compareTo(a.blockHeight),
+              (a, b) {
+                if (a.name.isEmpty && b.name.isNotEmpty) {
+                  return 1;
+                } else if (a.name.isNotEmpty && b.name.isEmpty) {
+                  return -1;
+                } else {
+                  return b.blockHeight.compareTo(a.blockHeight);
+                }
+              },
             ),
         ),
       );
