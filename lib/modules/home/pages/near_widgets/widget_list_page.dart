@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/apis/models/near_widget_info.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widgets/near_widget_tile.dart';
 import 'package:near_social_mobile/modules/home/vms/near_widgets/near_widgets_controller.dart';
+import 'package:near_social_mobile/shared_widgets/search_textfield.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class NearWidgetListPage extends StatefulWidget {
@@ -67,23 +68,15 @@ class _NearWidgetListPageState extends State<NearWidgetListPage> {
                 : nearWidgetsController.state.widgetList;
 
             return ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 15).r,
               itemBuilder: (context, index) {
                 if (index == 0) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20).r,
+                    padding: const EdgeInsets.symmetric(vertical: 15).r,
                     child: SizedBox(
-                      height: 60.h,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: searchController,
-                              decoration: const InputDecoration.collapsed(
-                                hintText: "Search",
-                              ),
-                            ),
-                          ),
-                        ],
+                      height: 40.h,
+                      child: CustomSearchBar(
+                        searchController: searchController,
                       ),
                     ),
                   );
