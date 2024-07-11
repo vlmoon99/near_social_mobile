@@ -1,8 +1,7 @@
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:near_social_mobile/modules/core_module.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
-import 'package:near_social_mobile/modules/home/pages/account_info_page.dart';
-import 'package:near_social_mobile/modules/home/pages/home_menu_page.dart';
+import 'package:near_social_mobile/modules/home/pages/home_menu/home_menu_page.dart';
 import 'package:near_social_mobile/modules/home/pages/home_page.dart';
 import 'package:near_social_mobile/modules/home/pages/key_manager/key_manager_page.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_app_page.dart';
@@ -85,10 +84,6 @@ class HomeModule extends Module {
       child: (context) => UserPage(
         accountId: r.args.queryParams['accountId'] as String,
       ),
-    );
-    r.child(
-      Routes.home.accountPage,
-      child: (context) => const AccountInfoPage(),
     );
     r.child(Routes.home.keyManagerPage,
         child: (context) => const KeyManagerPage());

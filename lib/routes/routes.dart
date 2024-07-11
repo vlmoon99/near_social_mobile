@@ -19,7 +19,6 @@ class _Home extends RouteClass {
   String startPage = '/';
   String postPage = '/post';
   String postsFeed = '/posts_feed';
-  String accountPage = '/account';
   String widgetsListPage = '/widgets_list';
   String widgetPage = '/widget';
   String peopleListPage = '/people_list';
