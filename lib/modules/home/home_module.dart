@@ -7,7 +7,7 @@ import 'package:near_social_mobile/modules/home/pages/home_page.dart';
 import 'package:near_social_mobile/modules/home/pages/key_manager/key_manager_page.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_app_page.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_list_page.dart';
-import 'package:near_social_mobile/modules/home/pages/notifications_page.dart';
+import 'package:near_social_mobile/modules/home/pages/notifications/notifications_page.dart';
 import 'package:near_social_mobile/modules/home/pages/people/people_list_page.dart';
 import 'package:near_social_mobile/modules/home/pages/people/user_page.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/posts_feed_page.dart';
@@ -71,9 +71,8 @@ class HomeModule extends Module {
         postsViewMode: PostsViewMode
             .values[int.parse(r.args.queryParams['postsViewMode'] as String)],
         postsOfAccountId: r.args.queryParams['postsOfAccountId'] ?? "",
-        allowToNavigateToPostAuthorPage: bool.parse(
-                r.args.queryParams['allowToNavigateToPostAuthorPage']
-                    as String) as bool? ??
+        allowToNavigateToPostAuthorPage: bool.tryParse(
+                r.args.queryParams['allowToNavigateToPostAuthorPage'] ?? "") ??
             true,
       ),
     );
