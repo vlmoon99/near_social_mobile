@@ -78,6 +78,7 @@ class PostPage extends StatelessWidget {
                 padding: REdgeInsets.all(15),
                 children: [
                   InkWell(
+                    borderRadius: BorderRadius.circular(10).r,
                     onTap: allowToNavigateToPostAuthorPage
                         ? () async {
                             HapticFeedback.lightImpact();

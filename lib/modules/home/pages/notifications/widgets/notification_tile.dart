@@ -137,7 +137,7 @@ class NotificationTile extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        InkWell(
+                        GestureDetector(
                           onTap: () async {
                             await navigateToAuthorPage();
                           },
