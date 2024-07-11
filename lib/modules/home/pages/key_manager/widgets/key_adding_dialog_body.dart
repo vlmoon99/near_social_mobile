@@ -5,6 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutterchain/flutterchain_lib/models/core/wallet.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:intl/intl.dart';
+import 'package:near_social_mobile/config/constants.dart';
+import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
@@ -45,6 +47,17 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
         });
         late PrivateKeyInfo privateKeyInfo;
         if (_tabController.index == 0) {
+          if (authController.state.additionalStoredKeys.values
+              .any((element) => element.privateKey == key)) {
+            setState(() {
+              addingKeyProcessLoading = false;
+            });
+            throw AppExceptions(
+              messageForUser: "Key already added",
+              messageForDev: "Key already added",
+              statusCode: AppErrorCodes.localAuthError,
+            );
+          }
           privateKeyInfo = await nearSocialApi.getAccessKeyInfo(
             accountId: authController.state.accountId,
             key: key,
@@ -73,6 +86,18 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
           final secretKey =
               await nearBlockChainService.exportPrivateKeyToTheNearApiJsFormat(
                   currentBlockchainData: blockChainData);
+
+          if (authController.state.additionalStoredKeys.values
+              .any((element) => element.privateKey == secretKey)) {
+            setState(() {
+              addingKeyProcessLoading = false;
+            });
+            throw AppExceptions(
+              messageForUser: "Key already added",
+              messageForDev: "Key already added",
+              statusCode: AppErrorCodes.localAuthError,
+            );
+          }
 
           privateKeyInfo = await nearSocialApi.getAccessKeyInfo(
             accountId: blockChainData.publicKey,

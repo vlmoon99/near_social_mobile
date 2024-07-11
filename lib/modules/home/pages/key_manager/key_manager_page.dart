@@ -35,7 +35,7 @@ class KeyManagerPage extends StatelessWidget {
                 final key = authController.state.additionalStoredKeys.entries
                     .elementAt(index);
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 10).r,
+                  padding: EdgeInsets.only(top: index == 0 ? 5 : 0).r,
                   child: AccessKeyInfoCard(
                     keyName: key.key,
                     privateKeyInfo: key.value,

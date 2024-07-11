@@ -25,7 +25,7 @@ class AuthController extends Disposable {
       : cryptoStorageService =
             CryptoStorageService(secureStorage: secureStorage);
 
-  Stream<AuthInfo> get stream => _streamController.stream.distinct();
+  Stream<AuthInfo> get stream => _streamController.stream;
 
   AuthInfo get state => _streamController.value;
 
@@ -89,6 +89,8 @@ class AuthController extends Disposable {
   Future<void> logout() async {
     try {
       await secureStorage.delete(key: SecureStorageKeys.authInfo);
+      await secureStorage.delete(
+          key: SecureStorageKeys.additionalCryptographicKeys);
       _streamController.add(state.copyWith(
         status: AuthInfoStatus.unauthenticated,
       ));

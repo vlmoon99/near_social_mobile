@@ -13,6 +13,7 @@ import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
+import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
 class HomeMenuPage extends StatefulWidget {
   const HomeMenuPage({super.key});
@@ -38,7 +39,7 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                 return SizedBox(
                   height: .3.sh,
                   child: const Center(
-                    child: CircularProgressIndicator(),
+                    child: SpinnerLoadingIndicator(),
                   ),
                 );
               } else {
