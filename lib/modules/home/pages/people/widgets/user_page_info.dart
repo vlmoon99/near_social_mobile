@@ -190,7 +190,9 @@ class UserPageMainInfo extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    SizedBox(height: 5.h),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Icon(
                           CupertinoIcons.person_fill,
@@ -198,33 +200,29 @@ class UserPageMainInfo extends StatelessWidget {
                         ),
                         SizedBox(width: 5.w),
                         Flexible(
-                          child: Text(
-                            "@${user.generalAccountInfo.accountId}",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
+                          child: GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              Clipboard.setData(
+                                ClipboardData(
+                                  text: user.generalAccountInfo.accountId,
+                                ),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      "AccountId ${user.generalAccountInfo.accountId} copied to clipboard"),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              "@${user.generalAccountInfo.accountId}",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.grey.shade600,
+                              ),
                             ),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            Clipboard.setData(
-                              ClipboardData(
-                                text: user.generalAccountInfo.accountId,
-                              ),
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    "AccountId ${user.generalAccountInfo.accountId} copied to clipboard"),
-                              ),
-                            );
-                          },
-                          icon: SvgPicture.asset(
-                            "assets/media/icons/copy_icon.svg",
-                            height: 14.h,
-                            width: 14.h,
                           ),
                         ),
                         SizedBox(width: 10.w),
@@ -254,6 +252,7 @@ class UserPageMainInfo extends StatelessWidget {
                           ),
                       ],
                     ),
+                    SizedBox(height: 5.h),
                     if (authController.state.accountId != accountIdOfUser)
                       Row(
                         children: [
