@@ -13,7 +13,6 @@ import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.d
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
-import 'package:near_social_mobile/shared_widgets/loading_page_with_after_navigation.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
@@ -71,27 +70,19 @@ class PostCard extends StatelessWidget {
                   onTap: allowToNavigateToReposterAuthorPage
                       ? () async {
                           HapticFeedback.lightImpact();
-                          Navigator.push(
-                            Modular.routerDelegate.navigatorKey.currentContext!,
-                            MaterialPageRoute(
-                              builder: (context) => LoadingPageWithNavigation(
-                                function: () async {
-                                  await Modular.get<UserListController>()
-                                      .loadAndAddGeneralAccountInfoIfNotExists(
-                                    accountId: post.reposterInfo!.accountId,
-                                  );
-                                },
-                                route:
-                                    ".${Routes.home.userPage}?accountId=${post.reposterInfo!.accountId}",
-                              ),
-                            ),
+                          await Modular.get<UserListController>()
+                              .addGeneralAccountInfoIfNotExists(
+                            generalAccountInfo: post.reposterInfo!.accountInfo,
+                          );
+                          Modular.to.pushNamed(
+                            ".${Routes.home.userPage}?accountId=${post.reposterInfo!.accountInfo.accountId}",
                           );
                         }
                       : null,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 3).r,
                     child: Text(
-                      "Reposted by ${post.reposterInfo?.name ?? ""} @${post.reposterInfo!.accountId}",
+                      "Reposted by ${post.reposterInfo?.accountInfo.name ?? ""} @${post.reposterInfo!.accountInfo.accountId}",
                       style: TextStyle(color: Colors.grey.shade600),
                     ),
                   ),
@@ -156,7 +147,7 @@ class PostCard extends StatelessWidget {
                               maxLines: 1,
                               style: post.authorInfo.name != ""
                                   ? const TextStyle(
-                                      color: NEARColors.gray,
+                                      color: NEARColors.grey,
                                       fontSize: 13,
                                     )
                                   : const TextStyle(

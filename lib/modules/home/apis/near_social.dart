@@ -97,45 +97,24 @@ class NearSocialApi {
           linktree: {},
           tags: [],
         );
-        //     await getGeneralAccountInfo(
-        //   accountId: info.postCreationInfo.accountId,
-        // );
-
-        // final postBody = await getPostContent(
-        //   accountId: info.postCreationInfo.accountId,
-        //   blockHeight: info.postCreationInfo.blockHeight,
-        // );
-
-        // late DateTime date;
-
         ReposterInfo? reposterInfo;
         if (info.reposterPostCreationInfo != null) {
-          // final reposterGeneralAccountInfo = await getGeneralAccountInfo(
-          //   accountId: info.reposterPostCreationInfo!.accountId,
-          // );
+
           reposterInfo = ReposterInfo(
-            accountId: info.reposterPostCreationInfo!.accountId,
-            // name: reposterGeneralAccountInfo.name,
+            accountInfo: GeneralAccountInfo(
+              accountId: info.reposterPostCreationInfo!.accountId,
+              profileImageLink: "",
+              name: "",
+              description: "",
+              backgroundImageLink: "",
+              linktree: {},
+              tags: [],
+            ),
             blockHeight: info.reposterPostCreationInfo!.blockHeight,
           );
-          // date = await getDateOfBlockHeight(
-          //   blockHeight: info.reposterPostCreationInfo!.blockHeight,
-          // );
-        } else {
-          // date = await getDateOfBlockHeight(
-          //   blockHeight: info.postCreationInfo.blockHeight,
-          // );
-        }
 
-        // final likes = await getLikesOfPost(
-        //   accountId: info.postCreationInfo.accountId,
-        //   blockHeight: info.postCreationInfo.blockHeight,
-        // );
+        } 
 
-        // final reposters = await getRepostsOfPost(
-        //   accountId: info.postCreationInfo.accountId,
-        //   blockHeight: info.postCreationInfo.blockHeight,
-        // );
         posts.add(
           Post(
             authorInfo: authorInfo,
@@ -147,16 +126,6 @@ class NearSocialApi {
             repostList: {},
             commentList: null,
           ),
-          // Post(
-          //   authorInfo: authorInfo,
-          //   blockHeight: info.postCreationInfo.blockHeight,
-          //   date: date,
-          //   postBody: postBody,
-          //   reposterInfo: reposterInfo,
-          //   likeList: likes,
-          //   repostList: reposters,
-          //   commentList: null,
-          // ),
         );
       }
 

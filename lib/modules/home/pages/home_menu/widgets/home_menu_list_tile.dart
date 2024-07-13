@@ -40,7 +40,7 @@ class HomeMenuListTile extends StatelessWidget {
             Container(
               height: 1,
               width: double.infinity,
-              color: NEARColors.gray,
+              color: NEARColors.grey,
             )
           ],
         ),

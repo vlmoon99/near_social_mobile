@@ -159,7 +159,7 @@ class NotificationTile extends StatelessWidget {
                             Icon(
                               Icons.access_time_filled,
                               size: 12.h,
-                              color: NEARColors.gray,
+                              color: NEARColors.grey,
                             ),
                             SizedBox(width: 5.h),
                             Text(

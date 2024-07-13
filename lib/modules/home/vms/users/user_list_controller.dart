@@ -52,8 +52,8 @@ class UserListController {
     );
     if (indexOfUser == -1) {
       _streamController.add(state.copyWith(users: [
+        ...state.users,
         FullUserInfo(generalAccountInfo: generalAccountInfo),
-        ...state.users
       ]));
     }
   }

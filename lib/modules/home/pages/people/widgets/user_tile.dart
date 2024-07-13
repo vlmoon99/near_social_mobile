@@ -76,7 +76,7 @@ class UserTile extends StatelessWidget {
                             maxLines: 1,
                             style: user.generalAccountInfo.name != ""
                                 ? const TextStyle(
-                                    color: NEARColors.gray,
+                                    color: NEARColors.grey,
                                     fontSize: 13,
                                   )
                                 : const TextStyle(fontWeight: FontWeight.bold),

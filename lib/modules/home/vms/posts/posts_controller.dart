@@ -119,6 +119,7 @@ class PostsController {
             blockHeight: blockHeight,
             date: data,
             commentList: null,
+            fullyLoaded: true,
           ),
           ...state.temporaryPosts
         ],
@@ -178,19 +179,22 @@ class PostsController {
             ? null
             : choosedPosts.elementAt(lastBlockHeightIndexOfReposts).blockHeight,
         targetAccounts: postsOfAccountId == null ? null : [postsOfAccountId],
+        limit: 15,
       );
 
-      posts.removeWhere(
-        (post) =>
+      if (lastBlockHeightIndexOfPosts != -1) {
+        posts.removeWhere((post) =>
             post.blockHeight ==
-                choosedPosts
-                    .elementAt(lastBlockHeightIndexOfPosts)
-                    .blockHeight ||
-            post.blockHeight ==
-                choosedPosts
-                    .elementAt(lastBlockHeightIndexOfReposts)
-                    .blockHeight,
-      );
+            choosedPosts.elementAt(lastBlockHeightIndexOfPosts).blockHeight);
+      }
+
+      if (lastBlockHeightIndexOfReposts != -1) {
+        posts.removeWhere(
+          (post) =>
+              post.blockHeight ==
+              choosedPosts.elementAt(lastBlockHeightIndexOfReposts).blockHeight,
+        );
+      }
 
       final newPosts = [...choosedPosts, ...posts];
 
@@ -226,8 +230,7 @@ class PostsController {
       );
       for (var i = 0; i < summaryPosts.length; i++) {
         final post = summaryPosts[i];
-        if (post.postBody.text == "Loading" ||
-            post.authorInfo.profileImageLink == "") {
+        if (!post.fullyLoaded) {
           _loadPostsDataAsync(i, postsViewMode, postsOfAccountId);
         }
       }
@@ -294,10 +297,11 @@ class PostsController {
       );
 
       _updateDataDueToPostsViewMode(
-          post: post,
-          commentList: commentsOfPost,
-          postsViewMode: postsViewMode,
-          postsOfAccountId: postsOfAccountId);
+        post: post,
+        commentList: commentsOfPost,
+        postsViewMode: postsViewMode,
+        postsOfAccountId: postsOfAccountId,
+      );
 
       for (var indexOfComment = 0;
           indexOfComment < commentsOfPost.length;
@@ -347,7 +351,8 @@ class PostsController {
           break;
         }
     }
-    final int indexOfPost = _getIndexOfPost(post, postsViewMode);
+    final int indexOfPost =
+        _getIndexOfPost(post, postsViewMode, postsOfAccountId);
 
     final newCommentsOfPost = await nearSocialApi.getCommentsOfPost(
       accountId: accountId,
@@ -399,7 +404,8 @@ class PostsController {
   Future<void> _loadCommentsDataAsync(
       Post post, int indexOfComment, PostsViewMode postsViewMode,
       [String? postsOfAccountId]) async {
-    final int indexOfPost = _getIndexOfPost(post, postsViewMode);
+    final int indexOfPost =
+        _getIndexOfPost(post, postsViewMode, postsOfAccountId);
     late final Comment comment;
 
     switch (postsViewMode) {
@@ -422,115 +428,49 @@ class PostsController {
         }
     }
 
-    nearSocialApi
-        .getCommentContent(
+    final CommentBody commentBody = await nearSocialApi.getCommentContent(
       accountId: comment.authorInfo.accountId,
       blockHeight: comment.blockHeight,
-    )
-        .then(
-      (commentBody) {
-        late final List<Comment> commentsOfPost;
-        switch (postsViewMode) {
-          case PostsViewMode.main:
-            {
-              commentsOfPost = state.posts[indexOfPost].commentList!;
-              break;
-            }
-          case PostsViewMode.account:
-            {
-              commentsOfPost = state
-                  .postsOfAccounts[postsOfAccountId]![indexOfPost].commentList!;
-              break;
-            }
-          case PostsViewMode.temporary:
-            {
-              commentsOfPost = state.temporaryPosts[indexOfPost].commentList!;
-              break;
-            }
-        }
-        _updateDataDueToPostsViewMode(
-          postsViewMode: postsViewMode,
-          post: post,
-          commentList: commentsOfPost
-            ..[indexOfComment] = commentsOfPost[indexOfComment].copyWith(
-              commentBody: commentBody,
-            ),
-          postsOfAccountId: postsOfAccountId,
-        );
-      },
     );
 
-    nearSocialApi
-        .getDateOfBlockHeight(
+    final DateTime date = await nearSocialApi.getDateOfBlockHeight(
       blockHeight: comment.blockHeight,
-    )
-        .then((date) {
-      late final List<Comment> commentsOfPost;
-      switch (postsViewMode) {
-        case PostsViewMode.main:
-          {
-            commentsOfPost = state.posts[indexOfPost].commentList!;
-            break;
-          }
-        case PostsViewMode.account:
-          {
-            commentsOfPost = state
-                .postsOfAccounts[postsOfAccountId]![indexOfPost].commentList!;
-            break;
-          }
-        case PostsViewMode.temporary:
-          {
-            commentsOfPost = state.temporaryPosts[indexOfPost].commentList!;
-            break;
-          }
-      }
-      _updateDataDueToPostsViewMode(
-        postsViewMode: postsViewMode,
-        post: post,
-        commentList: commentsOfPost
-          ..[indexOfComment] = commentsOfPost[indexOfComment].copyWith(
-            date: date,
-          ),
-        postsOfAccountId: postsOfAccountId,
-      );
-    });
+    );
 
-    nearSocialApi
-        .getLikesOfComment(
+    final Set<Like> likes = await nearSocialApi.getLikesOfComment(
       accountId: comment.authorInfo.accountId,
       blockHeight: comment.blockHeight,
-    )
-        .then(
-      (likes) {
-        late final List<Comment> commentsOfPost;
-        switch (postsViewMode) {
-          case PostsViewMode.main:
-            {
-              commentsOfPost = state.posts[indexOfPost].commentList!;
-              break;
-            }
-          case PostsViewMode.account:
-            {
-              commentsOfPost = state
-                  .postsOfAccounts[postsOfAccountId]![indexOfPost].commentList!;
-              break;
-            }
-          case PostsViewMode.temporary:
-            {
-              commentsOfPost = state.temporaryPosts[indexOfPost].commentList!;
-              break;
-            }
+    );
+
+    late final List<Comment> commentsOfPost;
+    switch (postsViewMode) {
+      case PostsViewMode.main:
+        {
+          commentsOfPost = state.posts[indexOfPost].commentList!;
+          break;
         }
-        _updateDataDueToPostsViewMode(
-          postsViewMode: postsViewMode,
-          post: post,
-          commentList: commentsOfPost
-            ..[indexOfComment] = commentsOfPost[indexOfComment].copyWith(
-              likeList: likes,
-            ),
-          postsOfAccountId: postsOfAccountId,
-        );
-      },
+      case PostsViewMode.account:
+        {
+          commentsOfPost = state
+              .postsOfAccounts[postsOfAccountId]![indexOfPost].commentList!;
+          break;
+        }
+      case PostsViewMode.temporary:
+        {
+          commentsOfPost = state.temporaryPosts[indexOfPost].commentList!;
+          break;
+        }
+    }
+    _updateDataDueToPostsViewMode(
+      postsViewMode: postsViewMode,
+      post: post,
+      commentList: commentsOfPost
+        ..[indexOfComment] = commentsOfPost[indexOfComment].copyWith(
+          commentBody: commentBody,
+          likeList: likes,
+          date: date,
+        ),
+      postsOfAccountId: postsOfAccountId,
     );
   }
 
@@ -541,7 +481,8 @@ class PostsController {
         limit: 10,
       );
 
-      final currentPostsOfAccount = state.postsOfAccounts[postsOfAccountId];
+      final List<Post> currentPostsOfAccount =
+          List<Post>.from(state.postsOfAccounts[postsOfAccountId]);
 
       newPosts.removeWhere(
         (post) => currentPostsOfAccount.any(
@@ -592,91 +533,73 @@ class PostsController {
         }
     }
 
-    await nearSocialApi
-        .getPostContent(
-      accountId: post.authorInfo.accountId,
-      blockHeight: post.blockHeight,
-    )
-        .then(
-      (postBody) {
-        _updateDataDueToPostsViewMode(
-          post: post,
-          postsViewMode: postsViewMode,
-          postBody: postBody,
-          postsOfAccountId: postsOfAccountId,
-        );
-      },
-    );
-
-    await nearSocialApi
-        .getGeneralAccountInfo(accountId: post.authorInfo.accountId)
-        .then((authorInfo) {
-      _updateDataDueToPostsViewMode(
-        post: post,
-        postsViewMode: postsViewMode,
-        authorInfo: authorInfo,
-        postsOfAccountId: postsOfAccountId,
-      );
-    });
+    ReposterInfo? actualReposterInfo;
+    late final DateTime actualDateOfPost;
     if (post.reposterInfo != null) {
-      await nearSocialApi
-          .getGeneralAccountInfo(accountId: post.reposterInfo!.accountId)
-          .then((authorInfo) {
-        _updateDataDueToPostsViewMode(
-          post: post,
-          postsViewMode: postsViewMode,
-          reposterInfo: post.reposterInfo!.copyWith(name: authorInfo.name),
-          postsOfAccountId: postsOfAccountId,
-        );
-      });
-      await nearSocialApi
-          .getDateOfBlockHeight(
+      actualReposterInfo = post.reposterInfo!.copyWith(
+        accountInfo: await nearSocialApi.getGeneralAccountInfo(
+            accountId: post.reposterInfo!.accountInfo.accountId),
+      );
+      actualDateOfPost = await nearSocialApi.getDateOfBlockHeight(
         blockHeight: post.reposterInfo!.blockHeight,
-      )
-          .then((date) {
-        _updateDataDueToPostsViewMode(
-          post: post,
-          postsViewMode: postsViewMode,
-          date: date,
-          postsOfAccountId: postsOfAccountId,
-        );
-      });
+      );
     } else {
-      await nearSocialApi
-          .getDateOfBlockHeight(blockHeight: post.blockHeight)
-          .then((date) {
-        _updateDataDueToPostsViewMode(
-          post: post,
-          postsViewMode: postsViewMode,
-          date: date,
-          postsOfAccountId: postsOfAccountId,
-        );
-      });
+      actualDateOfPost = await nearSocialApi.getDateOfBlockHeight(
+          blockHeight: post.blockHeight);
     }
 
-    await nearSocialApi
-        .getLikesOfPost(
-            accountId: post.authorInfo.accountId, blockHeight: post.blockHeight)
-        .then((likes) {
-      _updateDataDueToPostsViewMode(
-        post: post,
-        postsViewMode: postsViewMode,
-        likeList: likes,
-        postsOfAccountId: postsOfAccountId,
-      );
-    });
+    final loadedPosts = getPostsDueToPostsViewMode(
+      postsViewMode,
+      postsOfAccountId,
+    ).where((element) => element.fullyLoaded == true).toList();
+    if (loadedPosts.any((element) =>
+        element.blockHeight == post.blockHeight &&
+        element.authorInfo.accountId == post.authorInfo.accountId)) {
+      final postToCopyInfo = loadedPosts.firstWhere((element) =>
+          element.blockHeight == post.blockHeight &&
+          element.authorInfo.accountId == post.authorInfo.accountId);
 
-    await nearSocialApi
-        .getRepostsOfPost(
-            accountId: post.authorInfo.accountId, blockHeight: post.blockHeight)
-        .then((reposts) {
       _updateDataDueToPostsViewMode(
         post: post,
         postsViewMode: postsViewMode,
-        repostList: reposts,
         postsOfAccountId: postsOfAccountId,
+        repostList: postToCopyInfo.repostList,
+        likeList: postToCopyInfo.likeList,
+        date: actualDateOfPost,
+        authorInfo: postToCopyInfo.authorInfo,
+        reposterInfo: actualReposterInfo,
+        postBody: postToCopyInfo.postBody,
+        fullyLoaded: true,
       );
-    });
+      return;
+    }
+
+    final actualPostBody = await nearSocialApi.getPostContent(
+      accountId: post.authorInfo.accountId,
+      blockHeight: post.blockHeight,
+    );
+
+    final actualAuthorInfo = await nearSocialApi.getGeneralAccountInfo(
+        accountId: post.authorInfo.accountId);
+
+    final actualLikeList = await nearSocialApi.getLikesOfPost(
+        accountId: post.authorInfo.accountId, blockHeight: post.blockHeight);
+
+    final actualRepostsOfPostList = await nearSocialApi.getRepostsOfPost(
+        accountId: post.authorInfo.accountId, blockHeight: post.blockHeight);
+
+    _updateDataDueToPostsViewMode(
+      post: post,
+      postsViewMode: postsViewMode,
+      postsOfAccountId: postsOfAccountId,
+      repostList: actualRepostsOfPostList,
+      likeList: actualLikeList,
+      date: actualDateOfPost,
+      authorInfo: actualAuthorInfo,
+      reposterInfo: actualReposterInfo,
+      postBody: actualPostBody,
+      fullyLoaded: true,
+    );
   }
 
   Future<void> likePost({
@@ -760,7 +683,7 @@ class PostsController {
     required PostsViewMode postsViewMode,
     String? postsOfAccountId,
   }) async {
-    final indexOfPost = _getIndexOfPost(post, postsViewMode);
+    final indexOfPost = _getIndexOfPost(post, postsViewMode, postsOfAccountId);
     final indexOfComment = post.commentList!.indexWhere(
       (element) =>
           element.blockHeight == comment.blockHeight &&
@@ -888,8 +811,9 @@ class PostsController {
     GeneralAccountInfo? authorInfo,
     ReposterInfo? reposterInfo,
     DateTime? date,
+    bool? fullyLoaded,
   }) {
-    final indexOfPost = _getIndexOfPost(post, postsViewMode);
+    final indexOfPost = _getIndexOfPost(post, postsViewMode, postsOfAccountId);
     switch (postsViewMode) {
       case PostsViewMode.main:
         {
@@ -906,6 +830,8 @@ class PostsController {
                   reposterInfo:
                       reposterInfo ?? state.posts[indexOfPost].reposterInfo,
                   date: date ?? state.posts[indexOfPost].date,
+                  fullyLoaded:
+                      fullyLoaded ?? state.posts[indexOfPost].fullyLoaded,
                 ),
             ),
           );
@@ -935,6 +861,9 @@ class PostsController {
                       .reposterInfo,
               date: date ??
                   state.postsOfAccounts[postsOfAccountId][indexOfPost].date,
+              fullyLoaded: fullyLoaded ??
+                  state.postsOfAccounts[postsOfAccountId][indexOfPost]
+                      .fullyLoaded,
             );
           _streamController.add(
             state.copyWith(
@@ -963,6 +892,8 @@ class PostsController {
                   reposterInfo: reposterInfo ??
                       state.temporaryPosts[indexOfPost].reposterInfo,
                   date: date ?? state.temporaryPosts[indexOfPost].date,
+                  fullyLoaded: fullyLoaded ??
+                      state.temporaryPosts[indexOfPost].fullyLoaded,
                 ),
             ),
           );
@@ -972,7 +903,8 @@ class PostsController {
     return;
   }
 
-  int _getIndexOfPost(Post post, PostsViewMode postsViewMode) {
+  int _getIndexOfPost(
+      Post post, PostsViewMode postsViewMode, String? postsOfAccountId) {
     switch (postsViewMode) {
       case PostsViewMode.main:
         {
@@ -985,12 +917,12 @@ class PostsController {
         }
       case PostsViewMode.account:
         {
-          return state.postsOfAccounts[
-                  post.reposterInfo?.accountId ?? post.authorInfo.accountId]
-              .indexWhere((element) =>
-                  element.blockHeight == post.blockHeight &&
-                  element.authorInfo.accountId == post.authorInfo.accountId &&
-                  element.reposterInfo == post.reposterInfo);
+          return state.postsOfAccounts[postsOfAccountId].indexWhere(
+            (element) =>
+                element.blockHeight == post.blockHeight &&
+                element.authorInfo.accountId == post.authorInfo.accountId &&
+                element.reposterInfo == post.reposterInfo,
+          );
         }
       case PostsViewMode.temporary:
         {

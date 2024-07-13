@@ -54,7 +54,7 @@ class _CustomSearchBarState extends State<CustomSearchBar>
       hintText: "Search",
       hintStyle: const WidgetStatePropertyAll(
         TextStyle(
-          color: NEARColors.gray,
+          color: NEARColors.grey,
         ),
       ),
       elevation: const WidgetStatePropertyAll(4),

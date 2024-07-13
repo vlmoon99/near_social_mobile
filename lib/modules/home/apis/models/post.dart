@@ -16,6 +16,7 @@ class Post {
   final Set<Like> likeList;
   final Set<Reposter> repostList;
   final List<Comment>? commentList;
+  final bool fullyLoaded;
 
   Post({
     required this.authorInfo,
@@ -26,6 +27,7 @@ class Post {
     required this.likeList,
     required this.repostList,
     required this.commentList,
+    this.fullyLoaded = false,
   });
 
   Post copyWith({
@@ -37,6 +39,7 @@ class Post {
     Set<Like>? likeList,
     Set<Reposter>? repostList,
     List<Comment>? commentList,
+    bool? fullyLoaded,
   }) {
     return Post(
       authorInfo: authorInfo ?? this.authorInfo,
@@ -47,6 +50,7 @@ class Post {
       likeList: likeList ?? this.likeList,
       repostList: repostList ?? this.repostList,
       commentList: commentList ?? this.commentList,
+      fullyLoaded: fullyLoaded ?? this.fullyLoaded,
     );
   }
 
@@ -60,14 +64,15 @@ class Post {
       other.reposterInfo == reposterInfo &&
       setEquals(other.likeList, likeList) &&
       setEquals(other.repostList, repostList) &&
-      listEquals(other.commentList, commentList);
+      listEquals(other.commentList, commentList) &&
+      other.fullyLoaded == fullyLoaded;
 
   @override
   String toString() {
     return """Post(authorAccountId: ${authorInfo.accountId}, blockHeight: $blockHeight, 
     date: $date, postBody: $postBody, authorProfileImageLink: ${authorInfo.profileImageLink}, 
     reposterInfo: $reposterInfo, likeList: $likeList, repostList: $repostList, 
-    commentList: $commentList)""";
+    commentList: $commentList, fullyLoaded: $fullyLoaded)""";
   }
 }
 
@@ -79,8 +84,6 @@ class FullPostCreationInfo {
     required this.postCreationInfo,
     this.reposterPostCreationInfo,
   });
-
-
 
   @override
   String toString() {

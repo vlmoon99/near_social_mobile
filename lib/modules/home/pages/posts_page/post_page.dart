@@ -136,7 +136,7 @@ class PostPage extends StatelessWidget {
                                   maxLines: 1,
                                   style: post.authorInfo.name != ""
                                       ? const TextStyle(
-                                          color: NEARColors.gray,
+                                          color: NEARColors.grey,
                                           fontSize: 13,
                                         )
                                       : const TextStyle(

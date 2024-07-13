@@ -210,7 +210,7 @@ class AccessKeyInfoCard extends StatelessWidget {
                   Icons.key,
                   color: privateKeyInfo.privateKeyTypeInfo.type ==
                           PrivateKeyType.FunctionCall
-                      ? NEARColors.gray
+                      ? NEARColors.grey
                       : NEARColors.gold,
                 ),
               ),

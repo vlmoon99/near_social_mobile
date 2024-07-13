@@ -10,7 +10,7 @@ class AppColors {
   static const onSecondary = NEARColors.white;
   static const background = NEARColors.white;
   static const onBackground = NEARColors.black;
-  static const lightSurface = NEARColors.gray;
+  static const lightSurface = NEARColors.grey;
   static const onlightSurface = NEARColors.white;
 }
 
@@ -25,7 +25,7 @@ class NEARColors {
   static const Color red = Color(0xFFDB5555);
   static const Color black = Color(0xFF262626);
   static const Color white = Color(0xFFFFFFFF);
-  static const Color gray = Color(0xFFA7A7A7);
+  static const Color grey = Color(0xFFA7A7A7);
   static const Color slate = Color(0xFF3F4246);
 }
 

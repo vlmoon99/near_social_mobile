@@ -69,9 +69,11 @@ class _UserPostsViewState extends State<UserPostsView> {
                               } catch (err) {
                                 rethrow;
                               } finally {
-                                setState(() {
-                                  loadingMorePosts = false;
-                                });
+                                if (mounted) {
+                                  setState(() {
+                                    loadingMorePosts = false;
+                                  });
+                                }
                               }
                             },
                       child: Text(
@@ -89,7 +91,7 @@ class _UserPostsViewState extends State<UserPostsView> {
               allowToNavigateToPostAuthorPage:
                   posts[index].authorInfo.accountId != widget.accountIdOfUser,
               allowToNavigateToReposterAuthorPage:
-                  posts[index].reposterInfo?.accountId !=
+                  posts[index].reposterInfo?.accountInfo.accountId !=
                       widget.accountIdOfUser,
             );
           },
