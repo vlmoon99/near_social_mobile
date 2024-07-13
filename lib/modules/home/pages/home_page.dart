@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutterchain/flutterchain_lib/constants/chains/near_blockchain_network_urls.dart';
-import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/auth/pages/decryption_page_for_loggined_user.dart';
@@ -11,7 +9,6 @@ import 'package:near_social_mobile/modules/vms/core/models/auth_info.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/services/firebase/firebase_notifications.dart';
 import 'package:near_social_mobile/utils/check_for_jailbreak.dart';
-import 'package:near_social_mobile/utils/get_network_type.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -31,19 +28,19 @@ class _HomePageState extends State<HomePage> {
   void didChangeDependencies() async {
     super.didChangeDependencies();
     checkForJailbreak();
-    final networkType = await getNearNetworkType();
-
-    if (networkType == NearNetworkType.mainnet) {
-      await Modular.get<NearBlockChainService>()
-          .setBlockchainNetworkEnvironment(
-        newUrl: NearBlockChainNetworkUrls.listOfUrls.elementAt(1),
-      );
-    } else {
-      await Modular.get<NearBlockChainService>()
-          .setBlockchainNetworkEnvironment(
-        newUrl: NearBlockChainNetworkUrls.listOfUrls.first,
-      );
-    }
+    //TODO: disabled testnet login
+    // final networkType = await getNearNetworkType();
+    // if (networkType == NearNetworkType.mainnet) {
+    //   // await Modular.get<NearBlockChainService>()
+    //   //     .setBlockchainNetworkEnvironment(
+    //   //   newUrl: NearBlockChainNetworkUrls.listOfUrls.elementAt(1),
+    //   // );
+    // } else {
+    //   await Modular.get<NearBlockChainService>()
+    //       .setBlockchainNetworkEnvironment(
+    //     newUrl: NearBlockChainNetworkUrls.listOfUrls.first,
+    //   );
+    // }
   }
 
   int currentIndex(String currentRoute) {

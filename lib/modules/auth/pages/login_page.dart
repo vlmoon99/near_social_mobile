@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutterchain/flutterchain_lib/constants/chains/near_blockchain_network_urls.dart';
-import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
-import 'package:near_social_mobile/modules/vms/core/models/authorization_credentials.dart';
 import 'package:near_social_mobile/routes/routes.dart';
-import 'package:near_social_mobile/services/testnet_service.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/loading_barrier.dart';
 import 'package:near_social_mobile/utils/check_for_jailbreak.dart';
@@ -90,11 +85,11 @@ class _LoginPageState extends State<LoginPage> {
                       CustomButton(
                         primary: true,
                         onPressed: () async {
-                          await Modular.get<NearBlockChainService>()
-                              .setBlockchainNetworkEnvironment(
-                            newUrl: NearBlockChainNetworkUrls.listOfUrls
-                                .elementAt(1),
-                          );
+                          // await Modular.get<NearBlockChainService>()
+                          //     .setBlockchainNetworkEnvironment(
+                          //   newUrl: NearBlockChainNetworkUrls.listOfUrls
+                          //       .elementAt(1),
+                          // );
                           Modular.to.pushNamed(
                               Routes.auth.getRoute(Routes.auth.qrReader));
                         },
@@ -105,43 +100,44 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      CustomButton(
-                        primary: true,
-                        onPressed: () async {
-                          try {
-                            setState(() {
-                              isLoading = true;
-                            });
-                            final TestNetService testNetService =
-                                TestNetService();
-                            final account =
-                                await testNetService.createAccount();
-                            await Modular.get<NearBlockChainService>()
-                                .setBlockchainNetworkEnvironment(
-                              newUrl:
-                                  NearBlockChainNetworkUrls.listOfUrls.first,
-                            );
-                            Modular.to.pushReplacementNamed(
-                              Routes.auth.getRoute(Routes.auth.encryptData),
-                              arguments: AuthorizationCredentials(
-                                  account.publicKey, account.secretKey),
-                            );
-                          } catch (err) {
-                            rethrow;
-                          } finally {
-                            setState(() {
-                              isLoading = false;
-                            });
-                          }
-                        },
-                        child: const Text(
-                          "Login with testnet",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                      //TODO: disbaled testnet login
+                      // const SizedBox(height: 20),
+                      // CustomButton(
+                      //   primary: true,
+                      //   onPressed: () async {
+                      //     try {
+                      //       setState(() {
+                      //         isLoading = true;
+                      //       });
+                      //       final TestNetService testNetService =
+                      //           TestNetService();
+                      //       final account =
+                      //           await testNetService.createAccount();
+                      //       await Modular.get<NearBlockChainService>()
+                      //           .setBlockchainNetworkEnvironment(
+                      //         newUrl:
+                      //             NearBlockChainNetworkUrls.listOfUrls.first,
+                      //       );
+                      //       Modular.to.pushReplacementNamed(
+                      //         Routes.auth.getRoute(Routes.auth.encryptData),
+                      //         arguments: AuthorizationCredentials(
+                      //             account.publicKey, account.secretKey),
+                      //       );
+                      //     } catch (err) {
+                      //       rethrow;
+                      //     } finally {
+                      //       setState(() {
+                      //         isLoading = false;
+                      //       });
+                      //     }
+                      //   },
+                      //   child: const Text(
+                      //     "Login with testnet",
+                      //     style: TextStyle(
+                      //       fontWeight: FontWeight.bold,
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),

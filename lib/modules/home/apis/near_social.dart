@@ -10,6 +10,7 @@ import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain
 import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_smart_contract_arguments.dart';
 import 'package:flutterchain/flutterchain_lib/models/core/wallet.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
+import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/modules/home/apis/models/follower.dart';
 import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
@@ -21,7 +22,7 @@ import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
-import 'package:near_social_mobile/services/dio_connectivity_retry_interceptor/retry_interceptor.dart';
+import 'package:near_social_mobile/services/dio_interceptors/retry_on_connection_changed_interceptor.dart';
 
 class NearSocialApi {
   final Dio _dio = Dio();
@@ -44,8 +45,6 @@ class NearSocialApi {
       ),
     ]);
   }
-
-  final _ipfsMediaHosting = "https://ipfs.near.social/ipfs/";
 
   Future<List<Post>> getPosts({
     int? lastBlockHeightIndexOfPosts,
@@ -99,7 +98,6 @@ class NearSocialApi {
         );
         ReposterInfo? reposterInfo;
         if (info.reposterPostCreationInfo != null) {
-
           reposterInfo = ReposterInfo(
             accountInfo: GeneralAccountInfo(
               accountId: info.reposterPostCreationInfo!.accountId,
@@ -112,8 +110,7 @@ class NearSocialApi {
             ),
             blockHeight: info.reposterPostCreationInfo!.blockHeight,
           );
-
-        } 
+        }
 
         posts.add(
           Post(
@@ -152,7 +149,7 @@ class NearSocialApi {
         }
       };
       final response = await _dio.request(
-        'https://api.near.social/index',
+        '${NearUrls.nearSocialApi}/index',
         options: Options(
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -195,7 +192,7 @@ class NearSocialApi {
         }
       };
       final response = await _dio.request(
-        'https://api.near.social/index',
+        '${NearUrls.nearSocialApi}/index',
         options: Options(
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -235,7 +232,7 @@ class NearSocialApi {
         "blockHeight": blockHeight
       };
       final response = await _dio.request(
-        'https://api.near.social/get',
+        '${NearUrls.nearSocialApi}/get',
         options: Options(
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -250,7 +247,8 @@ class NearSocialApi {
         text: postInfo["text"] ?? "",
         mediaLink: postInfo["image"] != null
             ? postInfo["image"]["ipfs_cid"] != null
-                ? _ipfsMediaHosting + postInfo["image"]["ipfs_cid"]
+                ? NearUrls.nearSocialIpfsMediaHosting +
+                    postInfo["image"]["ipfs_cid"]
                 : postInfo["image"]["url"]
             : null,
       );
@@ -273,7 +271,7 @@ class NearSocialApi {
         }
       };
       final response = await _dio.request(
-        'https://api.near.social/index',
+        '${NearUrls.nearSocialApi}/index',
         options: Options(
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -338,7 +336,7 @@ class NearSocialApi {
         }
       });
       final response = await _dio.request(
-        'https://api.near.social/index',
+        '${NearUrls.nearSocialApi}/index',
         options: Options(
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -357,7 +355,7 @@ class NearSocialApi {
   Future<DateTime> getDateOfBlockHeight({required int blockHeight}) async {
     try {
       final response = await _dio.request(
-        'https://api.near.social/time?blockHeight=$blockHeight',
+        '${NearUrls.nearSocialApi}/time?blockHeight=$blockHeight',
         options: Options(
           method: 'GET',
         ),
@@ -440,7 +438,7 @@ class NearSocialApi {
         }
       });
       final response = await _dio.request(
-        'https://api.near.social/index',
+        '${NearUrls.nearSocialApi}/index',
         options: Options(
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -469,7 +467,7 @@ class NearSocialApi {
         "blockHeight": blockHeight
       };
       final response = await _dio.request(
-        'https://api.near.social/get',
+        '${NearUrls.nearSocialApi}/get',
         options: Options(
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -482,7 +480,8 @@ class NearSocialApi {
         text: commentInfo["text"],
         mediaLink: commentInfo["image"] != null
             ? commentInfo["image"]["ipfs_cid"] != null
-                ? _ipfsMediaHosting + commentInfo["image"]["ipfs_cid"]
+                ? NearUrls.nearSocialIpfsMediaHosting +
+                    commentInfo["image"]["ipfs_cid"]
                 : commentInfo["image"]["url"]
             : null,
       );
@@ -503,7 +502,7 @@ class NearSocialApi {
         }
       };
       final response = await _dio.request(
-        'https://api.near.social/index',
+        '${NearUrls.nearSocialApi}/index',
         options: Options(
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -527,7 +526,7 @@ class NearSocialApi {
         "keys": ["$accountId/profile/**"]
       });
       final response = await _dio.request(
-        'https://api.near.social/get',
+        '${NearUrls.nearSocialApi}/get',
         options: Options(
           method: 'POST',
           headers: headers,
@@ -564,7 +563,7 @@ class NearSocialApi {
       final image = requestBody[typeOfImage];
 
       if (image["ipfs_cid"] != null) {
-        imageLink = _ipfsMediaHosting + image["ipfs_cid"];
+        imageLink = NearUrls.nearSocialIpfsMediaHosting + image["ipfs_cid"];
       } else if (image["url"] != null) {
         imageLink = image["url"];
       } else if (image["nft"] != null) {
@@ -891,7 +890,7 @@ class NearSocialApi {
     try {
       final headers = {'Content-Type': 'application/json'};
       final responseOfWidgetsListWithMetadata = await _dio.request(
-        'https://api.near.social/get',
+        '${NearUrls.nearSocialApi}/get',
         options: Options(
           method: 'POST',
           headers: headers,
@@ -911,7 +910,7 @@ class NearSocialApi {
       );
 
       final responseOfAllWidgetsList = await _dio.request(
-        'https://api.near.social/keys',
+        '${NearUrls.nearSocialApi}/keys',
         options: Options(
           method: 'POST',
           headers: headers,
@@ -992,7 +991,7 @@ class NearSocialApi {
         "keys": ["*/profile/**"]
       };
       var response = await _dio.request(
-        'https://api.near.social/get',
+        '${NearUrls.nearSocialApi}/get',
         options: Options(
           method: 'POST',
           headers: headers,
@@ -1036,7 +1035,7 @@ class NearSocialApi {
         "keys": ["$accountId/graph/follow/*"]
       };
       var response = await _dio.request(
-        'https://api.near.social/keys',
+        '${NearUrls.nearSocialApi}/keys',
         options: Options(
           method: 'POST',
           headers: headers,
@@ -1070,7 +1069,7 @@ class NearSocialApi {
       };
 
       var response = await _dio.request(
-        'https://api.near.social/keys',
+        '${NearUrls.nearSocialApi}/keys',
         options: Options(
           method: 'POST',
           headers: headers,
@@ -1095,7 +1094,7 @@ class NearSocialApi {
         "keys": ["*/nametag/$accountId/tags/*"]
       };
       final response = await _dio.request(
-        'https://api.near.social/keys',
+        '${NearUrls.nearSocialApi}/keys',
         options: Options(
           method: 'POST',
           headers: headers,
@@ -1255,8 +1254,9 @@ class NearSocialApi {
 
     final args = {"account_id": accountIdOfUser};
     for (var nftContractId in nftContractIds) {
-      final nftInfoResponse = await _dio.request(
-        'https://rpc.mainnet.near.org',
+      final nftInfoResponse =
+          await _nearBlockChainService.nearRpcClient.networkClient.dio.request(
+        "",
         data: {
           'jsonrpc': '2.0',
           'id': 'dontcare',
@@ -1305,7 +1305,7 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _dio.request(
-        'https://api.near.social/index',
+        '${NearUrls.nearSocialApi}/index',
         options: Options(
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -1386,8 +1386,9 @@ class NearSocialApi {
           "public_key": privateKeyInNearApiJsFormat
         }
       };
-      final response = await _dio.request(
-        'https://rpc.mainnet.near.org',
+      final response =
+          await _nearBlockChainService.nearRpcClient.networkClient.dio.request(
+        "",
         options: Options(
           method: 'POST',
           headers: {'Content-Type': 'application/json'},

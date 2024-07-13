@@ -92,10 +92,11 @@ packages:
   bos_gateway_viewer:
     dependency: "direct main"
     description:
-      name: bos_gateway_viewer
-      sha256: "8083de159f7f7df3e82f5f89a49fbb3a81a6d97ac8988102fe4e28627e3bf44b"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: main
+      resolved-ref: b1eae0bd7fa5e7a7a319b9dfc88bbee23f03d99d
+      url: "https://github.com/vlmoon99/bos_gateway_viewer.git"
+    source: git
     version: "0.0.3"
   bs58:
     dependency: transitive

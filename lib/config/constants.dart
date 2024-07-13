@@ -27,3 +27,9 @@ class NearAssets {
   static const standartAvatar = "assets/media/images/standart_avatar.png";
   static const widgetPlaceholder = "assets/media/images/widget_placeholder.png";
 }
+
+class NearUrls {
+  static const blockchainRpc = "https://rpc.fastnear.com";
+  static const nearSocialApi = "https://api.near.social";
+  static const nearSocialIpfsMediaHosting = "https://ipfs.near.social/ipfs/";
+}
