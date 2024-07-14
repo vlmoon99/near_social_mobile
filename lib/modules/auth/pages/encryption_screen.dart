@@ -7,7 +7,6 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/assets/localizations/localizations_strings.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/modules/vms/core/models/authorization_credentials.dart';
@@ -38,19 +37,8 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
       storageKey: SecureStorageKeys.authInfo,
       data: jsonEncode(widget.authorizationCredentials),
     );
-    await Modular.get<NearBlockChainService>()
-        .getBlockchainNetworkEnvironment()
-        .then(
-      (networkUrl) async {
-        if (networkUrl.contains("mainnet")) {
-          await Modular.get<FlutterSecureStorage>()
-              .write(key: SecureStorageKeys.networkType, value: "mainnet");
-        } else {
-          await Modular.get<FlutterSecureStorage>()
-              .write(key: SecureStorageKeys.networkType, value: "testnet");
-        }
-      },
-    );
+    await Modular.get<FlutterSecureStorage>()
+        .write(key: SecureStorageKeys.networkType, value: "mainnet");
     final authController = Modular.get<AuthController>();
     await authController.login(
       accountId: widget.authorizationCredentials.accountId,

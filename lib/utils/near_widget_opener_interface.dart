@@ -17,9 +17,6 @@ Future<dynamic> openNearWidget(
               final NearWidgetSetupCredentials nearWidgetSetupCredentials =
                   NearWidgetSetupCredentials(
                 network: NearNetwork.mainnet,
-                // await getNearNetworkType() == NearNetworkType.mainnet
-                //     ? NearNetwork.mainnet
-                //     : NearNetwork.testnet,
                 privateKeyInfo: privateKeyInfo,
                 widgetSettings: WidgetSettings(
                   widgetSrc: widgetPath,
