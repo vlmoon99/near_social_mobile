@@ -249,8 +249,8 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                         if (value != null && value) {
                           final AuthController authController =
                               Modular.get<AuthController>();
-                          Modular.to.navigate(Routes.auth.getModule());
                           authController.logout();
+                          Modular.to.navigate("/");
                         }
                       },
                     );

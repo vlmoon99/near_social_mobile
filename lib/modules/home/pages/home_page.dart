@@ -3,7 +3,6 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
-import 'package:near_social_mobile/modules/auth/pages/decryption_page_for_loggined_user.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/models/auth_info.dart';
 import 'package:near_social_mobile/routes/routes.dart';
@@ -28,19 +27,6 @@ class _HomePageState extends State<HomePage> {
   void didChangeDependencies() async {
     super.didChangeDependencies();
     checkForJailbreak();
-    //TODO: disabled testnet login
-    // final networkType = await getNearNetworkType();
-    // if (networkType == NearNetworkType.mainnet) {
-    //   // await Modular.get<NearBlockChainService>()
-    //   //     .setBlockchainNetworkEnvironment(
-    //   //   newUrl: NearBlockChainNetworkUrls.listOfUrls.elementAt(1),
-    //   // );
-    // } else {
-    //   await Modular.get<NearBlockChainService>()
-    //       .setBlockchainNetworkEnvironment(
-    //     newUrl: NearBlockChainNetworkUrls.listOfUrls.first,
-    //   );
-    // }
   }
 
   int currentIndex(String currentRoute) {
@@ -65,9 +51,6 @@ class _HomePageState extends State<HomePage> {
     return StreamBuilder<AuthInfo>(
       stream: authController.stream,
       builder: (context, _) {
-        if (authController.state.status == AuthInfoStatus.unauthenticated) {
-          return const DecryptionPageForLoginnedUser();
-        }
         if (authController.state.status == AuthInfoStatus.authenticated) {
           FirebaseNotificationService.subscribeToNotifications(
               authController.state.accountId);
