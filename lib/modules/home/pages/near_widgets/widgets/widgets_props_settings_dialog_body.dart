@@ -46,7 +46,8 @@ class _WidgetsPropsSettingsDialogBodyState
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text("Widgets props settings", style: TextStyle(fontSize: 20.sp)),
+          const Text("Widget props settings", style: TextStyle(fontSize: 20)),
+          SizedBox(height: 5.h),
           Container(
             padding: const EdgeInsets.all(10).r,
             decoration: BoxDecoration(
