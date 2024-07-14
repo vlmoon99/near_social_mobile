@@ -68,7 +68,7 @@ class _StartSplashPageState extends State<StartSplashPage>
         stopwatch.stop();
 
         final remainingTime =
-            const Duration(milliseconds: 1300) - stopwatch.elapsed;
+            const Duration(milliseconds: 1000) - stopwatch.elapsed;
 
         if (remainingTime > Duration.zero) {
           await Future.delayed(remainingTime, () {
