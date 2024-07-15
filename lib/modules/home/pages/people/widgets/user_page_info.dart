@@ -253,7 +253,7 @@ class UserPageMainInfo extends StatelessWidget {
                       ],
                     ),
                     SizedBox(height: 5.h),
-                    if (authController.state.accountId != accountIdOfUser)
+                    if (authController.state.accountId != accountIdOfUser) ...[
                       Row(
                         children: [
                           if (user.followers != null)
@@ -318,7 +318,8 @@ class UserPageMainInfo extends StatelessWidget {
                           ),
                         ],
                       ),
-                    SizedBox(height: 10.h),
+                      SizedBox(height: 5.h),
+                    ],
                     Row(
                       children: [
                         Text.rich(
@@ -367,32 +368,35 @@ class UserPageMainInfo extends StatelessWidget {
                           SizedBox(height: 10.h),
                         ],
                       ),
-                    Wrap(
-                      spacing: 5.w,
-                      runSpacing: 5.w,
-                      children: [
-                        ...user.generalAccountInfo.tags.map((tag) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(5),
-                              color: AppColors.lightSurface.withOpacity(.5),
-                            ),
-                            child: Text(
-                              "#$tag",
-                              style: const TextStyle(
-                                color: AppColors.onlightSurface,
+                    if (user.generalAccountInfo.tags.isNotEmpty) ...[
+                      SizedBox(height: 5.h),
+                      Wrap(
+                        spacing: 5.w,
+                        runSpacing: 5.w,
+                        children: [
+                          ...user.generalAccountInfo.tags.map((tag) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
                               ),
-                            ),
-                          );
-                        })
-                      ],
-                    ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(5),
+                                color: AppColors.lightSurface.withOpacity(.5),
+                              ),
+                              child: Text(
+                                "#$tag",
+                                style: const TextStyle(
+                                  color: AppColors.onlightSurface,
+                                ),
+                              ),
+                            );
+                          })
+                        ],
+                      )
+                    ],
                     if (user.userTags != null && user.userTags!.isNotEmpty) ...[
-                      SizedBox(height: 10.w),
+                      SizedBox(height: 10.h),
                       Wrap(
                         spacing: 5.w,
                         runSpacing: 5.w,

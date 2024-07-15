@@ -63,45 +63,59 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   child: moreNotificationsLoading
                       ? const Center(child: SpinnerLoadingIndicator())
-                      : CustomButton(
-                          onPressed: allNotificationsLoaded
-                              ? null
-                              : () async {
-                                  try {
-                                    setState(() {
-                                      moreNotificationsLoading = true;
-                                    });
-                                    final AuthController authController =
-                                        Modular.get<AuthController>();
-                                    final accountId =
-                                        authController.state.accountId;
-                                    final moreNotifications =
-                                        await notificationsController
-                                            .loadMoreNotifications(
-                                      accountId: accountId,
-                                    );
-                                    if (moreNotifications.isEmpty) {
-                                      setState(() {
-                                        allNotificationsLoaded = true;
-                                      });
-                                    }
-                                  } catch (err) {
-                                    rethrow;
-                                  } finally {
-                                    setState(() {
-                                      moreNotificationsLoading = false;
-                                    });
-                                  }
-                                },
-                          child: Text(
-                            allNotificationsLoaded
-                                ? "No more notifications"
-                                : "Load more notifications",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                      : notificationsController.state.notifications.isEmpty
+                          ? const Center(
+                              child: Text(
+                                "No notifications",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            )
+                          : notificationsController.state.notifications.length <
+                                  20
+                              ? const SizedBox.shrink()
+                              : CustomButton(
+                                  onPressed: allNotificationsLoaded
+                                      ? null
+                                      : () async {
+                                          try {
+                                            setState(() {
+                                              moreNotificationsLoading = true;
+                                            });
+                                            final AuthController
+                                                authController =
+                                                Modular.get<AuthController>();
+                                            final accountId =
+                                                authController.state.accountId;
+                                            final moreNotifications =
+                                                await notificationsController
+                                                    .loadMoreNotifications(
+                                              accountId: accountId,
+                                            );
+                                            if (moreNotifications.isEmpty) {
+                                              setState(() {
+                                                allNotificationsLoaded = true;
+                                              });
+                                            }
+                                          } catch (err) {
+                                            rethrow;
+                                          } finally {
+                                            setState(() {
+                                              moreNotificationsLoading = false;
+                                            });
+                                          }
+                                        },
+                                  child: Text(
+                                    allNotificationsLoaded
+                                        ? "No more notifications"
+                                        : "Load more notifications",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                 );
               }
               final notification =
