@@ -559,22 +559,27 @@ class NearSocialApi {
       {required Map requestBody, required String typeOfImage}) {
     String imageLink = "";
 
-    if (requestBody[typeOfImage] != null) {
-      final image = requestBody[typeOfImage];
+    try {
+      if (requestBody[typeOfImage] != null) {
+        final image = requestBody[typeOfImage];
 
-      if (image["ipfs_cid"] != null) {
-        imageLink = NearUrls.nearSocialIpfsMediaHosting + image["ipfs_cid"];
-      } else if (image["url"] != null) {
-        imageLink = image["url"];
-      } else if (image["nft"] != null) {
-        final nft = image["nft"];
-        if (nft["contractId"] != null && nft["tokenId"] != null) {
-          imageLink =
-              "https://i.near.social/magic/large/https://near.social/magic/img/nft/${nft["contractId"]}/${nft["tokenId"]}";
+        if (image["ipfs_cid"] != null) {
+          imageLink = NearUrls.nearSocialIpfsMediaHosting + image["ipfs_cid"];
+        } else if (image["url"] != null) {
+          imageLink = image["url"];
+        } else if (image["nft"] != null) {
+          final nft = image["nft"];
+          if (nft["contractId"] != null && nft["tokenId"] != null) {
+            imageLink =
+                "https://i.near.social/magic/large/https://near.social/magic/img/nft/${nft["contractId"]}/${nft["tokenId"]}";
+          }
         }
       }
+      return imageLink;
+    } catch (err) {
+      log(err.toString());
+      return imageLink;
     }
-    return imageLink;
   }
 
   String getUrlOfPost({required String accountId, required int blockHeight}) {
