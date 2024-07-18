@@ -242,7 +242,13 @@ class NearSocialApi {
       if (response.data[accountId] == null) {
         return PostBody(text: "", mediaLink: null);
       }
-      final postInfo = jsonDecode(response.data[accountId]["post"]["main"]);
+
+      late final Map<String, dynamic> postInfo;
+      try {
+        postInfo = jsonDecode(response.data[accountId]["post"]["main"]);
+      } catch (err) {
+        postInfo = {};
+      }
       return PostBody(
         text: postInfo["text"] ?? "",
         mediaLink: postInfo["image"] != null
