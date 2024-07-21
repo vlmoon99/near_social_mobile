@@ -8,7 +8,7 @@ import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_se
 import 'package:flutterchain/flutterchain_lib/services/core/crypto_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
-import 'package:near_social_mobile/services/dio_interceptors/retry_on_connection_changed_interceptor.dart';
+import 'package:near_social_mobile/network/dio_interceptors/retry_on_connection_changed_interceptor.dart';
 
 class TestNetService {
   final FlutterChainService flutterChainService =

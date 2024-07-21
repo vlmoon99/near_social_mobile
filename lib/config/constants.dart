@@ -3,6 +3,7 @@ class SecureStorageKeys {
   static const cryptographicKey = 'cryptographic_key';
   static const additionalCryptographicKeys = 'additional_cryptographic_keys';
   static const networkType = 'network_type';
+  static const appPolicyAccepted = 'app_policy_accepted';
 }
 
 class AppErrorCodes {
@@ -34,6 +35,13 @@ class NearUrls {
   static const nearSocialIpfsMediaHosting = "https://ipfs.near.social/ipfs/";
 }
 
+class NearSocialMobileUrls {
+  static const eulaUrl =
+      "https://docs.google.com/document/d/1u0bmfj0OCtG0utsbR-xcPJVy0srEUf86N92rw8NOtEQ/edit";
+  static const privacyPolicyUrl =
+      "https://docs.google.com/document/d/1T-g8ZSH5Bg2_nUVOzUELmzK43a5UFp3o8G9pHnVb16k/edit";
+}
+
 const firebaseNearSocialProject = "near-social";
 
 class FirebaseDatabasePathKeys {
@@ -49,4 +57,3 @@ class FirebaseDatabasePathKeys {
   static const String reportedCommentsPath = "reported_comments";
   static const String reportedAccountsPath = "reported_accounts";
 }
-

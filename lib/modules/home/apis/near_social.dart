@@ -22,7 +22,7 @@ import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
-import 'package:near_social_mobile/services/dio_interceptors/retry_on_connection_changed_interceptor.dart';
+import 'package:near_social_mobile/network/dio_interceptors/retry_on_connection_changed_interceptor.dart';
 
 class NearSocialApi {
   final Dio _dio = Dio();

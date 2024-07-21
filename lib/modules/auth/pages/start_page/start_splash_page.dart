@@ -1,13 +1,20 @@
 import 'dart:math';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/auth/pages/start_page/widgets/auth_body.dart';
 import 'package:near_social_mobile/modules/auth/pages/start_page/widgets/login_body.dart';
-import 'package:near_social_mobile/services/checkAuthenticationOnDevice.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
+import 'package:near_social_mobile/utils/checkAppPolicyAccepted.dart';
+import 'package:near_social_mobile/utils/checkAuthenticationOnDevice.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class StartSplashPage extends StatefulWidget {
   const StartSplashPage({super.key});
@@ -23,6 +30,67 @@ class _StartSplashPageState extends State<StartSplashPage>
   late Animation<double> _fadeAnimation;
 
   final ValueNotifier<bool?> localyAuthenticated = ValueNotifier(false);
+
+  Future<void> showAcceptAppPolicy() async {
+    return showDialog(
+      barrierDismissible: false,
+      context: Modular.routerDelegate.navigatorKey.currentContext!,
+      builder: (context) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(20).r,
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              const Text(
+                'Welcome to Near Social Mobile!',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 5.h),
+              Text.rich(
+                style: const TextStyle(fontSize: 15),
+                TextSpan(children: [
+                  const TextSpan(
+                    text: 'By using this app, you agree to the ',
+                  ),
+                  TextSpan(
+                      text: 'End User License Agreement (EULA)',
+                      style: const TextStyle(color: Colors.blue),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          launchUrl(Uri.parse(NearSocialMobileUrls.eulaUrl));
+                        }),
+                  const TextSpan(text: ' and '),
+                  TextSpan(
+                      text: 'Privacy Policy',
+                      style: const TextStyle(color: Colors.blue),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          launchUrl(
+                              Uri.parse(NearSocialMobileUrls.privacyPolicyUrl));
+                        }),
+                  const TextSpan(text: '.'),
+                ]),
+              ),
+              SizedBox(height: 10.h),
+              CustomButton(
+                primary: true,
+                onPressed: () {
+                  final FlutterSecureStorage secureStorage =
+                      Modular.get<FlutterSecureStorage>();
+                  secureStorage.write(
+                      key: SecureStorageKeys.appPolicyAccepted, value: 'true');
+                  Modular.to.pop();
+                },
+                child: const Text(
+                  'I AGREE',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ]),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -53,6 +121,12 @@ class _StartSplashPageState extends State<StartSplashPage>
         final stopwatch = Stopwatch()..start();
 
         final checkedAuthentication = await checkAuthenticationOnDevice();
+        final appPolicyAccepted = await checkAppPolicyAccepted();
+
+        if (!appPolicyAccepted) {
+          showAcceptAppPolicy();
+        }
+
         stopwatch.stop();
 
         final remainingTime =
@@ -61,11 +135,12 @@ class _StartSplashPageState extends State<StartSplashPage>
         if (remainingTime > Duration.zero) {
           await Future.delayed(remainingTime, () {
             localyAuthenticated.value = checkedAuthentication;
+            _controller.forward();
           });
         } else {
           localyAuthenticated.value = checkedAuthentication;
+          _controller.forward();
         }
-        _controller.forward();
       },
     );
   }
