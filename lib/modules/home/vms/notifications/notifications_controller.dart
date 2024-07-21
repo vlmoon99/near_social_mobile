@@ -61,6 +61,11 @@ class NotificationsController {
       rethrow;
     }
   }
+
+  Future<void> clear() async {
+    _streamController.add(const Notifications());
+  }
+
 }
 
 enum NotificationsLoadingState { initial, loading, loaded }

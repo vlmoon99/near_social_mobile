@@ -8,8 +8,11 @@ import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_se
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/home/pages/home_menu/widgets/home_menu_list_tile.dart';
+import 'package:near_social_mobile/modules/home/vms/notifications/notifications_controller.dart';
+import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
@@ -206,6 +209,17 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                 ),
                 SizedBox(height: 15.h),
                 HomeMenuListTile(
+                  tile: const Icon(Icons.settings),
+                  title: "Settings",
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    Modular.to.pushNamed(
+                      ".${Routes.home.settingsPage}",
+                    );
+                  },
+                ),
+                SizedBox(height: 15.h),
+                HomeMenuListTile(
                   title: "Logout",
                   tile: const Icon(Icons.logout),
                   onTap: () async {
@@ -247,9 +261,10 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                     ).then(
                       (value) {
                         if (value != null && value) {
-                          final AuthController authController =
-                              Modular.get<AuthController>();
-                          authController.logout();
+                          Modular.get<AuthController>().logout();
+                          Modular.get<NotificationsController>().clear();
+                          Modular.get<FilterController>().clear();
+                          Modular.get<PostsController>().clear();
                           Modular.to.navigate("/");
                         }
                       },

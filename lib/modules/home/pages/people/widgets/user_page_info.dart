@@ -9,6 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/home/pages/people/widgets/more_actions_for_user_button.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
@@ -19,9 +20,11 @@ import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UserPageMainInfo extends StatelessWidget {
-  const UserPageMainInfo({super.key, required this.accountIdOfUser});
+  const UserPageMainInfo(
+      {super.key, required this.accountIdOfUser, required this.userIsBlocked});
 
   final String accountIdOfUser;
+  final bool userIsBlocked;
   List<Widget> linkTreeList({required Map<String, dynamic> linkTree}) {
     final List<Widget> linkTreeList = linkTree.entries.map((pair) {
       if (pair.key == "twitter") {
@@ -87,7 +90,6 @@ class UserPageMainInfo extends StatelessWidget {
     final AuthController authController = Modular.get<AuthController>();
     final UserListController userListController =
         Modular.get<UserListController>();
-
     return StreamBuilder(
         stream: userListController.stream,
         builder: (context, snapshot) {
@@ -181,14 +183,26 @@ class UserPageMainInfo extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      user.generalAccountInfo.name != ""
-                          ? user.generalAccountInfo.name
-                          : "No Name",
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            user.generalAccountInfo.name != ""
+                                ? user.generalAccountInfo.name
+                                : "No Name",
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        if (user.generalAccountInfo.accountId !=
+                            authController.state.accountId)
+                          MoreActionsForUserButton(
+                            userAccountId: user.generalAccountInfo.accountId,
+                          ),
+                      ],
                     ),
                     SizedBox(height: 5.h),
                     Row(
@@ -253,7 +267,8 @@ class UserPageMainInfo extends StatelessWidget {
                       ],
                     ),
                     SizedBox(height: 5.h),
-                    if (authController.state.accountId != accountIdOfUser) ...[
+                    if (authController.state.accountId != accountIdOfUser &&
+                        !userIsBlocked) ...[
                       Row(
                         children: [
                           if (user.followers != null)

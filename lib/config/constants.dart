@@ -33,3 +33,20 @@ class NearUrls {
   static const nearSocialApi = "https://api.near.social";
   static const nearSocialIpfsMediaHosting = "https://ipfs.near.social/ipfs/";
 }
+
+const firebaseNearSocialProject = "near-social";
+
+class FirebaseDatabasePathKeys {
+  static const String usersPath = "users";
+  //user blocsk
+  static const String userBlocskDir = "user_blocks";
+  static const String blockedAccountsPath = "blocked_accounts";
+  static const String hidedPostsPath = "hided_posts";
+  static const String hidedCommentsPath = "hided_comments";
+  //reports
+  static const String reportsDir = "reports";
+  static const String reportedPostsPath = "reported_posts";
+  static const String reportedCommentsPath = "reported_comments";
+  static const String reportedAccountsPath = "reported_accounts";
+}
+

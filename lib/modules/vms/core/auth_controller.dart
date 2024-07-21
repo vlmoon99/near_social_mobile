@@ -34,6 +34,11 @@ class AuthController extends Disposable {
     required String secretKey,
   }) async {
     try {
+      _streamController.add(state.copyWith(
+        accountId: accountId,
+        secretKey: secretKey,
+      ));
+
       final privateKey = await nearBlockChainService
           .getPrivateKeyFromSecretKeyFromNearApiJSFormat(
         secretKey.split(":").last,
@@ -91,9 +96,7 @@ class AuthController extends Disposable {
       await secureStorage.delete(key: SecureStorageKeys.authInfo);
       await secureStorage.delete(
           key: SecureStorageKeys.additionalCryptographicKeys);
-      _streamController.add(state.copyWith(
-        status: AuthInfoStatus.unauthenticated,
-      ));
+      _streamController.add(const AuthInfo());
     } catch (err) {
       throw AppExceptions(
         messageForUser: "Failed to logout",

@@ -8,6 +8,7 @@ import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
 import 'package:near_social_mobile/utils/future_queue.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -26,7 +27,9 @@ class PostsController {
   );
 
   Future<void> loadPosts(
-      {String? postsOfAccountId, required PostsViewMode postsViewMode}) async {
+      {String? postsOfAccountId,
+      required PostsViewMode postsViewMode,
+      Filters? filters}) async {
     try {
       if (postsViewMode == PostsViewMode.main) {
         _streamController.add(
@@ -46,14 +49,8 @@ class PostsController {
             _streamController.add(
               state.copyWith(
                 posts: posts,
-                status: PostLoadingStatus.loaded,
               ),
             );
-            for (var indexOfPost = 0;
-                indexOfPost < state.posts.length;
-                indexOfPost++) {
-              _loadPostsDataAsync(indexOfPost, postsViewMode);
-            }
             break;
           }
         case PostsViewMode.account:
@@ -64,11 +61,6 @@ class PostsController {
                   ..[postsOfAccountId!] = posts,
               ),
             );
-            for (var indexOfPost = 0;
-                indexOfPost < state.postsOfAccounts[postsOfAccountId].length;
-                indexOfPost++) {
-              _loadPostsDataAsync(indexOfPost, postsViewMode, postsOfAccountId);
-            }
             break;
           }
         case PostsViewMode.temporary:
@@ -77,8 +69,50 @@ class PostsController {
             break;
           }
       }
+
+      checkPostsForFullLoadAndLoadIfNecessary(
+        postsViewMode: postsViewMode,
+        filters: filters,
+        postsOfAccountId: postsOfAccountId,
+      );
+
+      _streamController.add(
+        state.copyWith(
+          status: PostLoadingStatus.loaded,
+        ),
+      );
     } catch (err) {
       rethrow;
+    }
+  }
+
+  Future<void> checkPostsForFullLoadAndLoadIfNecessary(
+      {required PostsViewMode postsViewMode,
+      Filters? filters,
+      String? postsOfAccountId}) async {
+    final summaryPosts = getPostsDueToPostsViewMode(
+      postsViewMode,
+      postsOfAccountId,
+    );
+
+    if (filters != null) {
+      final FiltersUtil filtersUtil = FiltersUtil(filters: filters);
+
+      for (var i = 0; i < summaryPosts.length; i++) {
+        final post = summaryPosts[i];
+        if (!post.fullyLoaded &&
+            !filtersUtil.postIsHided(
+                post.authorInfo.accountId, post.blockHeight)) {
+          _loadPostsDataAsync(i, postsViewMode, postsOfAccountId);
+        }
+      }
+    } else {
+      for (var i = 0; i < summaryPosts.length; i++) {
+        final post = summaryPosts[i];
+        if (!post.fullyLoaded) {
+          _loadPostsDataAsync(i, postsViewMode, postsOfAccountId);
+        }
+      }
     }
   }
 
@@ -153,7 +187,9 @@ class PostsController {
   }
 
   Future<List<Post>> loadMorePosts(
-      {String? postsOfAccountId, required PostsViewMode postsViewMode}) async {
+      {String? postsOfAccountId,
+      required PostsViewMode postsViewMode,
+      Filters? filters}) async {
     try {
       log("Loading more posts");
       _streamController.add(
@@ -224,16 +260,11 @@ class PostsController {
           }
       }
 
-      final summaryPosts = getPostsDueToPostsViewMode(
-        postsViewMode,
-        postsOfAccountId,
+      checkPostsForFullLoadAndLoadIfNecessary(
+        postsViewMode: postsViewMode,
+        filters: filters,
+        postsOfAccountId: postsOfAccountId,
       );
-      for (var i = 0; i < summaryPosts.length; i++) {
-        final post = summaryPosts[i];
-        if (!post.fullyLoaded) {
-          _loadPostsDataAsync(i, postsViewMode, postsOfAccountId);
-        }
-      }
 
       _streamController.add(
         state.copyWith(
@@ -935,6 +966,11 @@ class PostsController {
         }
     }
   }
+
+  Future<void> clear() async {
+    _streamController.add(const Posts());
+  }
+
 }
 
 enum PostLoadingStatus {

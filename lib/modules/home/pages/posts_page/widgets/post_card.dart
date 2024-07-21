@@ -6,7 +6,7 @@ import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
-import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/more_actions_for_post_button.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
@@ -14,7 +14,6 @@ import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
-import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:near_social_mobile/utils/date_to_string.dart';
 
@@ -174,7 +173,12 @@ class PostCard extends StatelessWidget {
                       selectable: false,
                       tappable: false,
                       heroAnimForImages: false,
-                      // loadImages: false,
+                      onTapLink: (_, __, ___) {
+                        HapticFeedback.lightImpact();
+                        Modular.to.pushNamed(
+                          ".${Routes.home.postPage}?accountId=${post.authorInfo.accountId}&blockHeight=${post.blockHeight}&postsViewMode=${postsViewMode.index}&postsOfAccountId=${postsOfAccountId ?? ""}&allowToNavigateToPostAuthorPage=$allowToNavigateToPostAuthorPage",
+                        );
+                      },
                     ),
                     if (post.postBody.mediaLink != null) ...[
                       NearNetworkImage(
@@ -300,22 +304,9 @@ class PostCard extends StatelessWidget {
                       );
                     },
                   ),
-                  TwoStatesIconButton(
-                    iconPath: NearAssets.shareIcon,
-                    onPressed: () async {
-                      HapticFeedback.lightImpact();
-                      final nearSocialApi = Modular.get<NearSocialApi>();
-                      final urlOfPost = nearSocialApi.getUrlOfPost(
-                        accountId: post.authorInfo.accountId,
-                        blockHeight: post.blockHeight,
-                      );
-                      Clipboard.setData(ClipboardData(text: urlOfPost));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Url of post coppied to clipboard"),
-                        ),
-                      );
-                    },
+                  MoreActionsForPostButton(
+                    post: post,
+                    postsViewMode: postsViewMode,
                   ),
                 ],
               ),

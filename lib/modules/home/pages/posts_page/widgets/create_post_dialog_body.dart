@@ -34,9 +34,9 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             "Create post",
-            style: TextStyle(fontSize: 18.sp),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 10.h),
           Container(

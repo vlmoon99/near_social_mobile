@@ -6,6 +6,7 @@ import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_comment_dialog_body.dart';
+import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/more_actions_for_comment_button.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
@@ -199,6 +200,8 @@ class CommentCard extends StatelessWidget {
                     );
                   },
                 ),
+                if (post.authorInfo.accountId != authController.state.accountId)
+                  MoreActionsForCommentButton(comment: comment),
               ],
             ),
           ],

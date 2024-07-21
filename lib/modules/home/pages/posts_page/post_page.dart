@@ -5,13 +5,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
-import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/comment_card.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_comment_dialog_body.dart';
+import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/more_actions_for_post_button.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
@@ -19,6 +20,7 @@ import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
+import 'package:rxdart/rxdart.dart';
 
 class PostPage extends StatelessWidget {
   const PostPage({
@@ -40,6 +42,7 @@ class PostPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
     final PostsController postsController = Modular.get<PostsController>();
+    final FilterController filterController = Modular.get<FilterController>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final posts = postsController.getPostsDueToPostsViewMode(
           postsViewMode, postsOfAccountId);
@@ -67,7 +70,7 @@ class PostPage extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: StreamBuilder(
-            stream: postsController.stream,
+            stream: Rx.merge([postsController.stream, filterController.stream]),
             builder: (context, snapshot) {
               final posts = postsController.getPostsDueToPostsViewMode(
                   postsViewMode, postsOfAccountId);
@@ -330,42 +333,60 @@ class PostPage extends StatelessWidget {
                           );
                         },
                       ),
-                      TwoStatesIconButton(
-                        iconPath: NearAssets.shareIcon,
-                        onPressed: () async {
-                          HapticFeedback.lightImpact();
-                          final nearSocialApi = Modular.get<NearSocialApi>();
-                          final urlOfPost = nearSocialApi.getUrlOfPost(
-                            accountId: post.authorInfo.accountId,
-                            blockHeight: post.blockHeight,
-                          );
-                          Clipboard.setData(ClipboardData(text: urlOfPost));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Url of post coppied to clipboard"),
-                            ),
-                          );
-                        },
+                      MoreActionsForPostButton(
+                        post: post,
+                        postsViewMode: postsViewMode,
                       ),
                     ],
                   ),
                   SizedBox(height: 10.h),
-                  if (post.commentList != null) ...[
-                    ...post.commentList!
-                        .map(
-                          (comment) => CommentCard(
-                            comment: comment,
-                            post: post,
-                            postsViewMode: postsViewMode,
-                            postsOfAccountId: postsOfAccountId,
-                          ),
-                        )
-                        .toList()
-                  ] else ...[
+                  if (post.commentList != null)
+                    Builder(
+                      builder: (context) {
+                        final FiltersUtil filterUtil = FiltersUtil(
+                          filters: filterController.state,
+                        );
+                        final comments = post.commentList!
+                            .where((comment) => !filterUtil.commentIsHided(
+                                comment.authorInfo.accountId,
+                                comment.blockHeight))
+                            .toList();
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: comments
+                              .map(
+                                (comment) => CommentCard(
+                                  comment: comment,
+                                  post: post,
+                                  postsViewMode: postsViewMode,
+                                  postsOfAccountId: postsOfAccountId,
+                                ),
+                              )
+                              .toList(),
+                        );
+                      },
+                    )
+                  else ...[
                     const Center(
                       child: SpinnerLoadingIndicator(),
                     )
                   ],
+                  // if (post.commentList != null) ...[
+                  //   ...post.commentList!
+                  //       .map(
+                  //         (comment) => CommentCard(
+                  //           comment: comment,
+                  //           post: post,
+                  //           postsViewMode: postsViewMode,
+                  //           postsOfAccountId: postsOfAccountId,
+                  //         ),
+                  //       )
+                  //       .toList()
+                  // ] else ...[
+                  //   const Center(
+                  //     child: SpinnerLoadingIndicator(),
+                  //   )
+                  // ],
                 ],
               );
             }),

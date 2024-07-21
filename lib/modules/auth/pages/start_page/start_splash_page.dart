@@ -2,14 +2,12 @@ import 'dart:math';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/auth/pages/start_page/widgets/auth_body.dart';
 import 'package:near_social_mobile/modules/auth/pages/start_page/widgets/login_body.dart';
+import 'package:near_social_mobile/services/checkAuthenticationOnDevice.dart';
 
 class StartSplashPage extends StatefulWidget {
   const StartSplashPage({super.key});
@@ -25,16 +23,6 @@ class _StartSplashPageState extends State<StartSplashPage>
   late Animation<double> _fadeAnimation;
 
   final ValueNotifier<bool?> localyAuthenticated = ValueNotifier(false);
-
-  Future<bool> checkAuthentication() async {
-    final secureStorage = Modular.get<FlutterSecureStorage>();
-    String? value = await secureStorage.read(key: SecureStorageKeys.authInfo);
-    if (value?.isNotEmpty ?? false) {
-      return true;
-    } else {
-      return false;
-    }
-  }
 
   @override
   void initState() {
@@ -64,7 +52,7 @@ class _StartSplashPageState extends State<StartSplashPage>
       (timeStamp) async {
         final stopwatch = Stopwatch()..start();
 
-        final checkedAuthentication = await checkAuthentication();
+        final checkedAuthentication = await checkAuthenticationOnDevice();
         stopwatch.stop();
 
         final remainingTime =

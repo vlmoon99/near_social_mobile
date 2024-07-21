@@ -21,11 +21,13 @@ class RawTextToContentFormatter extends StatelessWidget {
     this.heroAnimForImages = true,
     this.loadImages = true,
     this.imageHeight,
+    this.onTapLink,
   });
 
   final String rawText;
   final bool selectable;
   final bool tappable;
+  final void Function(String text, String? href, String title)? onTapLink;
   final bool heroAnimForImages;
   final bool loadImages;
   final double? imageHeight;
@@ -129,64 +131,65 @@ class RawTextToContentFormatter extends StatelessWidget {
           ),
         );
       },
-      onTapLink: tappable
-          ? (text, href, title) {
-              showAdaptiveDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text.rich(
-                      TextSpan(
-                        style: const TextStyle(
-                          fontSize: 20,
-                        ),
-                        text: "Do you want to open ?\n",
-                        children: [
+      onTapLink: onTapLink ??
+          (tappable
+              ? (text, href, title) {
+                  showAdaptiveDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text.rich(
                           TextSpan(
-                            text: href,
-                            style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 14.sp,
+                            style: const TextStyle(
+                              fontSize: 20,
+                            ),
+                            text: "Do you want to open ?\n",
+                            children: [
+                              TextSpan(
+                                text: href,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 14.sp,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        actionsAlignment: MainAxisAlignment.spaceEvenly,
+                        actions: [
+                          CustomButton(
+                            primary: true,
+                            onPressed: () {
+                              Modular.to.pop(true);
+                            },
+                            child: const Text(
+                              "Open",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          CustomButton(
+                            onPressed: () {
+                              Modular.to.pop(false);
+                            },
+                            child: const Text(
+                              "Cancel",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
-                      ),
-                    ),
-                    actionsAlignment: MainAxisAlignment.spaceEvenly,
-                    actions: [
-                      CustomButton(
-                        primary: true,
-                        onPressed: () {
-                          Modular.to.pop(true);
-                        },
-                        child: const Text(
-                          "Open",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      CustomButton(
-                        onPressed: () {
-                          Modular.to.pop(false);
-                        },
-                        child: const Text(
-                          "Cancel",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ).then((toOpen) {
-                if (toOpen != null && toOpen) {
-                  _launchURL(href!);
+                      );
+                    },
+                  ).then((toOpen) {
+                    if (toOpen != null && toOpen) {
+                      _launchURL(href!);
+                    }
+                  });
                 }
-              });
-            }
-          : null,
+              : null),
       selectable: selectable,
       onSelectionChanged: (text, selection, cause) {},
     );
