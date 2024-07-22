@@ -3,7 +3,6 @@ import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/core_module.dart';
 import 'package:near_social_mobile/modules/auth/pages/start_page/start_splash_page.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
-import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 
 import 'auth/auth_module.dart';
@@ -19,7 +18,6 @@ class AppModule extends Module {
   void binds(Injector i) {
     i.addSingleton(Catcher.new);
     i.addSingleton(AuthController.new);
-    i.addSingleton(FilterController.new);
   }
 
   @override

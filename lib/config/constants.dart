@@ -46,7 +46,7 @@ const firebaseNearSocialProject = "near-social";
 
 class FirebaseDatabasePathKeys {
   static const String usersPath = "users";
-  //user blocsk
+  //user blocks
   static const String userBlocskDir = "user_blocks";
   static const String blockedAccountsPath = "blocked_accounts";
   static const String hidedPostsPath = "hided_posts";
@@ -56,4 +56,8 @@ class FirebaseDatabasePathKeys {
   static const String reportedPostsPath = "reported_posts";
   static const String reportedCommentsPath = "reported_comments";
   static const String reportedAccountsPath = "reported_accounts";
+  //app settings
+
+  static const String globalSettingsDir = "global_settings";
+  static const String featuresSettingsPath = "features";
 }

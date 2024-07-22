@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/modules/vms/core/global_settings_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/models/auth_info.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/services/firebase/notifications_project/firebase_notifications.dart';
@@ -26,6 +27,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
+    final GlobalSettingsController globalSettingsController = Modular.get<GlobalSettingsController>();
+    if (globalSettingsController.state.loadStatus == GlobalSettingsLoadStatus.init) {
+      globalSettingsController.loadGlobalSettings();
+    }
     checkForJailbreak();
   }
 
