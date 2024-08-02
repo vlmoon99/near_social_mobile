@@ -145,7 +145,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     child: moreNotificationsLoading
                         ? const Center(child: SpinnerLoadingIndicator())
-                        : notifications.length < 20
+                        : (notifications.length < 20 && allNotificationsLoaded)
                             ? const SizedBox.shrink()
                             : CustomButton(
                                 onPressed: allNotificationsLoaded
