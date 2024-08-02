@@ -7,8 +7,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_post_dialog_body.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/post_card.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
-import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
+import 'package:near_social_mobile/modules/vms/core/models/filters.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -54,9 +54,8 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final FilterController filterController = Modular.get<FilterController>();
-      final AuthController authController = Modular.get<AuthController>();
       if (filterController.state.status == FilterLoadStatus.initial) {
-        filterController.loadFilters(authController.state.accountId);
+        filterController.loadFilters();
       }
       final PostsController postsController = Modular.get<PostsController>();
       if (postsController.state.status == PostLoadingStatus.initial) {

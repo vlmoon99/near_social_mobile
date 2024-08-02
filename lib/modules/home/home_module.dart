@@ -18,7 +18,6 @@ import 'package:near_social_mobile/modules/home/vms/notifications/notifications_
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
-import 'package:near_social_mobile/modules/vms/core/global_settings_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 
 import 'pages/posts_page/post_page.dart';
@@ -37,7 +36,6 @@ class HomeModule extends Module {
     i.addSingleton(UserListController.new);
     i.addSingleton(NotificationsController.new);
     i.addSingleton(FilterController.new);
-    i.addSingleton(GlobalSettingsController.new);
   }
 
   @override

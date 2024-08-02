@@ -9,6 +9,7 @@ import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
+import 'package:near_social_mobile/modules/vms/core/models/filters.dart';
 import 'package:near_social_mobile/utils/future_queue.dart';
 import 'package:rxdart/rxdart.dart';
 

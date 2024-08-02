@@ -1,15 +1,14 @@
 import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
+import 'dart:convert';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/services/firebase/near_social_project/firestore_database.dart';
+import 'package:near_social_mobile/modules/vms/core/models/filters.dart';
 import 'package:rxdart/rxdart.dart';
 
 class FilterController extends Disposable {
-  String _dbPathToFilters(String accountId) =>
-      "${FirebaseDatabasePathKeys.usersPath}/$accountId/${FirebaseDatabasePathKeys.userBlocskDir}";
+  final FlutterSecureStorage storage;
+  FilterController(this.storage);
 
   final BehaviorSubject<Filters> _streamController =
       BehaviorSubject.seeded(const Filters());
@@ -17,12 +16,12 @@ class FilterController extends Disposable {
   Stream<Filters> get stream => _streamController.stream;
   Filters get state => _streamController.value;
 
-  Future<void> loadFilters(String accountId) async {
+  Future<void> loadFilters() async {
     _streamController.add(state.copyWith(status: FilterLoadStatus.loading));
     final Map<String, dynamic> filters =
-        await FirebaseDatabaseService.getAllRecordsOfCollection(
-            "${FirebaseDatabasePathKeys.usersPath}/$accountId/user_blocks");
+        jsonDecode(await storage.read(key: SecureStorageKeys.filters) ?? "{}");
     if (filters.isEmpty) {
+      _streamController.add(state.copyWith(status: FilterLoadStatus.loaded));
       return;
     }
     final actualFilters = Filters.fromJson(filters);
@@ -31,52 +30,32 @@ class FilterController extends Disposable {
 
   Future<void> blockUser(
       {required String accountId, required String blockedAccountId}) async {
-    await FirebaseDatabaseService.updateBySetWithMergeRecordByPath(
-      "${_dbPathToFilters(accountId)}/${FirebaseDatabasePathKeys.blockedAccountsPath}",
-      {blockedAccountId: {}},
-    );
     _streamController.add(state.copyWith(
       blockedAccounts: [...state.blockedAccounts, blockedAccountId],
     ));
+    _updateFilters();
   }
 
   Future<void> unblockUser(
       {required String accountId, required String blockedAccountId}) async {
-    await FirebaseDatabaseService.updateBySetWithMergeRecordByPath(
-        "${_dbPathToFilters(accountId)}/${FirebaseDatabasePathKeys.blockedAccountsPath}",
-        {
-          blockedAccountId: FieldValue.delete(),
-        });
     _streamController.add(state.copyWith(
       blockedAccounts: List.of(state.blockedAccounts)..remove(blockedAccountId),
     ));
+    _updateFilters();
   }
 
   Future<void> hidePost(
       {required String accountId,
       required String accountIdToHide,
       required int blockHeightToHide}) async {
-    final String hidedPostsPathFullPath =
-        "${_dbPathToFilters(accountId)}/${FirebaseDatabasePathKeys.hidedPostsPath}";
-    await FirebaseDatabaseService.updateBySetWithMergeRecordByPath(
-      hidedPostsPathFullPath,
-      {
-        accountIdToHide: FieldValue.arrayUnion([blockHeightToHide])
-      },
-    );
     _streamController.add(state.copyWith(
       hidedPosts: [...state.hidedPosts, "$accountIdToHide&$blockHeightToHide"],
     ));
+    _updateFilters();
   }
 
   Future<void> hidePostsOfUser(
       {required String accountId, required String accountIdToHide}) async {
-    final String hidedPostsPathFullPath =
-        "${_dbPathToFilters(accountId)}/${FirebaseDatabasePathKeys.hidedPostsPath}";
-    await FirebaseDatabaseService.updateBySetWithMergeRecordByPath(
-      hidedPostsPathFullPath,
-      {accountIdToHide: true},
-    );
     _streamController.add(
       state.copyWith(
         hidedAllPostsAccounts: [
@@ -89,16 +68,11 @@ class FilterController extends Disposable {
           ),
       ),
     );
+    _updateFilters();
   }
 
   Future<void> restorePostsOfUser(
       {required String accountId, required String accountIdToRestore}) async {
-    final String hidedPostsPathFullPath =
-        "${_dbPathToFilters(accountId)}/${FirebaseDatabasePathKeys.hidedPostsPath}";
-    await FirebaseDatabaseService.updateBySetWithMergeRecordByPath(
-      hidedPostsPathFullPath,
-      {accountIdToRestore: FieldValue.delete()},
-    );
     _streamController.add(
       state.copyWith(
         hidedAllPostsAccounts: List.of(state.hidedAllPostsAccounts)
@@ -109,27 +83,19 @@ class FilterController extends Disposable {
           ),
       ),
     );
+    _updateFilters();
   }
 
-  Future<void> sendReport({
-    required String accountId,
-    required String message,
-    required String accountIdToReport,
-    int? blockHeightToReport,
-    required String reportType,
-  }) async {
-    final path =
-        "${FirebaseDatabasePathKeys.reportsDir}/$accountId/$reportType/${DateTime.now().toIso8601String()}";
-    await FirebaseDatabaseService.updateBySetWithMergeRecordByPath(path, {
-      "message": message,
-      "accountIdToReport": accountIdToReport,
-      if (blockHeightToReport != null)
-        "blockHeightToReport": blockHeightToReport,
-    });
+  Future<void> _updateFilters() async {
+    return storage.write(
+      key: SecureStorageKeys.filters,
+      value: jsonEncode(state.toJson()),
+    );
   }
 
   Future<void> clear() async {
     _streamController.add(const Filters());
+    await storage.delete(key: SecureStorageKeys.filters);
   }
 
   @override
@@ -155,100 +121,5 @@ class FiltersUtil {
 
   bool userIsBlocked(String accountId) {
     return filters.blockedAccounts.contains(accountId);
-  }
-}
-
-enum FilterLoadStatus { initial, loading, loaded }
-
-@immutable
-class Filters {
-  final FilterLoadStatus status;
-  final List<String> blockedAccounts;
-  final List<String> hidedPosts;
-  final List<String> hidedAllPostsAccounts;
-
-  const Filters({
-    this.status = FilterLoadStatus.initial,
-    this.blockedAccounts = const [],
-    this.hidedPosts = const [],
-    this.hidedAllPostsAccounts = const [],
-  });
-
-  ({String accountId, int blockHeight}) convertIdToCredentials(String id) {
-    final splittedID = id.split("&");
-    return (
-      accountId: splittedID.first,
-      blockHeight: int.parse(splittedID.last)
-    );
-  }
-
-  List<String> get allHiddenPostsUsers => List.of(hidedAllPostsAccounts)
-    ..addAll(hidedPosts.map(
-      (fullId) {
-        return fullId.split("&")[0];
-      },
-    ).toSet());
-
-  Filters copyWith({
-    FilterLoadStatus? status,
-    List<String>? blockedAccounts,
-    List<String>? hidedPosts,
-    List<String>? hidedAllPostsAccounts,
-  }) {
-    return Filters(
-        status: status ?? this.status,
-        blockedAccounts: blockedAccounts ?? this.blockedAccounts,
-        hidedPosts: hidedPosts ?? this.hidedPosts,
-        hidedAllPostsAccounts:
-            hidedAllPostsAccounts ?? this.hidedAllPostsAccounts);
-  }
-
-  static Filters fromJson(Map<String, dynamic> filters) {
-    List<String> convertMapToListFullIDs(dynamic value) {
-      if (value == null) {
-        return [];
-      }
-      List<String> result = [];
-
-      final mappedValue = Map<String, dynamic>.from(value);
-
-      mappedValue.forEach((key, value) {
-        if (value is! bool) {
-          final blockheights = List<int>.from(value);
-          for (var element in blockheights) {
-            result.add("$key&$element");
-          }
-        }
-      });
-      return result;
-    }
-
-    List<String> convertMapToListIDs(dynamic value) {
-      if (value == null) {
-        return [];
-      }
-      List<String> result = [];
-
-      final mappedValue = Map<String, dynamic>.from(value);
-
-      mappedValue.forEach((key, value) {
-        if (value is bool) {
-          result.add(key);
-        }
-      });
-      return result;
-    }
-
-    return Filters(
-      status: FilterLoadStatus.loaded,
-      blockedAccounts: List<String>.from(Map<String, dynamic>.from(
-              filters[FirebaseDatabasePathKeys.blockedAccountsPath] ?? {})
-          .keys
-          .toList()),
-      hidedPosts: convertMapToListFullIDs(
-          filters[FirebaseDatabasePathKeys.hidedPostsPath]),
-      hidedAllPostsAccounts:
-          convertMapToListIDs(filters[FirebaseDatabasePathKeys.hidedPostsPath]),
-    );
   }
 }

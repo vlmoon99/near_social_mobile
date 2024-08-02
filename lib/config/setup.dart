@@ -5,10 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutterchain/flutterchain_lib/services/core/lib_initialization_service.dart';
-import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/modules/home/vms/notifications/notifications_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
-import 'package:near_social_mobile/services/firebase/near_social_project/firebase_options.dart';
 import 'package:near_social_mobile/services/firebase/notifications_project/firebase_options.dart';
 import 'package:near_social_mobile/services/local_notification_service.dart';
 
@@ -19,11 +17,6 @@ Future<void> initOfApp() async {
   // init firebase for notifications
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-  );
-  // init firebase of near social project
-  await Firebase.initializeApp(
-    name: firebaseNearSocialProject,
-    options: DefaultFirebaseOptionsOfNearSocialProject.currentPlatform,
   );
 
   LocalNotificationService.init();

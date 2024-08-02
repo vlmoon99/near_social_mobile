@@ -13,7 +13,6 @@ import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart'
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
-import 'package:near_social_mobile/modules/vms/core/global_settings_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
@@ -32,8 +31,6 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
     final AuthController authController = Modular.get<AuthController>();
     final UserListController userListController =
         Modular.get<UserListController>();
-    final GlobalSettingsController globalSettingsController =
-        Modular.get<GlobalSettingsController>();
     return Scaffold(
       body: ListView(
         children: [
@@ -200,23 +197,14 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
             padding: const EdgeInsets.symmetric(horizontal: 20).r,
             child: Column(
               children: [
-                StreamBuilder(
-                  stream: globalSettingsController.stream,
-                  builder: (context, snapshot) {
-                    if (globalSettingsController.state.allowKeyManagerFeature) {
-                      return HomeMenuListTile(
-                        title: "Key Manager",
-                        tile: const Icon(Icons.key),
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          Modular.to.pushNamed(
-                            ".${Routes.home.keyManagerPage}",
-                          );
-                        },
-                      );
-                    } else {
-                      return const SizedBox.shrink();
-                    }
+                HomeMenuListTile(
+                  title: "Key Manager",
+                  tile: const Icon(Icons.key),
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    Modular.to.pushNamed(
+                      ".${Routes.home.keyManagerPage}",
+                    );
                   },
                 ),
                 SizedBox(height: 15.h),

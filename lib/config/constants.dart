@@ -4,6 +4,7 @@ class SecureStorageKeys {
   static const additionalCryptographicKeys = 'additional_cryptographic_keys';
   static const networkType = 'network_type';
   static const appPolicyAccepted = 'app_policy_accepted';
+  static const filters = 'filters';
 }
 
 class AppErrorCodes {
@@ -40,24 +41,4 @@ class NearSocialMobileUrls {
       "https://docs.google.com/document/d/1u0bmfj0OCtG0utsbR-xcPJVy0srEUf86N92rw8NOtEQ/edit";
   static const privacyPolicyUrl =
       "https://docs.google.com/document/d/1T-g8ZSH5Bg2_nUVOzUELmzK43a5UFp3o8G9pHnVb16k/edit";
-}
-
-const firebaseNearSocialProject = "near-social";
-
-class FirebaseDatabasePathKeys {
-  static const String usersPath = "users";
-  //user blocks
-  static const String userBlocskDir = "user_blocks";
-  static const String blockedAccountsPath = "blocked_accounts";
-  static const String hidedPostsPath = "hided_posts";
-  static const String hidedCommentsPath = "hided_comments";
-  //reports
-  static const String reportsDir = "reports";
-  static const String reportedPostsPath = "reported_posts";
-  static const String reportedCommentsPath = "reported_comments";
-  static const String reportedAccountsPath = "reported_accounts";
-  //app settings
-
-  static const String globalSettingsDir = "global_settings";
-  static const String featuresSettingsPath = "features";
 }
