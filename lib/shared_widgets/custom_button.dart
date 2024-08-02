@@ -24,7 +24,9 @@ class CustomButton extends StatelessWidget {
     return FilledButton(
       onPressed: () {
         HapticFeedback.lightImpact();
-        onPressed!();
+        if (onPressed != null) {
+          onPressed!();
+        }
       },
       style: FilledButton.styleFrom(
         backgroundColor: primary ? NEARColors.black : NEARColors.white,

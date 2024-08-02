@@ -259,7 +259,8 @@ class NearSocialApi {
             : null,
       );
     } catch (err) {
-      rethrow;
+      log("$err\n Post: accountId: $accountId, blockHeight: $blockHeight");
+      return PostBody(text: "", mediaLink: null);
     }
   }
 
