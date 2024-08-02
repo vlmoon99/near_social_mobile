@@ -242,7 +242,6 @@ class PostPage extends StatelessWidget {
                             final exc = AppExceptions(
                               messageForUser: "Failed to like post",
                               messageForDev: err.toString(),
-                              statusCode: AppErrorCodes.flutterchainError,
                             );
                             throw exc;
                           }
@@ -325,7 +324,6 @@ class PostPage extends StatelessWidget {
                                 final exc = AppExceptions(
                                   messageForUser: "Failed to like post",
                                   messageForDev: err.toString(),
-                                  statusCode: AppErrorCodes.flutterchainError,
                                 );
                                 throw exc;
                               }

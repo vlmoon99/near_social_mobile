@@ -83,7 +83,6 @@ class RawTextToContentFormatter extends StatelessWidget {
       throw AppExceptions(
         messageForUser: 'Could not launch $url',
         messageForDev: 'Could not launch $url',
-        statusCode: 1,
       );
     }
   }

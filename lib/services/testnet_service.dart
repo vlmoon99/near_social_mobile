@@ -6,7 +6,6 @@ import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:flutterchain/flutterchain_lib/constants/core/supported_blockchains.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:flutterchain/flutterchain_lib/services/core/crypto_service.dart';
-import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/network/dio_interceptors/retry_on_connection_changed_interceptor.dart';
 
@@ -74,7 +73,6 @@ class TestNetService {
       throw AppExceptions(
         messageForUser: "Failed to create account",
         messageForDev: err.toString(),
-        statusCode: AppErrorCodes.testnetError,
       );
     }
   }

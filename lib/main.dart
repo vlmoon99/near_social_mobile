@@ -10,7 +10,6 @@ import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/app_module.dart';
 
-import 'config/constants.dart';
 import 'config/setup.dart';
 
 void main() async {
@@ -55,7 +54,6 @@ void main() async {
         messageForUser:
             ErrorMessageHandler.getErrorMessageForNotFlutterExceptions(error),
         messageForDev: error.toString(),
-        statusCode: AppErrorCodes.errorFromZone,
       );
       catcher.exceptionsHandler.add(
         appException,

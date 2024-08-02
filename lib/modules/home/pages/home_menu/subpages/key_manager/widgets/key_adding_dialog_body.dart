@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutterchain/flutterchain_lib/models/core/wallet.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:intl/intl.dart';
-import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
@@ -55,7 +53,6 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
             throw AppExceptions(
               messageForUser: "Key already added",
               messageForDev: "Key already added",
-              statusCode: AppErrorCodes.localAuthError,
             );
           }
           privateKeyInfo = await nearSocialApi.getAccessKeyInfo(
@@ -95,7 +92,6 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
             throw AppExceptions(
               messageForUser: "Key already added",
               messageForDev: "Key already added",
-              statusCode: AppErrorCodes.localAuthError,
             );
           }
 

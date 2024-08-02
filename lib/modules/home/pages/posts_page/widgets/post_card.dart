@@ -216,7 +216,6 @@ class PostCard extends StatelessWidget {
                         final exc = AppExceptions(
                           messageForUser: "Failed to like post",
                           messageForDev: err.toString(),
-                          statusCode: AppErrorCodes.flutterchainError,
                         );
                         throw exc;
                       }
@@ -296,7 +295,6 @@ class PostCard extends StatelessWidget {
                             final exc = AppExceptions(
                               messageForUser: "Failed to repost post",
                               messageForDev: err.toString(),
-                              statusCode: AppErrorCodes.flutterchainError,
                             );
                             throw exc;
                           }

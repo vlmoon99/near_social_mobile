@@ -1,4 +1,3 @@
-import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/vms/core/models/authorization_credentials.dart';
 
@@ -19,7 +18,6 @@ class QRFormatter {
         messageForUser: "Invalid QR code format",
         messageForDev:
             "Invalid QR code format $accountIdStartIndex, $secretKeyStartIndex, $accountIdEndIndex, $secretKeyEndIndex",
-        statusCode: AppErrorCodes.invalidQRCodeFormat,
       );
     }
 

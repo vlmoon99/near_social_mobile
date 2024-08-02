@@ -9,26 +9,13 @@ import 'package:rxdart/rxdart.dart';
 class AppExceptions {
   String messageForUser;
   String messageForDev;
-  int statusCode;
   AppExceptions({
     required this.messageForUser,
     required this.messageForDev,
-    required this.statusCode,
   });
 
   @override
   String toString() => "messageForDev$messageForDev";
-  factory AppExceptions.fromJson(Map<String, dynamic> json) => AppExceptions(
-        messageForUser: json["messageForUser"],
-        messageForDev: json["messageForDev"],
-        statusCode: json["statusCode"],
-      );
-
-  Map<String, dynamic> toJson() => {
-        "messageForUser": messageForUser,
-        "messageForDev": messageForDev,
-        "statusCode": statusCode,
-      };
 }
 
 class Catcher {

@@ -7,18 +7,6 @@ class SecureStorageKeys {
   static const filters = 'filters';
 }
 
-class AppErrorCodes {
-  static const errorFromZone = 0;
-  static const errorFromFlutter = 1;
-  static const invalidQRCodeFormat = 2;
-  static const cryptoError = 3;
-  static const storageError = 4;
-  static const flutterchainError = 5;
-  static const localAuthError = 6;
-  static const testnetError = 7;
-  static const nearSocialApiError = 8;
-}
-
 class NearAssets {
   static const logoIcon = "assets/media/icons/near_social_logo.svg";
   static const commentIcon = "assets/media/icons/comment_icon.svg";

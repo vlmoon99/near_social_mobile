@@ -1,4 +1,4 @@
-  import 'package:flutter_modular/flutter_modular.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:near_social_mobile/config/constants.dart';
 

@@ -101,7 +101,6 @@ class AuthController extends Disposable {
       throw AppExceptions(
         messageForUser: "Failed to logout",
         messageForDev: err.toString(),
-        statusCode: AppErrorCodes.storageError,
       );
     }
   }
@@ -124,7 +123,6 @@ class AuthController extends Disposable {
       final appException = AppExceptions(
         messageForUser: "Failed to add key",
         messageForDev: err.toString(),
-        statusCode: AppErrorCodes.storageError,
       );
 
       throw appException;
@@ -145,7 +143,6 @@ class AuthController extends Disposable {
       final appException = AppExceptions(
         messageForUser: "Failed to remove key",
         messageForDev: err.toString(),
-        statusCode: AppErrorCodes.storageError,
       );
       throw appException;
     }
