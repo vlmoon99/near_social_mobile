@@ -155,6 +155,7 @@ class PostPage extends StatelessWidget {
                   SizedBox(height: 5.h),
                   RawTextToContentFormatter(
                     rawText: post.postBody.text.trim(),
+                    imageHeight: .5.sh,
                   ),
                   SizedBox(height: 10.h),
                   if (post.postBody.mediaLink != null) ...[
@@ -172,8 +173,12 @@ class PostPage extends StatelessWidget {
                       },
                       child: Hero(
                         tag: post.postBody.mediaLink!,
-                        child: NearNetworkImage(
-                          imageUrl: post.postBody.mediaLink!,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(maxHeight: .5.sh),
+                          child: NearNetworkImage(
+                            imageUrl: post.postBody.mediaLink!,
+                            boxFit: BoxFit.contain,
+                          ),
                         ),
                       ),
                     ),

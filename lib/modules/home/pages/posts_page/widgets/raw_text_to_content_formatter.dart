@@ -112,21 +112,24 @@ class RawTextToContentFormatter extends StatelessWidget {
                   );
                 }
               : null,
-          child: SizedBox(
-            height: imageHeight,
-            width: double.infinity,
-            child: heroAnimForImages
-                ? Hero(
-                    tag: uri.toString(),
-                    child: NearNetworkImage(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints:
+                  BoxConstraints(maxHeight: imageHeight ?? double.infinity),
+              child: heroAnimForImages
+                  ? Hero(
+                      tag: uri.toString(),
+                      child: NearNetworkImage(
+                        imageUrl: uri.toString(),
+                        boxFit: BoxFit.contain,
+                      ),
+                    )
+                  : NearNetworkImage(
                       imageUrl: uri.toString(),
-                      errorPlaceholder: const Icon(Icons.broken_image),
+                      boxFit: BoxFit.contain,
                     ),
-                  )
-                : NearNetworkImage(
-                    imageUrl: uri.toString(),
-                    errorPlaceholder: const Icon(Icons.broken_image),
-                  ),
+            ),
           ),
         );
       },

@@ -121,6 +121,7 @@ class CommentCard extends StatelessWidget {
             SizedBox(height: 10.h),
             RawTextToContentFormatter(
               rawText: comment.commentBody.text.trim(),
+              imageHeight: .5.sh,
             ),
             if (comment.commentBody.mediaLink != null) ...[
               GestureDetector(

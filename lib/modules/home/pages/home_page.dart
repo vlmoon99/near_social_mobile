@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -26,7 +27,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
-    checkForJailbreak();
+    if (!kIsWeb) {
+      checkForJailbreak();
+    }
   }
 
   int currentIndex(String currentRoute) {
@@ -51,7 +54,8 @@ class _HomePageState extends State<HomePage> {
     return StreamBuilder<AuthInfo>(
       stream: authController.stream,
       builder: (context, _) {
-        if (authController.state.status == AuthInfoStatus.authenticated) {
+        if (authController.state.status == AuthInfoStatus.authenticated &&
+            !kIsWeb) {
           FirebaseNotificationService.subscribeToNotifications(
               authController.state.accountId);
         }

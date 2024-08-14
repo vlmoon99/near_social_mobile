@@ -1,11 +1,15 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:near_social_mobile/config/constants.dart';
+import 'package:near_social_mobile/modules/home/vms/notifications/notifications_controller.dart';
+import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/services/crypto_storage_service.dart';
 import 'package:near_social_mobile/services/local_auth_service.dart';
@@ -26,7 +30,7 @@ class AuthenticatedBody extends StatelessWidget {
     );
     final authController = Modular.get<AuthController>();
     final Map<String, dynamic> decodedData = jsonDecode(encodedData);
-    authController.login(
+    await authController.login(
       accountId: decodedData["accountId"],
       secretKey: decodedData["secretKey"],
     );
@@ -41,9 +45,14 @@ class AuthenticatedBody extends StatelessWidget {
           CustomButton(
             primary: true,
             onPressed: () async {
-              final bool authenticated = await LocalAuthService().authenticate(
-                requestAuthMessage: 'Please authenticate to decrypt data',
-              );
+              late bool authenticated;
+              if (kIsWeb) {
+                authenticated = true;
+              } else {
+                authenticated = await LocalAuthService().authenticate(
+                  requestAuthMessage: 'Please authenticate to decrypt data',
+                );
+              }
               if (!authenticated) return;
               await decryptDataAndLogin();
               Modular.to.navigate(Routes.home.getModule());
@@ -61,6 +70,12 @@ class AuthenticatedBody extends StatelessWidget {
               Modular.get<AuthController>().logout().then(
                 (_) {
                   authenticatedStatusChanged(false);
+                },
+              ).then(
+                (_) {
+                  Modular.tryGet<NotificationsController>()?.clear();
+                  Modular.tryGet<FilterController>()?.clear();
+                  Modular.tryGet<PostsController>()?.clear();
                 },
               );
             },

@@ -173,6 +173,7 @@ class PostCard extends StatelessWidget {
                       selectable: false,
                       tappable: false,
                       heroAnimForImages: false,
+                      imageHeight: .5.sh,
                       onTapLink: (_, __, ___) {
                         HapticFeedback.lightImpact();
                         Modular.to.pushNamed(
@@ -181,8 +182,12 @@ class PostCard extends StatelessWidget {
                       },
                     ),
                     if (post.postBody.mediaLink != null) ...[
-                      NearNetworkImage(
-                        imageUrl: post.postBody.mediaLink!,
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxHeight: .5.sh),
+                        child: NearNetworkImage(
+                          imageUrl: post.postBody.mediaLink!,
+                          boxFit: BoxFit.contain,
+                        ),
                       ),
                     ],
                   ],

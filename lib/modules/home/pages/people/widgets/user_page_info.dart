@@ -131,7 +131,7 @@ class UserPageMainInfo extends StatelessWidget {
                     ),
                     Positioned(
                       bottom: 0,
-                      left: 30.w,
+                      left: 20.h,
                       width: .2.sh,
                       height: .2.sh,
                       child: GestureDetector(

@@ -73,10 +73,10 @@ class NearWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      if (nearWidgetSetupCredentials.privateKeyInfo.privateKeyTypeInfo.type ==
-          PrivateKeyType.FunctionCall) _showOverlay(context);
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    //   if (nearWidgetSetupCredentials.privateKeyInfo.privateKeyTypeInfo.type ==
+    //       PrivateKeyType.FunctionCall) _showOverlay(context);
+    // });
     return Scaffold(
       body: SafeArea(
         child: BosGatewayWidget(

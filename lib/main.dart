@@ -68,15 +68,19 @@ class AppWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Modular.setInitialRoute(Routes.home.getModule());
-    ScreenUtil.init(context);
-    return MaterialApp.router(
-      title: 'Near Social',
-      debugShowCheckedModeBanner: false,
-      routerConfig: Modular.routerConfig,
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      theme: appTheme,
+    // ScreenUtil.init(context);
+    return ScreenUtilInit(
+      builder: (_, __) {
+        return MaterialApp.router(
+          title: 'Near Social',
+          debugShowCheckedModeBanner: false,
+          routerConfig: Modular.routerConfig,
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          locale: context.locale,
+          theme: appTheme,
+        );
+      },
     );
   }
 }

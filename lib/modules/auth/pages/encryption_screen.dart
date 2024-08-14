@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -86,7 +87,7 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
                       ),
                       TextSpan(
                         text:
-                            "To protect your authentication data, it will be encrypted and secured with a password. For this to work, device protection must be enabled on your device.",
+                            "To protect your authentication data, it will be encrypted ${!kIsWeb ? 'and secured with a password. For this to work, device protection must be enabled on your device.' : ''}",
                       ),
                     ],
                   ),
@@ -98,16 +99,20 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
               CustomButton(
                 primary: true,
                 onPressed: () async {
-                  final bool authenticated =
-                      await LocalAuthService().authenticate(
-                    requestAuthMessage: 'Please authenticate to encrypt data',
-                  );
+                  late bool authenticated;
+                  if (kIsWeb) {
+                    authenticated = true;
+                  } else {
+                    authenticated = await LocalAuthService().authenticate(
+                      requestAuthMessage: 'Please authenticate to encrypt data',
+                    );
+                  }
                   if (!authenticated) return;
                   await encryptDataAndLogin();
                   Modular.to.navigate(Routes.home.getModule());
                 },
                 child: const Text(
-                  "Encrypt",
+                  kIsWeb ? "Login" : "Encrypt",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                   ),

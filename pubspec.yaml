@@ -31,19 +31,19 @@ dependencies:
   animated_text_kit: 4.2.2
   bos_gateway_viewer:
     git:
-      url: https://github.com/vlmoon99/bos_gateway_viewer.git
-      ref: main
+      url: https://github.com/ArturLevchuk/bos_gateway_viewer.git
+      ref: web_support
   cached_network_image: 3.3.1
-  cloud_firestore: 4.16.1
+  cloud_firestore: 5.2.1
   connectivity_plus: 6.0.3
   cupertino_icons: ^1.0.2
   dio: 5.4.1
   dio_smart_retry: 6.0.0
   easy_localization: 3.0.5
   encrypt: 5.0.3
-  firebase_auth: 4.15.3
-  firebase_core: 2.29.0
-  firebase_messaging: 14.8.1
+  firebase_auth: 5.1.4
+  firebase_core: 3.3.0
+  firebase_messaging: 15.0.4
   flutter:
     sdk: flutter
   flutter_jailbreak_detection: 1.10.0
@@ -64,8 +64,16 @@ dependencies:
   palette_generator: ^0.3.3+4
   photo_view: 0.15.0
   qr_code_scanner: 1.0.1
+  qrcode_reader_web: 1.1.1
   rxdart: 0.27.7
   url_launcher: 6.2.5
+
+dependency_overrides:
+  flutter_inappwebview_web:
+    git:
+      url: https://github.com/p-mazhnik/flutter_inappwebview.git
+      path: flutter_inappwebview_web
+      ref: 295ff82
 
 dev_dependencies:
   build_runner: ^2.4.8
@@ -81,6 +89,10 @@ flutter_launcher_icons:
   remove_alpha_ios: true
   image_path: "assets/media/icons/logo_icon.png"
   min_sdk_android: 23
+  web:
+    generate: true
+    image_path: "assets/media/icons/logo_icon.png"
+    background_color: "#ffffff"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
