@@ -42,7 +42,7 @@ class _WidgetsPropsSettingsDialogBodyState
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
     return Padding(
-      padding: const EdgeInsets.all(10).r,
+      padding: const EdgeInsets.all(16).r,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -83,7 +83,15 @@ class _WidgetsPropsSettingsDialogBodyState
               }).toList(),
             ),
           ),
-          SizedBox(height: 5.h),
+          if (selectedKey.privateKeyTypeInfo.type ==
+              PrivateKeyType.FunctionCall) ...[
+            SizedBox(height: 10.h),
+            const Text(
+              "You are using a functional key. Some functions might be unavailable. For extended operations, use a full access key.",
+              softWrap: true,
+            ),
+          ],
+          SizedBox(height: 10.h),
           CustomButton(
             primary: true,
             onPressed: () {

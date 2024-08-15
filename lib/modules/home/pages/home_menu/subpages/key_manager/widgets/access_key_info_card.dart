@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
@@ -206,8 +207,8 @@ class AccessKeyInfoCard extends StatelessWidget {
                   color: NEARColors.black,
                   borderRadius: BorderRadius.circular(10).r,
                 ),
-                child: Icon(
-                  Icons.key,
+                child: SvgPicture.asset(
+                  "assets/media/icons/key-icon.svg",
                   color: privateKeyInfo.privateKeyTypeInfo.type ==
                           PrivateKeyType.FunctionCall
                       ? NEARColors.grey

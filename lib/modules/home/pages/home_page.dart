@@ -72,6 +72,7 @@ class _HomePageState extends State<HomePage> {
               unselectedItemColor: NEARColors.white,
               type: BottomNavigationBarType.fixed,
               currentIndex: currentIndex(Modular.to.path),
+              landscapeLayout: BottomNavigationBarLandscapeLayout.centered,
               items: const [
                 BottomNavigationBarItem(
                   backgroundColor: NEARColors.black,

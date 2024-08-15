@@ -49,14 +49,16 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    log(widget.authorizationCredentials.toString());
+    if (kDebugMode) {
+      log(widget.authorizationCredentials.toString());
+    }
     return Scaffold(
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset("assets/media/icons/near_social_logo.svg"),
-            SizedBox(width: 10.w),
+            SizedBox(width: 10.h),
             Text(
               LocalizationsStrings.home.title,
               style: const TextStyle(fontSize: 20),

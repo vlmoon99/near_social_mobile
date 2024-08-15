@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -159,7 +160,8 @@ class _UserPageState extends State<UserPage>
         .getUserByAccountId(accountId: widget.accountId);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
-        if (currentUser.generalAccountInfo.backgroundImageLink != "") {
+        if (currentUser.generalAccountInfo.backgroundImageLink != "" &&
+            !kIsWeb) {
           PaletteGenerator.fromImageProvider(
             CachedNetworkImageProvider(
               currentUser.generalAccountInfo.backgroundImageLink,

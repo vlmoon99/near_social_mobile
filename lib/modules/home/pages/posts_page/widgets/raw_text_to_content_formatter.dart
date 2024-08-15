@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
@@ -149,9 +148,9 @@ class RawTextToContentFormatter extends StatelessWidget {
                             children: [
                               TextSpan(
                                 text: href,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.blue,
-                                  fontSize: 14.sp,
+                                  fontSize: 14,
                                 ),
                               ),
                             ],

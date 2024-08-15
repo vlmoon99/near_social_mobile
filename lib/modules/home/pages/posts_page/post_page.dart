@@ -95,7 +95,7 @@ class PostPage extends StatelessWidget {
                           }
                         : null,
                     child: SizedBox(
-                      height: 36.h,
+                      height: 37.h,
                       child: Row(
                         children: [
                           Container(
@@ -117,7 +117,7 @@ class PostPage extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(width: 10.w),
+                          SizedBox(width: 10.h),
                           Expanded(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -198,7 +198,7 @@ class PostPage extends StatelessWidget {
                                   postsViewMode: postsViewMode,
                                   postsOfAccountId: postsOfAccountId,
                                   descriptionTitle: Text.rich(
-                                    style: TextStyle(fontSize: 14.sp),
+                                    style: const TextStyle(fontSize: 14),
                                     TextSpan(
                                       children: [
                                         const TextSpan(text: "Answer to "),

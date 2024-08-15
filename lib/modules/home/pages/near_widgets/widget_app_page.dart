@@ -37,19 +37,19 @@ class NearWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
+                const Text(
                   'Attention!',
                   style: TextStyle(
-                    fontSize: 18.0.sp,
+                    fontSize: 18.0,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 10.0.w),
+                SizedBox(height: 10.0.h),
                 const Text(
                   'You are using a functional key. Some functions might be unavailable.',
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20.0.w),
+                SizedBox(height: 20.0.h),
                 CustomButton(
                   primary: true,
                   onPressed: () {

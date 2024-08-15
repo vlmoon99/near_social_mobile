@@ -102,7 +102,7 @@ class PostCard extends StatelessWidget {
                       }
                     : null,
                 child: SizedBox(
-                  height: 36.h,
+                  height: 37.h,
                   child: Row(
                     children: [
                       Container(

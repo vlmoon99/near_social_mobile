@@ -212,7 +212,7 @@ class UserPageMainInfo extends StatelessWidget {
                           CupertinoIcons.person_fill,
                           size: 16.h,
                         ),
-                        SizedBox(width: 5.w),
+                        SizedBox(width: 5.h),
                         Flexible(
                           child: GestureDetector(
                             onTap: () {
@@ -239,7 +239,7 @@ class UserPageMainInfo extends StatelessWidget {
                             ),
                           ),
                         ),
-                        SizedBox(width: 10.w),
+                        SizedBox(width: 10.h),
                         if (user.followings != null &&
                             user.followings!.any(
                               (element) =>
@@ -255,10 +255,10 @@ class UserPageMainInfo extends StatelessWidget {
                               borderRadius: BorderRadius.circular(5).r,
                               color: NEARColors.slate,
                             ),
-                            child: Text(
+                            child: const Text(
                               "Follows you",
                               style: TextStyle(
-                                fontSize: 14.sp,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w300,
                                 color: NEARColors.white,
                               ),
@@ -354,7 +354,7 @@ class UserPageMainInfo extends StatelessWidget {
                             ],
                           ),
                         ),
-                        SizedBox(width: 10.w),
+                        SizedBox(width: 10.h),
                         Text.rich(
                           TextSpan(
                             style: const TextStyle(
@@ -386,8 +386,8 @@ class UserPageMainInfo extends StatelessWidget {
                     if (user.generalAccountInfo.tags.isNotEmpty) ...[
                       SizedBox(height: 5.h),
                       Wrap(
-                        spacing: 5.w,
-                        runSpacing: 5.w,
+                        spacing: 5.h,
+                        runSpacing: 5.h,
                         children: [
                           ...user.generalAccountInfo.tags.map((tag) {
                             return Container(
@@ -413,8 +413,8 @@ class UserPageMainInfo extends StatelessWidget {
                     if (user.userTags != null && user.userTags!.isNotEmpty) ...[
                       SizedBox(height: 10.h),
                       Wrap(
-                        spacing: 5.w,
-                        runSpacing: 5.w,
+                        spacing: 5.h,
+                        runSpacing: 5.h,
                         children: [
                           ...user.userTags!.map((tag) {
                             return Container(

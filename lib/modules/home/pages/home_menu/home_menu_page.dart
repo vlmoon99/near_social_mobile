@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
@@ -70,7 +71,7 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                           ),
                           Positioned(
                             bottom: 0,
-                            left: 30.w,
+                            left: 20.h,
                             width: .18.sh,
                             height: .18.sh,
                             child: Container(
@@ -121,7 +122,7 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                                 CupertinoIcons.person_fill,
                                 size: 14,
                               ),
-                              SizedBox(width: 5.w),
+                              SizedBox(width: 5.h),
                               Expanded(
                                 child: GestureDetector(
                                   onTap: () {
@@ -164,7 +165,7 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  SizedBox(width: 5.w),
+                                  SizedBox(width: 5.h),
                                   if (snapshot.connectionState !=
                                       ConnectionState.done)
                                     AnimatedTextKit(
@@ -199,7 +200,11 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
               children: [
                 HomeMenuListTile(
                   title: "Key Manager",
-                  tile: const Icon(Icons.key),
+                  tile: SvgPicture.asset(
+                    "assets/media/icons/key-icon.svg",
+                    color: IconTheme.of(context).color,
+                    height: IconTheme.of(context).size,
+                  ),
                   onTap: () {
                     HapticFeedback.lightImpact();
                     Modular.to.pushNamed(
