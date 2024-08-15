@@ -46,10 +46,11 @@ dependencies:
   firebase_messaging: 15.0.4
   flutter:
     sdk: flutter
+  flutter_cache_manager: 3.4.1
   flutter_jailbreak_detection: 1.10.0
   flutter_local_notifications: 16.3.0
   flutter_markdown: 0.7.2
-  flutter_modular: 6.3.2
+  flutter_modular: 6.3.4
   flutter_screenutil: 5.9.0
   flutter_secure_storage: 9.0.0
   flutter_svg: 2.0.10+1
