@@ -29,10 +29,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   animated_text_kit: 4.2.2
-  bos_gateway_viewer:
-    git:
-      url: https://github.com/ArturLevchuk/bos_gateway_viewer.git
-      ref: web_support
+  bos_gateway_viewer: 0.0.4
   cached_network_image: 3.3.1
   cloud_firestore: 5.2.1
   connectivity_plus: 6.0.3
