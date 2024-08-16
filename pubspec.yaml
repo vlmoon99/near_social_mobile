@@ -31,16 +31,16 @@ dependencies:
   animated_text_kit: 4.2.2
   bos_gateway_viewer: 0.0.4
   cached_network_image: 3.3.1
-  cloud_firestore: 5.2.1
+  cloud_firestore: 4.17.5
   connectivity_plus: 6.0.3
   cupertino_icons: ^1.0.2
   dio: 5.4.1
   dio_smart_retry: 6.0.0
   easy_localization: 3.0.5
   encrypt: 5.0.3
-  firebase_auth: 5.1.4
-  firebase_core: 3.3.0
-  firebase_messaging: 15.0.4
+  firebase_auth: 4.20.0
+  firebase_core: 2.32.0
+  firebase_messaging: 14.9.4
   flutter:
     sdk: flutter
   flutter_cache_manager: 3.4.1
