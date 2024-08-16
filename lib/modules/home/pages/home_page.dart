@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:near_social_mobile/config/constants.dart';
@@ -97,6 +98,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
               onTap: (value) {
+                HapticFeedback.lightImpact();
                 switch (value) {
                   case 0:
                     Modular.to.navigate(".${Routes.home.postsFeed}");
