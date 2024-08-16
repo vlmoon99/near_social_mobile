@@ -4,6 +4,8 @@
 
 The primary goal of our project is to provide a secure and accessible way to use the NEAR Social network on mobile devices and improve the user experience.
 
+Web App preview: [https://near-social-mobile-777.web.app](https://near-social-mobile-777.web.app)
+
 ## Features
 
 - **Full Access to NEAR Social Network**: Utilized the native API to interact with the NEAR Social network.
