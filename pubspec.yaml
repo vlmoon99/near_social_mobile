@@ -29,7 +29,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   animated_text_kit: 4.2.2
-  bos_gateway_viewer: 0.0.4
+  bos_gateway_viewer: 0.0.5
   cached_network_image: 3.3.1
   cloud_firestore: 4.17.5
   connectivity_plus: 6.0.3

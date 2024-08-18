@@ -93,10 +93,10 @@ packages:
     dependency: "direct main"
     description:
       name: bos_gateway_viewer
-      sha256: dbdac106d0e70b765ca19a30836b03283fe3adbf0431c1e4c4558b6d3406d99d
+      sha256: "848e30ade0bc48b12dc931fe5289ef95482ed5020a9997e9931a70358e611796"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.4"
+    version: "0.0.5"
   bs58:
     dependency: transitive
     description:
