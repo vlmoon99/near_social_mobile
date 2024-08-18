@@ -93,10 +93,8 @@ class HomeModule extends Module {
           final rawQueryParams = Uri.base.fragment.split('?').last;
           final queryParams = Uri.splitQueryString(rawQueryParams);
           accountId = queryParams['accountId'].toString();
-          Modular.to.navigateHistory.first;
         } else {
           accountId = r.args.queryParams['accountId'].toString();
-          Modular.to.navigateHistory;
         }
         return UserPage(
           accountId: accountId,
