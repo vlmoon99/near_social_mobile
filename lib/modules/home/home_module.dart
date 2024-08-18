@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:near_social_mobile/modules/core_module.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
@@ -86,9 +87,21 @@ class HomeModule extends Module {
     );
     r.child(
       Routes.home.userPage,
-      child: (context) => UserPage(
-        accountId: r.args.queryParams['accountId'] as String,
-      ),
+      child: (context) {
+        String accountId = '';
+        if (r.args.queryParams['accountId'] == null && kIsWeb) {
+          final rawQueryParams = Uri.base.fragment.split('?').last;
+          final queryParams = Uri.splitQueryString(rawQueryParams);
+          accountId = queryParams['accountId'].toString();
+          Modular.to.navigateHistory.first;
+        } else {
+          accountId = r.args.queryParams['accountId'].toString();
+          Modular.to.navigateHistory;
+        }
+        return UserPage(
+          accountId: accountId,
+        );
+      },
     );
     r.child(Routes.home.keyManagerPage,
         child: (context) => const KeyManagerPage());

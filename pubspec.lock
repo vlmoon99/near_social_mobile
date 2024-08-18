@@ -648,10 +648,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_modular
-      sha256: bc17a1eb1da676b9111e59d27834fb6673bdea01aead12f0803a0847ff9d451c
+      sha256: "3e9eff30acb2fd741a6e65151289020b6655d2dec0e42ed7f1c9745bf87dd5f4"
       url: "https://pub.dev"
     source: hosted
-    version: "6.3.4"
+    version: "6.3.0"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
