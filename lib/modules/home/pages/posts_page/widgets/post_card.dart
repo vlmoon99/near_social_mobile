@@ -170,16 +170,9 @@ class PostCard extends StatelessWidget {
                   children: [
                     RawTextToContentFormatter(
                       rawText: post.postBody.text.trim(),
-                      selectable: false,
-                      tappable: false,
                       heroAnimForImages: false,
                       imageHeight: .5.sh,
-                      onTapLink: (_, __, ___) {
-                        HapticFeedback.lightImpact();
-                        Modular.to.pushNamed(
-                          ".${Routes.home.postPage}?accountId=${post.authorInfo.accountId}&blockHeight=${post.blockHeight}&postsViewMode=${postsViewMode.index}&postsOfAccountId=${postsOfAccountId ?? ""}&allowToNavigateToPostAuthorPage=$allowToNavigateToPostAuthorPage",
-                        );
-                      },
+                      responsive: false,
                     ),
                     if (post.postBody.mediaLink != null) ...[
                       ConstrainedBox(

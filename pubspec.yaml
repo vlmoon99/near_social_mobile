@@ -46,7 +46,7 @@ dependencies:
   flutter_cache_manager: 3.4.1
   flutter_jailbreak_detection: 1.10.0
   flutter_local_notifications: 16.3.0
-  flutter_markdown: 0.7.2
+  flutter_markdown: 0.7.3+1
   flutter_modular: 6.3.0
   flutter_screenutil: 5.9.0
   flutter_secure_storage: 9.0.0

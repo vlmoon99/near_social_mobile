@@ -15,20 +15,14 @@ class RawTextToContentFormatter extends StatelessWidget {
   const RawTextToContentFormatter({
     super.key,
     required this.rawText,
-    this.selectable = true,
-    this.tappable = true,
     this.heroAnimForImages = true,
-    this.loadImages = true,
     this.imageHeight,
-    this.onTapLink,
+    this.responsive = true,
   });
 
   final String rawText;
-  final bool selectable;
-  final bool tappable;
-  final void Function(String text, String? href, String title)? onTapLink;
+  final bool responsive;
   final bool heroAnimForImages;
-  final bool loadImages;
   final double? imageHeight;
 
   bool _isNearWidget(String url) => url.contains("/widget/");
@@ -89,110 +83,109 @@ class RawTextToContentFormatter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = rawText.replaceAll("\\n", "\n");
-    return MarkdownBody(
-      data: text,
-      imageBuilder: (uri, title, alt) {
-        if (!loadImages) {
-          return Text.rich(TextSpan(
-            text: uri.toString(),
-          ));
-        }
-        return GestureDetector(
-          onTap: tappable
-              ? () {
-                  HapticFeedback.lightImpact();
-                  Navigator.push(
-                    Modular.routerDelegate.navigatorKey.currentContext!,
-                    MaterialPageRoute(
-                      builder: (context) => ImageFullScreen(
-                        imageUrl: uri.toString(),
-                      ),
-                    ),
-                  );
-                }
-              : null,
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints:
-                  BoxConstraints(maxHeight: imageHeight ?? double.infinity),
-              child: heroAnimForImages
-                  ? Hero(
-                      tag: uri.toString(),
-                      child: NearNetworkImage(
-                        imageUrl: uri.toString(),
-                        boxFit: BoxFit.contain,
-                      ),
-                    )
-                  : NearNetworkImage(
+    return Stack(
+      children: [
+        MarkdownBody(
+          data: text,
+          imageBuilder: (uri, title, alt) {
+            return GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                Navigator.push(
+                  Modular.routerDelegate.navigatorKey.currentContext!,
+                  MaterialPageRoute(
+                    builder: (context) => ImageFullScreen(
                       imageUrl: uri.toString(),
-                      boxFit: BoxFit.contain,
                     ),
-            ),
-          ),
-        );
-      },
-      onTapLink: onTapLink ??
-          (tappable
-              ? (text, href, title) {
-                  showAdaptiveDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text.rich(
-                          TextSpan(
-                            style: const TextStyle(
-                              fontSize: 20,
-                            ),
-                            text: "Do you want to open ?\n",
-                            children: [
-                              TextSpan(
-                                text: href,
-                                style: const TextStyle(
-                                  color: Colors.blue,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
+                  ),
+                );
+              },
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints:
+                      BoxConstraints(maxHeight: imageHeight ?? double.infinity),
+                  child: heroAnimForImages
+                      ? Hero(
+                          tag: uri.toString(),
+                          child: NearNetworkImage(
+                            imageUrl: uri.toString(),
+                            boxFit: BoxFit.contain,
+                          ),
+                        )
+                      : NearNetworkImage(
+                          imageUrl: uri.toString(),
+                          boxFit: BoxFit.contain,
+                        ),
+                ),
+              ),
+            );
+          },
+          onTapLink: (text, href, title) {
+            showAdaptiveDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text.rich(
+                    TextSpan(
+                      style: const TextStyle(
+                        fontSize: 20,
+                      ),
+                      text: "Do you want to open ?\n",
+                      children: [
+                        TextSpan(
+                          text: href,
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            fontSize: 14,
                           ),
                         ),
-                        actionsAlignment: MainAxisAlignment.spaceEvenly,
-                        actions: [
-                          CustomButton(
-                            primary: true,
-                            onPressed: () {
-                              Modular.to.pop(true);
-                            },
-                            child: const Text(
-                              "Open",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          CustomButton(
-                            onPressed: () {
-                              Modular.to.pop(false);
-                            },
-                            child: const Text(
-                              "Cancel",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ).then((toOpen) {
-                    if (toOpen != null && toOpen) {
-                      _launchURL(href!);
-                    }
-                  });
-                }
-              : null),
-      selectable: selectable,
-      onSelectionChanged: (text, selection, cause) {},
+                      ],
+                    ),
+                  ),
+                  actionsAlignment: MainAxisAlignment.spaceEvenly,
+                  actions: [
+                    CustomButton(
+                      primary: true,
+                      onPressed: () {
+                        Modular.to.pop(true);
+                      },
+                      child: const Text(
+                        "Open",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    CustomButton(
+                      onPressed: () {
+                        Modular.to.pop(false);
+                      },
+                      child: const Text(
+                        "Cancel",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ).then((toOpen) {
+              if (toOpen != null && toOpen) {
+                _launchURL(href!);
+              }
+            });
+          },
+          selectable: responsive,
+        ),
+        if (!responsive)
+          Positioned.fill(
+            child: Container(
+              color: Colors.transparent,
+            ),
+          ),
+      ],
     );
   }
 }
