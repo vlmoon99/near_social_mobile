@@ -136,10 +136,17 @@ class CommentCard extends StatelessWidget {
                     ),
                   );
                 },
-                child: Hero(
-                  tag: comment.commentBody.mediaLink!,
-                  child: NearNetworkImage(
-                    imageUrl: comment.commentBody.mediaLink!,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Hero(
+                    tag: comment.commentBody.mediaLink!,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxHeight: .5.sh),
+                      child: NearNetworkImage(
+                        imageUrl: comment.commentBody.mediaLink!,
+                        boxFit: BoxFit.contain,
+                      ),
+                    ),
                   ),
                 ),
               ),
