@@ -15,7 +15,7 @@ import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/services/pausable_timer.dart';
-import 'package:near_social_mobile/services/position_retained_scroll_physics.dart';
+import 'package:near_social_mobile/shared_widgets/position_retained_scroll_physics.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
