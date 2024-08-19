@@ -15,6 +15,7 @@ import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.d
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
+import 'package:near_social_mobile/services/notification_subscription_service.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
@@ -266,7 +267,11 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                     ).then(
                       (value) {
                         if (value != null && value) {
-                          Modular.get<AuthController>().logout();
+                          final authController = Modular.get<AuthController>();
+                          Modular.get<NotificationSubscriptionService>()
+                              .unsubscribeFromNotifications(
+                                  authController.state.accountId);
+                          authController.logout();
                           Modular.get<NotificationsController>().clear();
                           Modular.get<FilterController>().clear();
                           Modular.get<PostsController>().clear();

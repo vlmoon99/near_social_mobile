@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/services/crypto_storage_service.dart';
 import 'package:near_social_mobile/services/crypto_service.dart';
 import 'package:near_social_mobile/services/local_auth_service.dart';
+import 'package:near_social_mobile/services/notification_subscription_service.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 
 class EncryptionScreen extends StatefulWidget {
@@ -41,9 +43,20 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
     await Modular.get<FlutterSecureStorage>()
         .write(key: SecureStorageKeys.networkType, value: "mainnet");
     final authController = Modular.get<AuthController>();
-    await authController.login(
+    await authController
+        .login(
       accountId: widget.authorizationCredentials.accountId,
       secretKey: widget.authorizationCredentials.secretKey,
+    )
+        .then(
+      (_) {
+        if (!kIsWasm) {
+          Modular.get<NotificationSubscriptionService>()
+              .subscribeToNotifications(
+            widget.authorizationCredentials.accountId,
+          );
+        }
+      },
     );
   }
 

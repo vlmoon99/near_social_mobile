@@ -13,6 +13,7 @@ import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/services/crypto_storage_service.dart';
 import 'package:near_social_mobile/services/local_auth_service.dart';
+import 'package:near_social_mobile/services/notification_subscription_service.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 
 class AuthenticatedBody extends StatelessWidget {
@@ -30,10 +31,21 @@ class AuthenticatedBody extends StatelessWidget {
     );
     final authController = Modular.get<AuthController>();
     final Map<String, dynamic> decodedData = jsonDecode(encodedData);
-    await authController.login(
+    await authController
+        .login(
       accountId: decodedData["accountId"],
       secretKey: decodedData["secretKey"],
+    )
+        .then(
+      (_) {
+        if (!kIsWeb) {
+                  Modular.get<NotificationSubscriptionService>().subscribeToNotifications(
+          decodedData["accountId"],
+        );
+        }
+      },
     );
+    ;
   }
 
   @override

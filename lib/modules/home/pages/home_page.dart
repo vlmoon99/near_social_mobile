@@ -8,7 +8,6 @@ import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/models/auth_info.dart';
 import 'package:near_social_mobile/routes/routes.dart';
-import 'package:near_social_mobile/services/firebase/notifications_project/firebase_notifications.dart';
 import 'package:near_social_mobile/utils/check_for_jailbreak.dart';
 
 class HomePage extends StatefulWidget {
@@ -55,11 +54,6 @@ class _HomePageState extends State<HomePage> {
     return StreamBuilder<AuthInfo>(
       stream: authController.stream,
       builder: (context, _) {
-        if (authController.state.status == AuthInfoStatus.authenticated &&
-            !kIsWeb) {
-          FirebaseNotificationService.subscribeToNotifications(
-              authController.state.accountId);
-        }
         return Scaffold(
           appBar: AppBar(
             title: SvgPicture.asset(NearAssets.logoIcon),
