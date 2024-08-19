@@ -139,12 +139,12 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                               icon: const Icon(Icons.close),
                               color: Colors.red,
                               style: const ButtonStyle(
-                                backgroundColor: MaterialStatePropertyAll(
+                                backgroundColor: WidgetStatePropertyAll(
                                   Colors.white,
                                 ),
                                 shadowColor:
-                                    MaterialStatePropertyAll(Colors.black),
-                                elevation: MaterialStatePropertyAll(2),
+                                    WidgetStatePropertyAll(Colors.black),
+                                elevation: WidgetStatePropertyAll(2),
                               ),
                             ),
                           ),
@@ -197,12 +197,15 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                   )
                       .then(
                     (_) {
-                      Modular.get<PostsController>().updateCommentsOfPost(
-                        accountId: widget.post.authorInfo.accountId,
-                        blockHeight: widget.post.blockHeight,
-                        postsViewMode: widget.postsViewMode,
-                        postsOfAccountId: widget.postsOfAccountId,
-                      );
+                      //we have to wait a little to update comments
+                      Future.delayed(const Duration(seconds: 10), () {
+                        Modular.get<PostsController>().updateCommentsOfPost(
+                          accountId: widget.post.authorInfo.accountId,
+                          blockHeight: widget.post.blockHeight,
+                          postsViewMode: widget.postsViewMode,
+                          postsOfAccountId: widget.postsOfAccountId,
+                        );
+                      });
                     },
                   );
                   ScaffoldMessenger.of(context).showSnackBar(

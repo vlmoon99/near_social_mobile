@@ -14,6 +14,8 @@ import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.d
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
+import 'package:near_social_mobile/services/pausable_timer.dart';
+import 'package:near_social_mobile/services/position_retained_scroll_physics.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
@@ -22,7 +24,7 @@ import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:rxdart/rxdart.dart';
 
-class PostPage extends StatelessWidget {
+class PostPage extends StatefulWidget {
   const PostPage({
     super.key,
     required this.accountId,
@@ -39,50 +41,82 @@ class PostPage extends StatelessWidget {
   final bool allowToNavigateToPostAuthorPage;
 
   @override
+  State<PostPage> createState() => _PostPageState();
+}
+
+class _PostPageState extends State<PostPage> {
+  late final PausableTimer updateCommentsTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    final PostsController postsController = Modular.get<PostsController>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final posts = postsController.getPostsDueToPostsViewMode(
+          widget.postsViewMode, widget.postsOfAccountId);
+      if (posts.firstWhere((element) {
+            return element.blockHeight == widget.blockHeight &&
+                element.authorInfo.accountId == widget.accountId;
+          }).commentList ==
+          null) {
+        postsController.loadCommentsOfPost(
+          accountId: widget.accountId,
+          blockHeight: widget.blockHeight,
+          postsViewMode: widget.postsViewMode,
+          postsOfAccountId: widget.postsOfAccountId,
+        );
+      } else {
+        postsController.updateCommentsOfPost(
+          accountId: widget.accountId,
+          blockHeight: widget.blockHeight,
+          postsViewMode: widget.postsViewMode,
+          postsOfAccountId: widget.postsOfAccountId,
+        );
+      }
+    });
+    updateCommentsTimer = PausableTimer.periodic(
+      const Duration(seconds: 40),
+      () async {
+        updateCommentsTimer.pause();
+        postsController.updateCommentsOfPost(
+          accountId: widget.accountId,
+          blockHeight: widget.blockHeight,
+          postsViewMode: widget.postsViewMode,
+          postsOfAccountId: widget.postsOfAccountId,
+        );
+        updateCommentsTimer.start();
+      },
+    )..start();
+  }
+
+  @override
+  void dispose() {
+    updateCommentsTimer.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
     final PostsController postsController = Modular.get<PostsController>();
     final FilterController filterController = Modular.get<FilterController>();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final posts = postsController.getPostsDueToPostsViewMode(
-          postsViewMode, postsOfAccountId);
-      if (posts.firstWhere((element) {
-            return element.blockHeight == blockHeight &&
-                element.authorInfo.accountId == accountId;
-          }).commentList ==
-          null) {
-        postsController.loadCommentsOfPost(
-          accountId: accountId,
-          blockHeight: blockHeight,
-          postsViewMode: postsViewMode,
-          postsOfAccountId: postsOfAccountId,
-        );
-      } else {
-        postsController.updateCommentsOfPost(
-          accountId: accountId,
-          blockHeight: blockHeight,
-          postsViewMode: postsViewMode,
-          postsOfAccountId: postsOfAccountId,
-        );
-      }
-    });
-
     return Scaffold(
       body: SafeArea(
         child: StreamBuilder(
             stream: Rx.merge([postsController.stream, filterController.stream]),
             builder: (context, snapshot) {
               final posts = postsController.getPostsDueToPostsViewMode(
-                  postsViewMode, postsOfAccountId);
+                  widget.postsViewMode, widget.postsOfAccountId);
               final post = posts.firstWhere((element) =>
-                  element.blockHeight == blockHeight &&
-                  element.authorInfo.accountId == accountId);
+                  element.blockHeight == widget.blockHeight &&
+                  element.authorInfo.accountId == widget.accountId);
               return ListView(
                 padding: REdgeInsets.all(15),
+                physics: const PositionRetainedScrollPhysics(),
                 children: [
                   InkWell(
                     borderRadius: BorderRadius.circular(10).r,
-                    onTap: allowToNavigateToPostAuthorPage
+                    onTap: widget.allowToNavigateToPostAuthorPage
                         ? () async {
                             HapticFeedback.lightImpact();
                             await Modular.get<UserListController>()
@@ -195,8 +229,8 @@ class PostPage extends StatelessWidget {
                             builder: (context) {
                               return Dialog(
                                 child: CreateCommentDialog(
-                                  postsViewMode: postsViewMode,
-                                  postsOfAccountId: postsOfAccountId,
+                                  postsViewMode: widget.postsViewMode,
+                                  postsOfAccountId: widget.postsOfAccountId,
                                   descriptionTitle: Text.rich(
                                     style: const TextStyle(fontSize: 14),
                                     TextSpan(
@@ -240,8 +274,8 @@ class PostPage extends StatelessWidget {
                               accountId: accountId,
                               publicKey: publicKey,
                               privateKey: privateKey,
-                              postsViewMode: postsViewMode,
-                              postsOfAccountId: postsOfAccountId,
+                              postsViewMode: widget.postsViewMode,
+                              postsOfAccountId: widget.postsOfAccountId,
                             );
                           } catch (err) {
                             final exc = AppExceptions(
@@ -322,8 +356,8 @@ class PostPage extends StatelessWidget {
                                   accountId: accountId,
                                   publicKey: publicKey,
                                   privateKey: privateKey,
-                                  postsViewMode: postsViewMode,
-                                  postsOfAccountId: postsOfAccountId,
+                                  postsViewMode: widget.postsViewMode,
+                                  postsOfAccountId: widget.postsOfAccountId,
                                 );
                               } catch (err) {
                                 final exc = AppExceptions(
@@ -338,7 +372,7 @@ class PostPage extends StatelessWidget {
                       ),
                       MoreActionsForPostButton(
                         post: post,
-                        postsViewMode: postsViewMode,
+                        postsViewMode: widget.postsViewMode,
                       ),
                     ],
                   ),
@@ -361,8 +395,8 @@ class PostPage extends StatelessWidget {
                                 (comment) => CommentCard(
                                   comment: comment,
                                   post: post,
-                                  postsViewMode: postsViewMode,
-                                  postsOfAccountId: postsOfAccountId,
+                                  postsViewMode: widget.postsViewMode,
+                                  postsOfAccountId: widget.postsOfAccountId,
                                 ),
                               )
                               .toList(),
@@ -374,22 +408,6 @@ class PostPage extends StatelessWidget {
                       child: SpinnerLoadingIndicator(),
                     )
                   ],
-                  // if (post.commentList != null) ...[
-                  //   ...post.commentList!
-                  //       .map(
-                  //         (comment) => CommentCard(
-                  //           comment: comment,
-                  //           post: post,
-                  //           postsViewMode: postsViewMode,
-                  //           postsOfAccountId: postsOfAccountId,
-                  //         ),
-                  //       )
-                  //       .toList()
-                  // ] else ...[
-                  //   const Center(
-                  //     child: SpinnerLoadingIndicator(),
-                  //   )
-                  // ],
                 ],
               );
             }),
