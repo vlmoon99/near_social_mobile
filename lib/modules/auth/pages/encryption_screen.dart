@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -50,7 +49,7 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
     )
         .then(
       (_) {
-        if (!kIsWasm) {
+        if (!kIsWeb) {
           Modular.get<NotificationSubscriptionService>()
               .subscribeToNotifications(
             widget.authorizationCredentials.accountId,
