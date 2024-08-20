@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1098516707870-25j1nbbkgqh40gjon85niov76m82qqm9.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1098516707870-25j1nbbkgqh40gjon85niov76m82qqm9</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>1098516707870-jb69slbfmqsktij84auujq73at5rnmm7.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyARuceSInGU1zUIXnMypGSZkB7U8aId5rg</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1098516707870</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.vlmoon.nearsocialmobile</string>
+	<key>PROJECT_ID</key>
+	<string>bos-notifications-777</string>
+	<key>STORAGE_BUCKET</key>
+	<string>bos-notifications-777.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1098516707870:ios:9c203d46f9ff72eb2e8c0f</string>
+</dict>
+</plist>

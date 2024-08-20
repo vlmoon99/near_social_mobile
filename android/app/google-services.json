@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1098516707870",
+    "project_id": "bos-notifications-777",
+    "storage_bucket": "bos-notifications-777.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1098516707870:android:f41ed46d93d540482e8c0f",
+        "android_client_info": {
+          "package_name": "com.vlmoon.nearsocialmobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1098516707870-1o9q2471te8q2k4nk5dgg92t301dqula.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDtTMghhLTfLIvy_ga5MC2WtXUjtWOUKE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1098516707870-1o9q2471te8q2k4nk5dgg92t301dqula.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1098516707870-25j1nbbkgqh40gjon85niov76m82qqm9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.vlmoon.nearsocialmobile"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
