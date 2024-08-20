@@ -55,8 +55,9 @@ class KeyManagerPage extends StatelessWidget {
           showDialog(
             context: context,
             builder: (context) {
-              return const Dialog(
-                child: KeyAddingDialogBody(),
+              return Dialog(
+                insetPadding: REdgeInsets.symmetric(horizontal: 20),
+                child: const KeyAddingDialogBody(),
               );
             },
           );

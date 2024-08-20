@@ -157,7 +157,7 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
           showDialog(
             context: context,
             builder: (context) {
-              return const Dialog(
+              return const Dialog.fullscreen(
                 child: CreatePostDialog(),
               );
             },

@@ -1,6 +1,7 @@
 import 'package:bos_gateway_viewer/bos_gateway_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_app_page.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widgets/widgets_props_settings_dialog_body.dart';
 import 'package:near_social_mobile/routes/routes.dart';
@@ -11,6 +12,7 @@ Future<dynamic> openNearWidget(
     context: Modular.routerDelegate.navigatorKey.currentContext!,
     builder: (context) {
       return Dialog(
+        insetPadding: REdgeInsets.symmetric(horizontal: 20),
         child: WidgetsPropsSettingsDialogBody(
             initWidgetProps: initWidgetProps,
             navigateFunction: (widgetprops, privateKeyInfo) async {

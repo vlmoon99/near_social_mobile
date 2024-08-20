@@ -227,7 +227,7 @@ class _PostPageState extends State<PostPage> {
                           showDialog(
                             context: context,
                             builder: (context) {
-                              return Dialog(
+                              return Dialog.fullscreen(
                                 child: CreateCommentDialog(
                                   postsViewMode: widget.postsViewMode,
                                   postsOfAccountId: widget.postsOfAccountId,

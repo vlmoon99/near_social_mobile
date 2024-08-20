@@ -161,7 +161,7 @@ class CommentCard extends StatelessWidget {
                     showDialog(
                       context: context,
                       builder: (context) {
-                        return Dialog(
+                        return Dialog.fullscreen(
                           child: CreateCommentDialog(
                             postsOfAccountId: postsOfAccountId,
                             postsViewMode: postsViewMode,
