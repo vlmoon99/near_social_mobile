@@ -2,7 +2,6 @@ import 'dart:math';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:encrypt/encrypt.dart';
-import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 
 class CryptoUtils {
@@ -18,7 +17,6 @@ class CryptoUtils {
       throw AppExceptions(
         messageForUser: "Failed to generate cryptographic key",
         messageForDev: err.toString(),
-        statusCode: AppErrorCodes.cryptoError,
       );
     }
     return key;
@@ -32,7 +30,6 @@ class CryptoUtils {
       throw AppExceptions(
         messageForUser: "Failed to decode cryptographic key",
         messageForDev: err.toString(),
-        statusCode: AppErrorCodes.cryptoError,
       );
     }
     return key;
@@ -46,7 +43,6 @@ class CryptoUtils {
       throw AppExceptions(
         messageForUser: "Failed to encode cryptographic key",
         messageForDev: err.toString(),
-        statusCode: AppErrorCodes.cryptoError,
       );
     }
     return base64Key;
@@ -67,7 +63,6 @@ class CryptoUtils {
       throw AppExceptions(
         messageForUser: "Failed to decrypt data",
         messageForDev: err.toString(),
-        statusCode: AppErrorCodes.cryptoError,
       );
     }
     return decryptedData;
@@ -87,7 +82,6 @@ class CryptoUtils {
       throw AppExceptions(
         messageForUser: "Failed to encrypt data",
         messageForDev: err.toString(),
-        statusCode: AppErrorCodes.cryptoError,
       );
     }
     return encryptedData;

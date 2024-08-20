@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:photo_view/photo_view.dart';
 
 class ImageFullScreen extends StatelessWidget {
@@ -16,15 +17,18 @@ class ImageFullScreen extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            PhotoView(
-              imageProvider: CachedNetworkImageProvider(
-                imageUrl,
-                headers: const {"Referer": "https://near.social/"},
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: .8.sh),
+              child: PhotoView(
+                imageProvider: CachedNetworkImageProvider(
+                  imageUrl,
+                  headers: const {"Referer": "https://near.social/"},
+                ),
+                filterQuality: FilterQuality.high,
+                minScale: PhotoViewComputedScale.contained * 1.0,
+                maxScale: PhotoViewComputedScale.contained * 1.0,
+                heroAttributes: PhotoViewHeroAttributes(tag: imageUrl),
               ),
-              filterQuality: FilterQuality.high,
-              minScale: PhotoViewComputedScale.contained * 1.0,
-              maxScale: PhotoViewComputedScale.contained * 1.0,
-              heroAttributes: PhotoViewHeroAttributes(tag: imageUrl),
             ),
             Align(
               alignment: Alignment.topRight,

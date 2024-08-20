@@ -40,7 +40,7 @@ class AuthInfo {
   }
 
   @override
-  bool operator ==(Object other) => 
+  bool operator ==(Object other) =>
       identical(this, other) ||
       other is AuthInfo &&
           runtimeType == other.runtimeType &&

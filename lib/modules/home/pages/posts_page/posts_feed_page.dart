@@ -7,6 +7,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/create_post_dialog_body.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/post_card.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
+import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
+import 'package:near_social_mobile/modules/vms/core/models/filters.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -22,10 +24,10 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
   final _postsLoaderDebouncer = StreamController();
 
   void _onScroll() async {
-    final postsConroller = Modular.get<PostsController>();
+    final postsController = Modular.get<PostsController>();
     if (_isBottom &&
-        postsConroller.state.status != PostLoadingStatus.loadingMorePosts) {
-      postsConroller.loadMorePosts(postsViewMode: PostsViewMode.main);
+        postsController.state.status != PostLoadingStatus.loadingMorePosts) {
+      postsController.loadMorePosts(postsViewMode: PostsViewMode.main);
     }
   }
 
@@ -51,9 +53,19 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final FilterController filterController = Modular.get<FilterController>();
+      if (filterController.state.status == FilterLoadStatus.initial) {
+        filterController.loadFilters();
+      }
       final PostsController postsController = Modular.get<PostsController>();
       if (postsController.state.status == PostLoadingStatus.initial) {
         postsController.loadPosts(postsViewMode: PostsViewMode.main);
+      }
+      if (postsController.state.status == PostLoadingStatus.loaded) {
+        postsController.checkPostsForFullLoadAndLoadIfNecessary(
+          postsViewMode: PostsViewMode.main,
+          filters: filterController.state,
+        );
       }
     });
   }
@@ -70,23 +82,52 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
   @override
   Widget build(BuildContext context) {
     final PostsController postsController = Modular.get<PostsController>();
+    final FilterController filterController = Modular.get<FilterController>();
     return Scaffold(
-      body: StreamBuilder<Posts>(
-        stream: postsController.stream,
+      body: StreamBuilder<dynamic>(
+        stream: Rx.merge([postsController.stream, filterController.stream]),
         builder: (context, _) {
           final postsState = postsController.state;
+          final filterUtil = FiltersUtil(filters: filterController.state);
+          final posts = postsState.posts
+              .where((post) => !filterUtil.postIsHided(
+                  post.authorInfo.accountId, post.blockHeight))
+              .toList();
+
           if (postsState.status == PostLoadingStatus.loaded ||
               postsState.status == PostLoadingStatus.loadingMorePosts) {
+            //loading more posts if zero posts
+            if (posts.isEmpty &&
+                postsState.status == PostLoadingStatus.loaded) {
+              postsController.loadMorePosts(
+                  postsViewMode: PostsViewMode.main,
+                  filters: filterController.state);
+            }
+
             return RefreshIndicator.adaptive(
               onRefresh: () async {
                 return postsController.loadPosts(
-                    postsViewMode: PostsViewMode.main);
+                  postsViewMode: PostsViewMode.main,
+                  filters: filterController.state,
+                );
               },
               child: ListView.builder(
                 controller: _scrollController,
                 padding: const EdgeInsets.symmetric(horizontal: 15).r,
                 itemBuilder: (context, index) {
-                  final post = postsState.posts[index];
+                  //checking if posts enought ot scroll. if not -> load more posts
+                  if (index == 0) {
+                    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                      if (_scrollController.position.maxScrollExtent == 0 &&
+                          postsState.status == PostLoadingStatus.loaded) {
+                        postsController.loadMorePosts(
+                            postsViewMode: PostsViewMode.main,
+                            filters: filterController.state);
+                      }
+                    });
+                  }
+
+                  final post = posts[index];
                   return Column(
                     children: [
                       PostCard(
@@ -101,7 +142,7 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
                     ],
                   );
                 },
-                itemCount: postsState.posts.length,
+                itemCount: posts.length,
               ),
             );
           }
@@ -111,12 +152,12 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        onPressed: () async {
           HapticFeedback.lightImpact();
           showDialog(
             context: context,
             builder: (context) {
-              return const Dialog(
+              return const Dialog.fullscreen(
                 child: CreatePostDialog(),
               );
             },

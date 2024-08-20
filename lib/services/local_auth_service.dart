@@ -1,7 +1,6 @@
 
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 
 class LocalAuthService {
@@ -20,7 +19,6 @@ class LocalAuthService {
       throw AppExceptions(
         messageForUser: 'You have to enable password protection on your device',
         messageForDev: err.toString(),
-        statusCode: AppErrorCodes.localAuthError,
       );
     } catch (err) {
       throw Exception(err.toString());

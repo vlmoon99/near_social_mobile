@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:near_social_mobile/config/theme.dart';
 
 class TwoStatesIconButton extends StatelessWidget {
   const TwoStatesIconButton({
@@ -9,7 +10,7 @@ class TwoStatesIconButton extends StatelessWidget {
     this.iconActivatedPath,
     required this.onPressed,
     this.activated = false,
-    this.size = 20,
+    this.size = 16,
     this.activatedColor = Colors.red,
   });
 
@@ -22,28 +23,24 @@ class TwoStatesIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        IconButton(
-          onPressed: onPressed,
-          icon: iconActivatedPath != null && activated
-              ? SvgPicture.asset(
-                  iconActivatedPath!,
-                  width: size.w,
-                  height: size.w,
-                  color: activatedColor,
-                )
-              : SvgPicture.asset(
-                  iconPath,
-                  color: activated ? activatedColor : Colors.grey,
-                  width: size.w,
-                  height: size.w,
-                ),
-          style: const ButtonStyle(
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-        ),
-      ],
+    return IconButton(
+      onPressed: onPressed,
+      icon: iconActivatedPath != null && activated
+          ? SvgPicture.asset(
+              iconActivatedPath!,
+              width: size.h,
+              height: size.h,
+              color: activatedColor,
+            )
+          : SvgPicture.asset(
+              iconPath,
+              color: activated ? activatedColor : NEARColors.grey,
+              width: size.h,
+              height: size.h,
+            ),
+      style: const ButtonStyle(
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
     );
   }
 }

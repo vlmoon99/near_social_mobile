@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 
 class WidgetsPropsSettingsDialogBody extends StatefulWidget {
   const WidgetsPropsSettingsDialogBody({
@@ -41,11 +42,12 @@ class _WidgetsPropsSettingsDialogBodyState
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
     return Padding(
-      padding: const EdgeInsets.all(10).r,
+      padding: const EdgeInsets.all(16).r,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text("Widgets props settings", style: TextStyle(fontSize: 20.sp)),
+          const Text("Widget props settings", style: TextStyle(fontSize: 20)),
+          SizedBox(height: 5.h),
           Container(
             padding: const EdgeInsets.all(10).r,
             decoration: BoxDecoration(
@@ -81,8 +83,17 @@ class _WidgetsPropsSettingsDialogBodyState
               }).toList(),
             ),
           ),
-          SizedBox(height: 5.h),
-          ElevatedButton(
+          if (selectedKey.privateKeyTypeInfo.type ==
+              PrivateKeyType.FunctionCall) ...[
+            SizedBox(height: 10.h),
+            const Text(
+              "You are using a functional key. Some functions might be unavailable. For extended operations, use a full access key.",
+              softWrap: true,
+            ),
+          ],
+          SizedBox(height: 10.h),
+          CustomButton(
+            primary: true,
             onPressed: () {
               widget.navigateFunction(
                 """'${_textEditingController.text}'""",
@@ -90,8 +101,14 @@ class _WidgetsPropsSettingsDialogBodyState
               );
               Modular.to.pop();
             },
-            child: const Text("Open widget"),
+            child: const Text(
+              "Open widget",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
+          SizedBox(height: 5.h),
         ],
       ),
     );

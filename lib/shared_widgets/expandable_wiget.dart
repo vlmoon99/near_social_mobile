@@ -113,9 +113,9 @@ class SeeMoreLessButton extends StatelessWidget {
         },
         child: Text.rich(
           softWrap: true,
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.w500,
-            fontSize: 13.0.sp,
+            fontSize: 13,
             color: Colors.blue,
           ),
           textAlign: TextAlign.start,

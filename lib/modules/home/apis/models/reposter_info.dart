@@ -1,31 +1,31 @@
 // ignore_for_file: hash_and_equals
 
+import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
+
 class ReposterInfo {
-  final String accountId;
-  final String? name;
+  final GeneralAccountInfo accountInfo;
   final int blockHeight;
 
   ReposterInfo({
-    required this.accountId,
-    this.name,
+    required this.accountInfo,
     required this.blockHeight,
   });
 
   ReposterInfo copyWith({
-    String? accountId,
-    String? name,
+    GeneralAccountInfo? accountInfo,
     int? blockHeight,
   }) {
     return ReposterInfo(
-      accountId: accountId ?? this.accountId,
-      name: name ?? this.name,
+      accountInfo: accountInfo ?? this.accountInfo,
       blockHeight: blockHeight ?? this.blockHeight,
     );
   }
 
   @override
   operator ==(Object other) =>
+      identical(this, other) ||
       other is ReposterInfo &&
-      other.blockHeight == blockHeight &&
-      other.accountId == accountId;
+          runtimeType == other.runtimeType &&
+          accountInfo.accountId == other.accountInfo.accountId &&
+          blockHeight == other.blockHeight;
 }

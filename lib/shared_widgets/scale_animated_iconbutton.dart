@@ -78,15 +78,15 @@ class _ScaleAnimatedIconButtonState extends State<ScaleAnimatedIconButton>
                     child: SvgPicture.asset(
                       widget.iconPath,
                       color: widget.activatedColor,
-                      width: widget.size.w,
-                      height: widget.size.w,
+                      width: widget.size.h,
+                      height: widget.size.h,
                     ),
                   )
                 : (widget.iconActivatedPath != null && widget.activated
                     ? SvgPicture.asset(
                         widget.iconActivatedPath!,
-                        width: widget.size.w,
-                        height: widget.size.w,
+                        width: widget.size.h,
+                        height: widget.size.h,
                         color: widget.activatedColor,
                       )
                     : SvgPicture.asset(
@@ -94,8 +94,8 @@ class _ScaleAnimatedIconButtonState extends State<ScaleAnimatedIconButton>
                         color: widget.activated
                             ? widget.activatedColor
                             : Colors.grey,
-                        width: widget.size.w,
-                        height: widget.size.w,
+                        width: widget.size.h,
+                        height: widget.size.h,
                       )),
             style: const ButtonStyle(
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -115,7 +115,7 @@ class ScaleAnimatedIconButtonWithCounter extends StatelessWidget {
     this.iconActivatedPath,
     required this.onPressed,
     this.activated = false,
-    this.size = 20,
+    this.size = 16,
     this.activatedColor = Colors.red,
     required this.count,
   });

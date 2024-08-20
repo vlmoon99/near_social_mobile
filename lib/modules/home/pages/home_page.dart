@@ -1,19 +1,14 @@
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutterchain/flutterchain_lib/constants/chains/near_blockchain_network_urls.dart';
-import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/modules/home/pages/decryption_page_for_loggined_user.dart';
+import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/models/auth_info.dart';
 import 'package:near_social_mobile/routes/routes.dart';
-import 'package:near_social_mobile/services/firebase/firebase_notifications.dart';
 import 'package:near_social_mobile/utils/check_for_jailbreak.dart';
-import 'package:near_social_mobile/utils/get_network_type.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -32,19 +27,24 @@ class _HomePageState extends State<HomePage> {
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
-    checkForJailbreak();
-    final networkType = await getNearNetworkType();
+    if (!kIsWeb) {
+      checkForJailbreak();
+    }
+  }
 
-    if (networkType == NearNetworkType.mainnet) {
-      await Modular.get<NearBlockChainService>()
-          .setBlockchainNetworkEnvironment(
-        newUrl: NearBlockChainNetworkUrls.listOfUrls.elementAt(1),
-      );
+  int currentIndex(String currentRoute) {
+    if (currentRoute.contains(Routes.home.postsFeed)) {
+      return 0;
+    } else if (currentRoute.contains(Routes.home.widgetsListPage)) {
+      return 1;
+    } else if (currentRoute.contains(Routes.home.peopleListPage)) {
+      return 2;
+    } else if (currentRoute.contains(Routes.home.notificationsPage)) {
+      return 3;
+    } else if (currentRoute.contains(Routes.home.homeMenu)) {
+      return 4;
     } else {
-      await Modular.get<NearBlockChainService>()
-          .setBlockchainNetworkEnvironment(
-        newUrl: NearBlockChainNetworkUrls.listOfUrls.first,
-      );
+      return 0;
     }
   }
 
@@ -54,81 +54,68 @@ class _HomePageState extends State<HomePage> {
     return StreamBuilder<AuthInfo>(
       stream: authController.stream,
       builder: (context, _) {
-        if (authController.state.status == AuthInfoStatus.unauthenticated) {
-          return const DecryptionPageForLoginnedUser();
-        }
-        if (authController.state.status == AuthInfoStatus.authenticated) {
-          FirebaseNotificationService.subscribeToNotifications(
-              authController.state.accountId);
-        }
         return Scaffold(
           appBar: AppBar(
             title: SvgPicture.asset(NearAssets.logoIcon),
             centerTitle: true,
           ),
           body: const RouterOutlet(),
-          bottomNavigationBar: BottomAppBar(
-            height: 60.w,
-            padding: EdgeInsets.zero,
-            child: NavigationListener(builder: (context, _) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.feed),
-                    color: Modular.to.path.endsWith(Routes.home.postsFeed)
-                        ? Theme.of(context).primaryColor
-                        : null,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      Modular.to.navigate(".${Routes.home.postsFeed}");
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.widgets),
-                    color: Modular.to.path.endsWith(Routes.home.widgetsListPage)
-                        ? Theme.of(context).primaryColor
-                        : null,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      Modular.to.navigate(".${Routes.home.widgetsListPage}");
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.people),
-                    color: Modular.to.path.endsWith(Routes.home.peopleListPage)
-                        ? Theme.of(context).primaryColor
-                        : null,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      Modular.to.navigate(".${Routes.home.peopleListPage}");
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications),
-                    color:
-                        Modular.to.path.endsWith(Routes.home.notificationsPage)
-                            ? Theme.of(context).primaryColor
-                            : null,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      Modular.to.navigate(".${Routes.home.notificationsPage}");
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.menu),
-                    color: Modular.to.path.endsWith(Routes.home.homeMenu)
-                        ? Theme.of(context).primaryColor
-                        : null,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      Modular.to.navigate(".${Routes.home.homeMenu}");
-                    },
-                  ),
-                ],
-              );
-            }),
-          ),
+          bottomNavigationBar: NavigationListener(builder: (_, __) {
+            return BottomNavigationBar(
+              backgroundColor: NEARColors.black,
+              selectedItemColor: Theme.of(context).primaryColor,
+              unselectedItemColor: NEARColors.white,
+              type: BottomNavigationBarType.fixed,
+              currentIndex: currentIndex(Modular.to.path),
+              landscapeLayout: BottomNavigationBarLandscapeLayout.centered,
+              items: const [
+                BottomNavigationBarItem(
+                  backgroundColor: NEARColors.black,
+                  icon: Icon(Icons.feed),
+                  label: "Feed",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.widgets),
+                  label: "Widgets",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.people),
+                  label: "Users",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.notifications),
+                  label: "Alerts",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.menu),
+                  label: "Menu",
+                ),
+              ],
+              onTap: (value) {
+                HapticFeedback.lightImpact();
+                switch (value) {
+                  case 0:
+                    Modular.to.navigate(".${Routes.home.postsFeed}");
+                    break;
+                  case 1:
+                    Modular.to.navigate(".${Routes.home.widgetsListPage}");
+                    break;
+                  case 2:
+                    Modular.to.navigate(".${Routes.home.peopleListPage}");
+                    break;
+                  case 3:
+                    Modular.to.navigate(".${Routes.home.notificationsPage}");
+                    break;
+                  case 4:
+                    Modular.to.navigate(".${Routes.home.homeMenu}");
+                    break;
+                  default:
+                    Modular.to.navigate(".${Routes.home.postsFeed}");
+                    break;
+                }
+              },
+            );
+          }),
         );
       },
     );

@@ -25,7 +25,7 @@ class AuthController extends Disposable {
       : cryptoStorageService =
             CryptoStorageService(secureStorage: secureStorage);
 
-  Stream<AuthInfo> get stream => _streamController.stream.distinct();
+  Stream<AuthInfo> get stream => _streamController.stream;
 
   AuthInfo get state => _streamController.value;
 
@@ -34,6 +34,11 @@ class AuthController extends Disposable {
     required String secretKey,
   }) async {
     try {
+      _streamController.add(state.copyWith(
+        accountId: accountId,
+        secretKey: secretKey,
+      ));
+
       final privateKey = await nearBlockChainService
           .getPrivateKeyFromSecretKeyFromNearApiJSFormat(
         secretKey.split(":").last,
@@ -89,14 +94,13 @@ class AuthController extends Disposable {
   Future<void> logout() async {
     try {
       await secureStorage.delete(key: SecureStorageKeys.authInfo);
-      _streamController.add(state.copyWith(
-        status: AuthInfoStatus.unauthenticated,
-      ));
+      await secureStorage.delete(
+          key: SecureStorageKeys.additionalCryptographicKeys);
+      _streamController.add(const AuthInfo());
     } catch (err) {
       throw AppExceptions(
         messageForUser: "Failed to logout",
         messageForDev: err.toString(),
-        statusCode: AppErrorCodes.storageError,
       );
     }
   }
@@ -119,7 +123,6 @@ class AuthController extends Disposable {
       final appException = AppExceptions(
         messageForUser: "Failed to add key",
         messageForDev: err.toString(),
-        statusCode: AppErrorCodes.storageError,
       );
 
       throw appException;
@@ -140,7 +143,6 @@ class AuthController extends Disposable {
       final appException = AppExceptions(
         messageForUser: "Failed to remove key",
         messageForDev: err.toString(),
-        statusCode: AppErrorCodes.storageError,
       );
       throw appException;
     }

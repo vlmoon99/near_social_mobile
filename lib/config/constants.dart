@@ -3,18 +3,8 @@ class SecureStorageKeys {
   static const cryptographicKey = 'cryptographic_key';
   static const additionalCryptographicKeys = 'additional_cryptographic_keys';
   static const networkType = 'network_type';
-}
-
-class AppErrorCodes {
-  static const errorFromZone = 0;
-  static const errorFromFlutter = 1;
-  static const invalidQRCodeFormat = 2;
-  static const cryptoError = 3;
-  static const storageError = 4;
-  static const flutterchainError = 5;
-  static const localAuthError = 6;
-  static const testnetError = 7;
-  static const nearSocialApiError = 8;
+  static const appPolicyAccepted = 'app_policy_accepted';
+  static const filters = 'filters';
 }
 
 class NearAssets {
@@ -26,4 +16,17 @@ class NearAssets {
   static const shareIcon = "assets/media/icons/share_icon.svg";
   static const standartAvatar = "assets/media/images/standart_avatar.png";
   static const widgetPlaceholder = "assets/media/images/widget_placeholder.png";
+}
+
+class NearUrls {
+  static const blockchainRpc = "https://rpc.fastnear.com";
+  static const nearSocialApi = "https://api.near.social";
+  static const nearSocialIpfsMediaHosting = "https://ipfs.near.social/ipfs/";
+}
+
+class NearSocialMobileUrls {
+  static const eulaUrl =
+      "https://docs.google.com/document/d/1u0bmfj0OCtG0utsbR-xcPJVy0srEUf86N92rw8NOtEQ/edit";
+  static const privacyPolicyUrl =
+      "https://docs.google.com/document/d/1T-g8ZSH5Bg2_nUVOzUELmzK43a5UFp3o8G9pHnVb16k/edit";
 }

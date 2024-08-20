@@ -8,7 +8,6 @@ class Routes {
 class _Auth extends RouteClass {
   @override
   String module = '/auth';
-  String login = '/';
   String qrReader = '/qr_reader';
   String encryptData = '/encrypt_data';
 }
@@ -19,7 +18,6 @@ class _Home extends RouteClass {
   String startPage = '/';
   String postPage = '/post';
   String postsFeed = '/posts_feed';
-  String accountPage = '/account';
   String widgetsListPage = '/widgets_list';
   String widgetPage = '/widget';
   String peopleListPage = '/people_list';
@@ -27,6 +25,9 @@ class _Home extends RouteClass {
   String homeMenu = '/home_menu';
   String notificationsPage = '/notifications';
   String keyManagerPage = '/key_manager';
+  String settingsPage = '/settings';
+  String blockedUsersPage = '/blocked_users';
+  String hiddenPostsPage = '/hided_posts';
 }
 
 abstract class RouteClass {

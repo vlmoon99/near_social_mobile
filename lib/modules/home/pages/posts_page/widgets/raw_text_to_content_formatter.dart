@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:near_social_mobile/utils/near_widget_opener_interface.dart';
@@ -15,18 +15,14 @@ class RawTextToContentFormatter extends StatelessWidget {
   const RawTextToContentFormatter({
     super.key,
     required this.rawText,
-    this.selectable = true,
-    this.tappable = true,
     this.heroAnimForImages = true,
-    this.loadImages = true,
     this.imageHeight,
+    this.responsive = true,
   });
 
   final String rawText;
-  final bool selectable;
-  final bool tappable;
+  final bool responsive;
   final bool heroAnimForImages;
-  final bool loadImages;
   final double? imageHeight;
 
   bool _isNearWidget(String url) => url.contains("/widget/");
@@ -80,7 +76,6 @@ class RawTextToContentFormatter extends StatelessWidget {
       throw AppExceptions(
         messageForUser: 'Could not launch $url',
         messageForDev: 'Could not launch $url',
-        statusCode: 1,
       );
     }
   }
@@ -88,99 +83,109 @@ class RawTextToContentFormatter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = rawText.replaceAll("\\n", "\n");
-    return MarkdownBody(
-      data: text,
-      imageBuilder: (uri, title, alt) {
-        if (!loadImages) {
-          return Text.rich(TextSpan(
-            text: uri.toString(),
-          ));
-        }
-        return GestureDetector(
-          onTap: tappable
-              ? () {
-                  HapticFeedback.lightImpact();
-                  Navigator.push(
-                    Modular.routerDelegate.navigatorKey.currentContext!,
-                    MaterialPageRoute(
-                      builder: (context) => ImageFullScreen(
-                        imageUrl: uri.toString(),
-                      ),
-                    ),
-                  );
-                }
-              : null,
-          child: SizedBox(
-            height: imageHeight,
-            width: double.infinity,
-            child: heroAnimForImages
-                ? Hero(
-                    tag: uri.toString(),
-                    child: NearNetworkImage(
+    return Stack(
+      children: [
+        MarkdownBody(
+          data: text,
+          imageBuilder: (uri, title, alt) {
+            return GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                Navigator.push(
+                  Modular.routerDelegate.navigatorKey.currentContext!,
+                  MaterialPageRoute(
+                    builder: (context) => ImageFullScreen(
                       imageUrl: uri.toString(),
-                      errorPlaceholder: const Icon(Icons.broken_image),
                     ),
-                  )
-                : NearNetworkImage(
-                    imageUrl: uri.toString(),
-                    errorPlaceholder: const Icon(Icons.broken_image),
                   ),
-          ),
-        );
-      },
-      onTapLink: tappable
-          ? (text, href, title) {
-              showAdaptiveDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text.rich(
-                      TextSpan(
-                        style: TextStyle(
-                          fontSize: 20.sp,
-                        ),
-                        text: "Do you want to open ?\n",
-                        children: [
-                          TextSpan(
-                            text: href,
-                            style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 14.sp,
-                            ),
+                );
+              },
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints:
+                      BoxConstraints(maxHeight: imageHeight ?? double.infinity),
+                  child: heroAnimForImages
+                      ? Hero(
+                          tag: uri.toString(),
+                          child: NearNetworkImage(
+                            imageUrl: uri.toString(),
+                            boxFit: BoxFit.contain,
                           ),
-                        ],
+                        )
+                      : NearNetworkImage(
+                          imageUrl: uri.toString(),
+                          boxFit: BoxFit.contain,
+                        ),
+                ),
+              ),
+            );
+          },
+          onTapLink: (text, href, title) {
+            showAdaptiveDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text.rich(
+                    TextSpan(
+                      style: const TextStyle(
+                        fontSize: 20,
+                      ),
+                      text: "Do you want to open ?\n",
+                      children: [
+                        TextSpan(
+                          text: href,
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  actionsAlignment: MainAxisAlignment.spaceEvenly,
+                  actions: [
+                    CustomButton(
+                      primary: true,
+                      onPressed: () {
+                        Modular.to.pop(true);
+                      },
+                      child: const Text(
+                        "Open",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          Modular.to.pop(false);
-                        },
-                        child: const Text(
-                          "Cancel",
-                          style: TextStyle(color: Colors.grey),
+                    CustomButton(
+                      onPressed: () {
+                        Modular.to.pop(false);
+                      },
+                      child: const Text(
+                        "Cancel",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          Modular.to.pop(true);
-                        },
-                        child: const Text("Open"),
-                      ),
-                    ],
-                  );
-                },
-              ).then((toOpen) {
-                if (toOpen != null && toOpen) {
-                  _launchURL(href!);
-                }
-              });
-            }
-          : null,
-      selectable: selectable,
-      onSelectionChanged: (text, selection, cause) {},
+                    ),
+                  ],
+                );
+              },
+            ).then((toOpen) {
+              if (toOpen != null && toOpen) {
+                _launchURL(href!);
+              }
+            });
+          },
+          selectable: responsive,
+        ),
+        if (!responsive)
+          Positioned.fill(
+            child: Container(
+              color: Colors.transparent,
+            ),
+          ),
+      ],
     );
   }
 }

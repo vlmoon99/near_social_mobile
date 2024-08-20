@@ -2,28 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
 import 'package:near_social_mobile/config/constants.dart';
+import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/post.dart';
-import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/more_actions_for_post_button.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
+import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
-import 'package:near_social_mobile/shared_widgets/two_states_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
+import 'package:near_social_mobile/utils/date_to_string.dart';
 
 class PostCard extends StatelessWidget {
-  const PostCard(
-      {super.key,
-      required this.post,
-      required this.postsViewMode,
-      this.postsOfAccountId});
+  const PostCard({
+    super.key,
+    required this.post,
+    required this.postsViewMode,
+    this.postsOfAccountId,
+    this.allowToNavigateToPostAuthorPage = true,
+    this.allowToNavigateToReposterAuthorPage = true,
+  });
   final Post post;
   final PostsViewMode postsViewMode;
   final String? postsOfAccountId;
+  final bool allowToNavigateToPostAuthorPage;
+  final bool allowToNavigateToReposterAuthorPage;
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +40,14 @@ class PostCard extends StatelessWidget {
       onTap: () {
         HapticFeedback.lightImpact();
         Modular.to.pushNamed(
-          ".${Routes.home.postPage}?accountId=${post.authorInfo.accountId}&blockHeight=${post.blockHeight}&postsViewMode=${postsViewMode.index}&postsOfAccountId=${postsOfAccountId ?? ""}",
+          ".${Routes.home.postPage}?accountId=${post.authorInfo.accountId}&blockHeight=${post.blockHeight}&postsViewMode=${postsViewMode.index}&postsOfAccountId=${postsOfAccountId ?? ""}&allowToNavigateToPostAuthorPage=$allowToNavigateToPostAuthorPage",
         );
       },
       child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0).r,
+        ),
+        elevation: 5,
         child: Padding(
           padding: REdgeInsets.all(10.0),
           child: Column(
@@ -45,80 +56,133 @@ class PostCard extends StatelessWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
-                  DateFormat('hh:mm a MMM dd, yyyy').format(post.date),
+                  formatDateDependingOnCurrentTime(post.date),
                   style: TextStyle(
                     color: Colors.grey.shade600,
-                    fontSize: 12.sp,
+                    fontSize: 12,
                   ),
                 ),
               ),
               if (post.reposterInfo != null) ...[
-                Text(
-                  "Reposted by ${post.reposterInfo?.name ?? ""} @${post.reposterInfo!.accountId}",
-                  style: TextStyle(color: Colors.grey.shade600),
+                InkWell(
+                  borderRadius: BorderRadius.circular(10).r,
+                  onTap: allowToNavigateToReposterAuthorPage
+                      ? () async {
+                          HapticFeedback.lightImpact();
+                          await Modular.get<UserListController>()
+                              .addGeneralAccountInfoIfNotExists(
+                            generalAccountInfo: post.reposterInfo!.accountInfo,
+                          );
+                          Modular.to.pushNamed(
+                            ".${Routes.home.userPage}?accountId=${post.reposterInfo!.accountInfo.accountId}",
+                          );
+                        }
+                      : null,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 3).r,
+                    child: Text(
+                      "Reposted by ${post.reposterInfo?.accountInfo.name ?? ""} @${post.reposterInfo!.accountInfo.accountId}",
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
+                  ),
                 ),
               ],
-              RPadding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Text(
-                    "${post.authorInfo.name} @${post.authorInfo.accountId}"),
+              InkWell(
+                borderRadius: BorderRadius.circular(10).r,
+                onTap: allowToNavigateToPostAuthorPage
+                    ? () async {
+                        HapticFeedback.lightImpact();
+                        await Modular.get<UserListController>()
+                            .addGeneralAccountInfoIfNotExists(
+                          generalAccountInfo: post.authorInfo,
+                        );
+                        Modular.to.pushNamed(
+                          ".${Routes.home.userPage}?accountId=${post.authorInfo.accountId}",
+                        );
+                      }
+                    : null,
+                child: SizedBox(
+                  height: 37.h,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 35.h,
+                        height: 35.h,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10).r,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: NearNetworkImage(
+                          imageUrl: post.authorInfo.profileImageLink,
+                          errorPlaceholder: Image.asset(
+                            NearAssets.standartAvatar,
+                            fit: BoxFit.cover,
+                          ),
+                          placeholder: Image.asset(
+                            NearAssets.standartAvatar,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10.h),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (post.authorInfo.name != "")
+                              Text(
+                                post.authorInfo.name,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            Text(
+                              "@${post.authorInfo.accountId}",
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: post.authorInfo.name != ""
+                                  ? const TextStyle(
+                                      color: NEARColors.grey,
+                                      fontSize: 13,
+                                    )
+                                  : const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
+              SizedBox(height: 10.h),
               ConstrainedBox(
                 constraints: BoxConstraints(
                   maxHeight: 200.h,
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: ListView(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   children: [
-                    Container(
-                      width: 40.w,
-                      height: 40.w,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: NearNetworkImage(
-                        imageUrl: post.authorInfo.profileImageLink,
-                        errorPlaceholder: Image.asset(
-                          NearAssets.standartAvatar,
-                          fit: BoxFit.cover,
-                        ),
-                        placeholder: Stack(
-                          children: [
-                            Image.asset(
-                              NearAssets.standartAvatar,
-                              fit: BoxFit.cover,
-                            ),
-                            const Positioned.fill(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 6,
-                              ),
-                            ),
-                          ],
+                    RawTextToContentFormatter(
+                      rawText: post.postBody.text.trim(),
+                      heroAnimForImages: false,
+                      imageHeight: .5.sh,
+                      responsive: false,
+                    ),
+                    if (post.postBody.mediaLink != null) ...[
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxHeight: .5.sh),
+                        child: NearNetworkImage(
+                          imageUrl: post.postBody.mediaLink!,
+                          boxFit: BoxFit.contain,
                         ),
                       ),
-                    ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: ListView(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        children: [
-                          RawTextToContentFormatter(
-                            rawText: post.postBody.text.trim(),
-                            selectable: false,
-                            tappable: false,
-                            heroAnimForImages: false,
-                            loadImages: false,
-                          ),
-                          if (post.postBody.mediaLink != null) ...[
-                            NearNetworkImage(
-                              imageUrl: post.postBody.mediaLink!,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -150,7 +214,6 @@ class PostCard extends StatelessWidget {
                         final exc = AppExceptions(
                           messageForUser: "Failed to like post",
                           messageForDev: err.toString(),
-                          statusCode: AppErrorCodes.flutterchainError,
                         );
                         throw exc;
                       }
@@ -184,18 +247,28 @@ class PostCard extends StatelessWidget {
                             content: const Text(
                               "Are you sure you want to repost this post?",
                             ),
+                            actionsAlignment: MainAxisAlignment.spaceEvenly,
                             actions: [
-                              TextButton(
-                                child: const Text("Yes"),
+                              CustomButton(
+                                primary: true,
+                                child: const Text(
+                                  "Yes",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                                 onPressed: () {
-                                  HapticFeedback.lightImpact();
                                   Modular.to.pop(true);
                                 },
                               ),
-                              TextButton(
-                                child: const Text("No"),
+                              CustomButton(
+                                child: const Text(
+                                  "No",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                                 onPressed: () {
-                                  HapticFeedback.lightImpact();
                                   Modular.to.pop(false);
                                 },
                               ),
@@ -220,7 +293,6 @@ class PostCard extends StatelessWidget {
                             final exc = AppExceptions(
                               messageForUser: "Failed to repost post",
                               messageForDev: err.toString(),
-                              statusCode: AppErrorCodes.flutterchainError,
                             );
                             throw exc;
                           }
@@ -228,22 +300,9 @@ class PostCard extends StatelessWidget {
                       );
                     },
                   ),
-                  TwoStatesIconButton(
-                    iconPath: NearAssets.shareIcon,
-                    onPressed: () async {
-                      HapticFeedback.lightImpact();
-                      final nearSocialApi = Modular.get<NearSocialApi>();
-                      final urlOfPost = nearSocialApi.getUrlOfPost(
-                        accountId: post.authorInfo.accountId,
-                        blockHeight: post.blockHeight,
-                      );
-                      Clipboard.setData(ClipboardData(text: urlOfPost));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Url of post coppied to clipboard"),
-                        ),
-                      );
-                    },
+                  MoreActionsForPostButton(
+                    post: post,
+                    postsViewMode: postsViewMode,
                   ),
                 ],
               ),

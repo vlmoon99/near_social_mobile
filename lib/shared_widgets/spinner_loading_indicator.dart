@@ -6,10 +6,12 @@ class SpinnerLoadingIndicator extends StatefulWidget {
     super.key,
     this.size = 50,
     this.duration = const Duration(seconds: 1),
+    this.color = Colors.black,
   });
 
   final double size;
   final Duration duration;
+  final Color color;
 
   @override
   State<SpinnerLoadingIndicator> createState() =>
@@ -44,6 +46,7 @@ class _SpinnerLoadingIndicatorState extends State<SpinnerLoadingIndicator>
           "assets/media/icons/loading_indicator.svg",
           height: widget.size,
           width: widget.size,
+          color: widget.color,
         ),
       ),
     );

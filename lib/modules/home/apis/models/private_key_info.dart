@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'private_key_info.g.dart';
@@ -25,6 +26,16 @@ class PrivateKeyInfo {
   String toString() {
     return 'PrivateKeyInfo{publicKey: $publicKey, privateKey: $privateKey, privateKeyInNearApiJsFormat: $privateKeyInNearApiJsFormat, privateKeyTypeInfo: $privateKeyTypeInfo}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PrivateKeyInfo &&
+          runtimeType == other.runtimeType &&
+          publicKey == other.publicKey &&
+          privateKey == other.privateKey &&
+          privateKeyInNearApiJsFormat == other.privateKeyInNearApiJsFormat &&
+          privateKeyTypeInfo == other.privateKeyTypeInfo;
 }
 
 enum PrivateKeyType { FullAccess, FunctionCall }
@@ -50,4 +61,13 @@ class PrivateKeyTypeInfo {
   String toString() {
     return 'PrivateKeyTypeInfo{type: $type, receiverId: $receiverId, methodNames: $methodNames}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PrivateKeyTypeInfo &&
+          runtimeType == other.runtimeType &&
+          type == other.type &&
+          receiverId == other.receiverId &&
+          listEquals(methodNames, other.methodNames);
 }

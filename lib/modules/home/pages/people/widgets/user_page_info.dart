@@ -9,18 +9,22 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/home/pages/people/widgets/more_actions_for_user_button.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/expandable_wiget.dart';
 import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UserPageMainInfo extends StatelessWidget {
-  const UserPageMainInfo({super.key, required this.accountIdOfUser});
+  const UserPageMainInfo(
+      {super.key, required this.accountIdOfUser, required this.userIsBlocked});
 
   final String accountIdOfUser;
+  final bool userIsBlocked;
   List<Widget> linkTreeList({required Map<String, dynamic> linkTree}) {
     final List<Widget> linkTreeList = linkTree.entries.map((pair) {
       if (pair.key == "twitter") {
@@ -86,7 +90,6 @@ class UserPageMainInfo extends StatelessWidget {
     final AuthController authController = Modular.get<AuthController>();
     final UserListController userListController =
         Modular.get<UserListController>();
-
     return StreamBuilder(
         stream: userListController.stream,
         builder: (context, snapshot) {
@@ -128,7 +131,7 @@ class UserPageMainInfo extends StatelessWidget {
                     ),
                     Positioned(
                       bottom: 0,
-                      left: 30.w,
+                      left: 20.h,
                       width: .2.sh,
                       height: .2.sh,
                       child: GestureDetector(
@@ -180,51 +183,63 @@ class UserPageMainInfo extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      user.generalAccountInfo.name != ""
-                          ? user.generalAccountInfo.name
-                          : "No Name",
-                      style: TextStyle(
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            user.generalAccountInfo.name != ""
+                                ? user.generalAccountInfo.name
+                                : "No Name",
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        if (user.generalAccountInfo.accountId !=
+                            authController.state.accountId)
+                          MoreActionsForUserButton(
+                            userAccountId: user.generalAccountInfo.accountId,
+                          ),
+                      ],
+                    ),
+                    SizedBox(height: 5.h),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Icon(
                           CupertinoIcons.person_fill,
-                          size: 16.sp,
+                          size: 16.h,
                         ),
-                        SizedBox(width: 5.w),
+                        SizedBox(width: 5.h),
                         Flexible(
-                          child: Text(
-                            "@${user.generalAccountInfo.accountId}",
-                            style: TextStyle(
-                                fontSize: 16.sp, fontWeight: FontWeight.w400),
+                          child: GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              Clipboard.setData(
+                                ClipboardData(
+                                  text: user.generalAccountInfo.accountId,
+                                ),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      "AccountId ${user.generalAccountInfo.accountId} copied to clipboard"),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              "@${user.generalAccountInfo.accountId}",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
                           ),
                         ),
-                        IconButton(
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            Clipboard.setData(
-                              ClipboardData(
-                                text: user.generalAccountInfo.accountId,
-                              ),
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    "AccountId ${user.generalAccountInfo.accountId} copied to clipboard"),
-                              ),
-                            );
-                          },
-                          icon: SvgPicture.asset(
-                            "assets/media/icons/copy_icon.svg",
-                            height: 14.sp,
-                            width: 14.sp,
-                          ),
-                        ),
-                        SizedBox(width: 10.w),
+                        SizedBox(width: 10.h),
                         if (user.followings != null &&
                             user.followings!.any(
                               (element) =>
@@ -233,91 +248,60 @@ class UserPageMainInfo extends StatelessWidget {
                             ))
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 5,
+                              horizontal: 10,
                               vertical: 2,
                             ).r,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(5).r,
-                              color: AppColors.lightSurface.withOpacity(.5),
+                              color: NEARColors.slate,
                             ),
-                            child: Text(
+                            child: const Text(
                               "Follows you",
                               style: TextStyle(
-                                fontSize: 14.sp,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w300,
-                                color: AppColors.onlightSurface,
+                                color: NEARColors.white,
                               ),
                             ),
                           ),
                       ],
                     ),
-                    if (authController.state.accountId != accountIdOfUser)
+                    SizedBox(height: 5.h),
+                    if (authController.state.accountId != accountIdOfUser &&
+                        !userIsBlocked) ...[
                       Row(
                         children: [
                           if (user.followers != null)
                             RPadding(
                               padding: const EdgeInsets.only(right: 10),
-                              child: user.followers!.any((follower) =>
-                                      follower.accountId ==
-                                      authController.state.accountId)
-                                  ? ElevatedButton(
-                                      onPressed: () {
-                                        HapticFeedback.lightImpact();
+                              child: Builder(
+                                builder: (_) {
+                                  final inFollowerList = user.followers!.any(
+                                    (follower) =>
+                                        follower.accountId ==
+                                        authController.state.accountId,
+                                  );
+                                  return CustomButton(
+                                    primary: !inFollowerList,
+                                    onPressed: () {
+                                      if (inFollowerList) {
                                         requestToUnfollowAccount(context);
-                                      },
-                                      style: ButtonStyle(
-                                        backgroundColor:
-                                            MaterialStatePropertyAll(
-                                                Theme.of(context)
-                                                    .colorScheme
-                                                    .onPrimary),
-                                        foregroundColor:
-                                            MaterialStatePropertyAll(
-                                                Theme.of(context)
-                                                    .colorScheme
-                                                    .primary),
-                                        side: MaterialStatePropertyAll(
-                                          BorderSide(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        "Following",
-                                        style: TextStyle(
-                                          fontSize: 16.sp,
-                                        ),
-                                      ),
-                                    )
-                                  : ElevatedButton(
-                                      onPressed: () {
-                                        HapticFeedback.lightImpact();
+                                      } else {
                                         requestToFollowAccount(context);
-                                      },
-                                      style: ButtonStyle(
-                                        backgroundColor:
-                                            MaterialStatePropertyAll(
-                                                Theme.of(context)
-                                                    .colorScheme
-                                                    .primary),
-                                        foregroundColor:
-                                            MaterialStatePropertyAll(
-                                                Theme.of(context)
-                                                    .colorScheme
-                                                    .onPrimary),
-                                      ),
-                                      child: Text(
-                                        "Follow",
-                                        style: TextStyle(
-                                          fontSize: 16.sp,
-                                          fontWeight: FontWeight.w400,
-                                        ),
+                                      }
+                                    },
+                                    child: Text(
+                                      inFollowerList ? "Following" : "Follow",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
+                                  );
+                                },
+                              ),
                             ),
-                          ElevatedButton(
+                          CustomButton(
+                            primary: true,
                             onPressed: () {
                               HapticFeedback.lightImpact();
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -340,20 +324,23 @@ class UserPageMainInfo extends StatelessWidget {
                                 );
                               });
                             },
-                            child: Text(
+                            child: const Text(
                               "👈 Poke",
-                              style: TextStyle(fontSize: 16.sp),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    SizedBox(height: 10.h),
+                      SizedBox(height: 5.h),
+                    ],
                     Row(
                       children: [
                         Text.rich(
                           TextSpan(
-                            style: TextStyle(
-                              fontSize: 16.sp,
+                            style: const TextStyle(
+                              fontSize: 16,
                             ),
                             children: [
                               TextSpan(
@@ -367,11 +354,11 @@ class UserPageMainInfo extends StatelessWidget {
                             ],
                           ),
                         ),
-                        SizedBox(width: 10.w),
+                        SizedBox(width: 10.h),
                         Text.rich(
                           TextSpan(
-                            style: TextStyle(
-                              fontSize: 16.sp,
+                            style: const TextStyle(
+                              fontSize: 16,
                             ),
                             children: [
                               TextSpan(
@@ -392,38 +379,42 @@ class UserPageMainInfo extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ...linkTreeList(
-                              linkTree: user.generalAccountInfo.linktree)
+                              linkTree: user.generalAccountInfo.linktree),
+                          SizedBox(height: 10.h),
                         ],
                       ),
-                    Wrap(
-                      spacing: 5.w,
-                      runSpacing: 5.w,
-                      children: [
-                        ...user.generalAccountInfo.tags.map((tag) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(5),
-                              color: AppColors.lightSurface.withOpacity(.5),
-                            ),
-                            child: Text(
-                              "#$tag",
-                              style: const TextStyle(
-                                color: AppColors.onlightSurface,
-                              ),
-                            ),
-                          );
-                        })
-                      ],
-                    ),
-                    if (user.userTags != null && user.userTags!.isNotEmpty) ...[
-                      SizedBox(height: 10.w),
+                    if (user.generalAccountInfo.tags.isNotEmpty) ...[
+                      SizedBox(height: 5.h),
                       Wrap(
-                        spacing: 5.w,
-                        runSpacing: 5.w,
+                        spacing: 5.h,
+                        runSpacing: 5.h,
+                        children: [
+                          ...user.generalAccountInfo.tags.map((tag) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(5),
+                                color: AppColors.lightSurface.withOpacity(.5),
+                              ),
+                              child: Text(
+                                "#$tag",
+                                style: const TextStyle(
+                                  color: AppColors.onlightSurface,
+                                ),
+                              ),
+                            );
+                          })
+                        ],
+                      )
+                    ],
+                    if (user.userTags != null && user.userTags!.isNotEmpty) ...[
+                      SizedBox(height: 10.h),
+                      Wrap(
+                        spacing: 5.h,
+                        runSpacing: 5.h,
                         children: [
                           ...user.userTags!.map((tag) {
                             return Container(
@@ -475,14 +466,13 @@ class UserPageMainInfo extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          content: Text(
-            "Are you sure you want to unfollow $accountIdOfUser?",
-            style: TextStyle(fontSize: 16.sp),
-          ),
+          content: Text("Are you sure you want to unfollow $accountIdOfUser?",
+              style: const TextStyle(fontSize: 16)),
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
           actions: [
-            TextButton(
+            CustomButton(
+              primary: true,
               onPressed: () async {
-                HapticFeedback.lightImpact();
                 userListController.unfollowAccount(
                   accountIdToUnfollow: accountIdOfUser,
                   accountId: authController.state.accountId,
@@ -491,14 +481,23 @@ class UserPageMainInfo extends StatelessWidget {
                 );
                 Modular.to.pop();
               },
-              child: const Text("Yes"),
+              child: const Text(
+                "Yes",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-            TextButton(
+            CustomButton(
               onPressed: () {
-                HapticFeedback.lightImpact();
                 Modular.to.pop();
               },
-              child: const Text("No"),
+              child: const Text(
+                "No",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );
@@ -516,14 +515,13 @@ class UserPageMainInfo extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          content: Text(
-            "Are you sure you want to follow $accountIdOfUser?",
-            style: TextStyle(fontSize: 16.sp),
-          ),
+          content: Text("Are you sure you want to follow $accountIdOfUser?",
+              style: const TextStyle(fontSize: 16)),
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
           actions: [
-            TextButton(
+            CustomButton(
+              primary: true,
               onPressed: () async {
-                HapticFeedback.lightImpact();
                 userListController.followAccount(
                   accountIdToFollow: accountIdOfUser,
                   accountId: authController.state.accountId,
@@ -532,14 +530,23 @@ class UserPageMainInfo extends StatelessWidget {
                 );
                 Modular.to.pop();
               },
-              child: const Text("Yes"),
+              child: const Text(
+                "Yes",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-            TextButton(
+            CustomButton(
               onPressed: () {
-                HapticFeedback.lightImpact();
                 Modular.to.pop();
               },
-              child: const Text("No"),
+              child: const Text(
+                "No",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );
