@@ -78,12 +78,22 @@ class _PostPageState extends State<PostPage> {
       const Duration(seconds: 40),
       () async {
         updateCommentsTimer.pause();
-        postsController.updateCommentsOfPost(
-          accountId: widget.accountId,
-          blockHeight: widget.blockHeight,
-          postsViewMode: widget.postsViewMode,
-          postsOfAccountId: widget.postsOfAccountId,
-        );
+
+        final posts = postsController.getPostsDueToPostsViewMode(
+            widget.postsViewMode, widget.postsOfAccountId);
+        final post = posts.firstWhere((element) =>
+            element.blockHeight == widget.blockHeight &&
+            element.authorInfo.accountId == widget.accountId);
+
+        if (post.commentList != null) {
+          await postsController.updateCommentsOfPost(
+            accountId: widget.accountId,
+            blockHeight: widget.blockHeight,
+            postsViewMode: widget.postsViewMode,
+            postsOfAccountId: widget.postsOfAccountId,
+          );
+        }
+
         updateCommentsTimer.start();
       },
     )..start();
