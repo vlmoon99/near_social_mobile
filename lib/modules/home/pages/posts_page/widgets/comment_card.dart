@@ -98,7 +98,7 @@ class CommentCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (post.authorInfo.name != "")
+                          if (comment.authorInfo.name != "")
                             Text(
                               comment.authorInfo.name,
                               style: const TextStyle(
