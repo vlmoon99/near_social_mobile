@@ -846,6 +846,9 @@ class PostsController {
     bool? fullyLoaded,
   }) {
     final indexOfPost = _getIndexOfPost(post, postsViewMode, postsOfAccountId);
+    if (indexOfPost == -1) {
+      return;
+    }
     switch (postsViewMode) {
       case PostsViewMode.main:
         {
@@ -971,7 +974,6 @@ class PostsController {
   Future<void> clear() async {
     _streamController.add(const Posts());
   }
-
 }
 
 enum PostLoadingStatus {
