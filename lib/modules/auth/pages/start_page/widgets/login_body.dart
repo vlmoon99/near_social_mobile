@@ -22,24 +22,30 @@ class _LoginBodyState extends State<LoginBody> {
     super.didChangeDependencies();
     if (kIsWeb && !isPWA) {
       NearWalletSelector().init("mainnet", "social.near").then(
-        (value) async {
+        (_) async {
           final account = await NearWalletSelector().getAccount();
           if (account == null) {
             return;
+          } else {
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              navigateToEncryptDataPage(account);
+            });
           }
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            NearWalletSelector().clearCredentials();
-            Modular.to.pushReplacementNamed(
-              Routes.auth.getRoute(Routes.auth.encryptData),
-              arguments: AuthorizationCredentials(
-                account.accountId,
-                account.privateKey,
-              ),
-            );
-          });
         },
       );
     }
+  }
+
+  Future<void> navigateToEncryptDataPage(
+      ({String accountId, String privateKey}) account) async {
+    NearWalletSelector().clearCredentials();
+    Modular.to.pushReplacementNamed(
+      Routes.auth.getRoute(Routes.auth.encryptData),
+      arguments: AuthorizationCredentials(
+        account.accountId,
+        account.privateKey,
+      ),
+    );
   }
 
   @override
@@ -66,7 +72,19 @@ class _LoginBodyState extends State<LoginBody> {
             CustomButton(
               primary: true,
               onPressed: () async {
-                NearWalletSelector().showSelector();
+                NearWalletSelector().showSelector().then(
+                  (hideReason) async {
+                    if (hideReason == "user-triggered") {
+                      return;
+                    }
+                    final account = await NearWalletSelector().getAccount();
+                    if (account == null) {
+                      return;
+                    } else {
+                      navigateToEncryptDataPage(account);
+                    }
+                  },
+                );
               },
               child: const Text(
                 "Login with Wallet",
