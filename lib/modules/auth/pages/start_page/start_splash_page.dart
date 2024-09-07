@@ -128,11 +128,15 @@ class _StartSplashPageState extends State<StartSplashPage>
         if (remainingTime > Duration.zero) {
           await Future.delayed(remainingTime, () {
             localyAuthenticated.value = checkedAuthentication;
-            _controller.forward();
+            if (mounted) {
+              _controller.forward();
+            }
           });
         } else {
           localyAuthenticated.value = checkedAuthentication;
-          _controller.forward();
+          if (mounted) {
+            _controller.forward();
+          }
         }
       },
     );

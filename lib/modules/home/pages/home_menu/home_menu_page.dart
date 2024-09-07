@@ -1,5 +1,6 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -268,9 +269,11 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                       (value) {
                         if (value != null && value) {
                           final authController = Modular.get<AuthController>();
-                          Modular.get<NotificationSubscriptionService>()
-                              .unsubscribeFromNotifications(
-                                  authController.state.accountId);
+                          if (!kIsWeb) {
+                            Modular.get<NotificationSubscriptionService>()
+                                .unsubscribeFromNotifications(
+                                    authController.state.accountId);
+                          }
                           authController.logout();
                           Modular.get<NotificationsController>().clear();
                           Modular.get<FilterController>().clear();
