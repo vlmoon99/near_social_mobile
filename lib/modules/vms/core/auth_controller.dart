@@ -2,8 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_data.dart';
-import 'package:flutterchain/flutterchain_lib/models/core/wallet.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
@@ -48,27 +46,14 @@ class AuthController extends Disposable {
         secretKey.split(":").last,
       );
 
-      final secretKeyInNearApiJsFormat =
-          await nearBlockChainService.exportPrivateKeyToTheNearApiJsFormat(
-        currentBlockchainData: NearBlockChainData(
-          publicKey: publicKey,
-          privateKey: secretKey,
-          passphrase: "",
-          derivationPath: const DerivationPath(
-            purpose: '',
-            coinType: '',
-            accountNumber: '',
-            change: '',
-            address: '',
-          ),
-        ),
-      );
+      final base58PubKey = await nearBlockChainService
+          .getBase58PubKeyFromHexValue(hexEncodedPubKey: publicKey);
 
       final additionalStoredKeys = {
         "Near Social QR Functional Key": PrivateKeyInfo(
           publicKey: accountId,
           privateKey: secretKey,
-          privateKeyInNearApiJsFormat: secretKeyInNearApiJsFormat,
+          base58PubKey: base58PubKey,
           privateKeyTypeInfo: PrivateKeyTypeInfo(
             type: PrivateKeyType.FunctionCall,
             receiverId: "social.near",
