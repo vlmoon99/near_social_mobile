@@ -6,9 +6,7 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
-import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_data.dart';
 import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_smart_contract_arguments.dart';
-import 'package:flutterchain/flutterchain_lib/models/core/wallet.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/modules/home/apis/models/follower.dart';
@@ -1372,21 +1370,8 @@ class NearSocialApi {
     try {
       final publicKeyOfSecretKey = await _nearBlockChainService
           .getPublicKeyFromSecretKeyFromNearApiJSFormat(key.split(":").last);
-      final privateKeyInNearApiJsFormat =
-          await _nearBlockChainService.exportPrivateKeyToTheNearApiJsFormat(
-        currentBlockchainData: NearBlockChainData(
-          publicKey: publicKeyOfSecretKey,
-          privateKey: key,
-          passphrase: '',
-          derivationPath: const DerivationPath(
-            accountNumber: '',
-            purpose: '',
-            coinType: '',
-            address: '',
-            change: '',
-          ),
-        ),
-      );
+      final base58PubKey = await _nearBlockChainService
+          .getBase58PubKeyFromHexValue(hexEncodedPubKey: publicKeyOfSecretKey);
       final request = {
         "jsonrpc": "2.0",
         "id": "dontcare",
@@ -1395,7 +1380,7 @@ class NearSocialApi {
           "request_type": "view_access_key",
           "finality": "final",
           "account_id": accountId,
-          "public_key": privateKeyInNearApiJsFormat
+          "public_key": base58PubKey
         }
       };
       final response =
@@ -1415,7 +1400,7 @@ class NearSocialApi {
         return PrivateKeyInfo(
           publicKey: accountId,
           privateKey: key,
-          privateKeyInNearApiJsFormat: privateKeyInNearApiJsFormat,
+          base58PubKey: base58PubKey,
           privateKeyTypeInfo: PrivateKeyTypeInfo(
             type: PrivateKeyType.FunctionCall,
             receiverId: permission["FunctionCall"]["receiver_id"],
@@ -1427,7 +1412,7 @@ class NearSocialApi {
         return PrivateKeyInfo(
           publicKey: accountId,
           privateKey: key,
-          privateKeyInNearApiJsFormat: privateKeyInNearApiJsFormat,
+          base58PubKey: base58PubKey,
           privateKeyTypeInfo: PrivateKeyTypeInfo(
             type: PrivateKeyType.FullAccess,
           ),

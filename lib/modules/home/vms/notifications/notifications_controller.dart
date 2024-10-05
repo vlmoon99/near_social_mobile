@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart' hide Notification;
 import 'package:near_social_mobile/modules/home/apis/models/notification.dart';
 import 'package:rxdart/rxdart.dart' hide Notification;
@@ -30,6 +29,9 @@ class NotificationsController {
         accountId: accountId,
         from: from,
       );
+      if (state.status != NotificationsLoadingState.loading) {
+        return;
+      }
       _streamController.add(
         state.copyWith(
           status: NotificationsLoadingState.loaded,
@@ -43,7 +45,8 @@ class NotificationsController {
     }
   }
 
-  Future<List<Notification>> loadMoreNotifications({required String accountId}) async {
+  Future<List<Notification>> loadMoreNotifications(
+      {required String accountId}) async {
     try {
       final notifications = await nearSocialApi.getNotificationsOfAccount(
         accountId: accountId,
@@ -65,7 +68,6 @@ class NotificationsController {
   Future<void> clear() async {
     _streamController.add(const Notifications());
   }
-
 }
 
 enum NotificationsLoadingState { initial, loading, loaded }

@@ -7,13 +7,13 @@ part 'private_key_info.g.dart';
 class PrivateKeyInfo {
   final String publicKey;
   final String privateKey;
-  final String privateKeyInNearApiJsFormat;
+  final String base58PubKey;
   final PrivateKeyTypeInfo privateKeyTypeInfo;
 
   PrivateKeyInfo({
     required this.publicKey,
     required this.privateKey,
-    required this.privateKeyInNearApiJsFormat,
+    required this.base58PubKey,
     required this.privateKeyTypeInfo,
   });
 
@@ -24,7 +24,7 @@ class PrivateKeyInfo {
 
   @override
   String toString() {
-    return 'PrivateKeyInfo{publicKey: $publicKey, privateKey: $privateKey, privateKeyInNearApiJsFormat: $privateKeyInNearApiJsFormat, privateKeyTypeInfo: $privateKeyTypeInfo}';
+    return 'PrivateKeyInfo{publicKey: $publicKey, privateKey: $privateKey, privateKeyInNearApiJsFormat: $base58PubKey, privateKeyTypeInfo: $privateKeyTypeInfo}';
   }
 
   @override
@@ -34,7 +34,7 @@ class PrivateKeyInfo {
           runtimeType == other.runtimeType &&
           publicKey == other.publicKey &&
           privateKey == other.privateKey &&
-          privateKeyInNearApiJsFormat == other.privateKeyInNearApiJsFormat &&
+          base58PubKey == other.base58PubKey &&
           privateKeyTypeInfo == other.privateKeyTypeInfo;
 }
 
