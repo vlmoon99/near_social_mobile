@@ -122,7 +122,7 @@ class _PostPageState extends State<PostPage> {
                   element.authorInfo.accountId == widget.accountId);
               return ListView(
                 padding: REdgeInsets.all(15),
-                physics: const PositionRetainedScrollPhysics(),
+                physics: const RangeMaintainingScrollPhysics(), 
                 children: [
                   InkWell(
                     borderRadius: BorderRadius.circular(10).r,
