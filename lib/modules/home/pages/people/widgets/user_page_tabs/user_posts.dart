@@ -40,7 +40,7 @@ class _UserPostsViewState extends State<UserPostsView> {
           return const Center(child: Text('No posts yet'));
         }
         return ListView.builder(
-          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
           padding: const EdgeInsets.symmetric(horizontal: 20).r,
           itemBuilder: (context, index) {
             if (index == posts.length) {

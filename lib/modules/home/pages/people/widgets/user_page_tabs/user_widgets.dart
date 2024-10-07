@@ -21,7 +21,7 @@ class _WidgetsViewState extends State<WidgetsView> {
         final userListController = Modular.get<UserListController>();
         final user = userListController.state
             .getUserByAccountId(accountId: widget.accountIdOfUser);
-        if (user.widgetList == null && !user.widgetsUpdating) {
+        if (user.widgetList == null) {
           Modular.get<UserListController>()
               .loadWidgetsOfAccount(accountId: widget.accountIdOfUser);
         }
@@ -46,6 +46,7 @@ class _WidgetsViewState extends State<WidgetsView> {
           return const Center(child: Text('No Widgets yet'));
         } else {
           return ListView.builder(
+            shrinkWrap: true,
             padding: const EdgeInsets.symmetric(horizontal: 20).r,
             itemBuilder: (context, index) {
               return NearWidgetTile(nearWidget: widgets[index]);

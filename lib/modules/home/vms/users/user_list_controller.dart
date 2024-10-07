@@ -233,14 +233,6 @@ class UserListController {
       (element) => element.generalAccountInfo.accountId == accountId,
     );
     try {
-      _streamController.add(
-        state.copyWith(
-          users: List.of(state.users)
-            ..[indexOfUser] = state.users[indexOfUser].copyWith(
-              nftsUpdating: true,
-            ),
-        ),
-      );
       final nfts =
           await nearSocialApi.getNftsOfAccount(accountIdOfUser: accountId);
       _streamController.add(
@@ -248,8 +240,6 @@ class UserListController {
           users: List.of(state.users)
             ..[indexOfUser] = state.users[indexOfUser].copyWith(
               nfts: nfts,
-              timeOfLastNftsUpdate: DateTime.now(),
-              nftsUpdating: false,
             ),
         ),
       );
@@ -264,14 +254,6 @@ class UserListController {
       (element) => element.generalAccountInfo.accountId == accountId,
     );
     try {
-      _streamController.add(
-        state.copyWith(
-          users: List.of(state.users)
-            ..[indexOfUser] = state.users[indexOfUser].copyWith(
-              widgetsUpdating: true,
-            ),
-        ),
-      );
       final widgetList = await nearSocialApi.getWidgetsList(
         accountId: accountId,
       );
@@ -280,8 +262,6 @@ class UserListController {
           users: List.of(state.users)
             ..[indexOfUser] = state.users[indexOfUser].copyWith(
               widgetList: widgetList,
-              timeOfLastWidgetsUpdate: DateTime.now(),
-              widgetsUpdating: false,
             ),
         ),
       );
@@ -329,10 +309,6 @@ class FullUserInfo {
   final List<Follower>? followers;
   final List<Follower>? followings;
   final List<String>? userTags;
-  final DateTime? timeOfLastNftsUpdate;
-  final DateTime? timeOfLastWidgetsUpdate;
-  final bool nftsUpdating;
-  final bool widgetsUpdating;
 
   FullUserInfo({
     required this.generalAccountInfo,
@@ -341,10 +317,6 @@ class FullUserInfo {
     this.followers,
     this.followings,
     this.userTags,
-    this.timeOfLastNftsUpdate,
-    this.timeOfLastWidgetsUpdate,
-    this.nftsUpdating = false,
-    this.widgetsUpdating = false,
   });
 
   FullUserInfo copyWith({
@@ -353,11 +325,7 @@ class FullUserInfo {
     List<NearWidgetInfo>? widgetList,
     List<Follower>? followers,
     List<Follower>? followings,
-    List<String>? userTags,
-    DateTime? timeOfLastNftsUpdate,
-    DateTime? timeOfLastWidgetsUpdate,
-    bool? nftsUpdating,
-    bool? widgetsUpdating,
+    List<String>? userTags
   }) {
     return FullUserInfo(
       generalAccountInfo: generalAccountInfo ?? this.generalAccountInfo,
@@ -366,11 +334,6 @@ class FullUserInfo {
       followers: followers ?? this.followers,
       followings: followings ?? this.followings,
       userTags: userTags ?? this.userTags,
-      timeOfLastNftsUpdate: timeOfLastNftsUpdate ?? this.timeOfLastNftsUpdate,
-      timeOfLastWidgetsUpdate:
-          timeOfLastWidgetsUpdate ?? this.timeOfLastWidgetsUpdate,
-      nftsUpdating: nftsUpdating ?? this.nftsUpdating,
-      widgetsUpdating: widgetsUpdating ?? this.widgetsUpdating,
     );
   }
 
@@ -388,9 +351,5 @@ class FullUserInfo {
           listEquals(widgetList, other.widgetList) &&
           listEquals(followers, other.followers) &&
           listEquals(followings, other.followings) &&
-          listEquals(userTags, other.userTags) &&
-          timeOfLastNftsUpdate == other.timeOfLastNftsUpdate &&
-          timeOfLastWidgetsUpdate == other.timeOfLastWidgetsUpdate &&
-          nftsUpdating == other.nftsUpdating &&
-          widgetsUpdating == other.widgetsUpdating;
+          listEquals(userTags, other.userTags);
 }

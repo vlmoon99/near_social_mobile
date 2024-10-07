@@ -535,8 +535,27 @@ class PostsController {
       for (var indexOfPost = 0;
           indexOfPost < state.postsOfAccounts[postsOfAccountId]!.length;
           indexOfPost++) {
-        _loadPostsDataAsync(
-            indexOfPost, PostsViewMode.account, postsOfAccountId);
+        final Post post = state.postsOfAccounts[postsOfAccountId]![indexOfPost];
+        if (!post.fullyLoaded) {
+          _loadPostsDataAsync(
+              indexOfPost, PostsViewMode.account, postsOfAccountId);
+        } else {
+          // update only likeList and repostList
+          final actualLikeList = await nearSocialApi.getLikesOfPost(
+              accountId: post.authorInfo.accountId,
+              blockHeight: post.blockHeight);
+          final actualRepostsOfPostList = await nearSocialApi.getRepostsOfPost(
+              accountId: post.authorInfo.accountId,
+              blockHeight: post.blockHeight);
+
+          _updateDataDueToPostsViewMode(
+            post: post,
+            postsViewMode: PostsViewMode.account,
+            postsOfAccountId: postsOfAccountId,
+            repostList: actualRepostsOfPostList,
+            likeList: actualLikeList,
+          );
+        }
       }
     } catch (err) {
       rethrow;
