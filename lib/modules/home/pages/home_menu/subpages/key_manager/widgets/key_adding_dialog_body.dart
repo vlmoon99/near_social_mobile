@@ -286,7 +286,8 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
                     ),
                   )
                 else
-                  const Center(
+                  const Align(
+                    alignment: Alignment.center,
                     child: SpinnerLoadingIndicator(),
                   ),
               ],
