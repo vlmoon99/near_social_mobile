@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +12,11 @@ import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/pages/people/widgets/more_actions_for_user_button.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
+import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
+import 'package:near_social_mobile/shared_widgets/custom_refresh_indicator.dart';
 import 'package:near_social_mobile/shared_widgets/expandable_wiget.dart';
 import 'package:near_social_mobile/shared_widgets/image_full_screen_page.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
@@ -97,47 +100,41 @@ class UserPageMainInfo extends StatelessWidget {
               .getUserByAccountId(accountId: accountIdOfUser);
           return Column(
             children: [
-              SizedBox(
-                height: .30.sh,
-                width: double.infinity,
-                child: Stack(
-                  alignment: Alignment.topCenter,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        if (user
-                            .generalAccountInfo.backgroundImageLink.isEmpty) {
-                          return;
-                        }
-                        Navigator.push(
-                          Modular.routerDelegate.navigatorKey.currentContext!,
-                          MaterialPageRoute(
-                            builder: (context) => ImageFullScreen(
-                              imageUrl:
-                                  user.generalAccountInfo.backgroundImageLink,
-                            ),
-                          ),
-                        );
-                      },
-                      child: SizedBox(
-                        height: .25.sh,
-                        width: double.infinity,
-                        child: NearNetworkImage(
-                          imageUrl: user.generalAccountInfo.backgroundImageLink,
-                          errorPlaceholder:
-                              Container(color: AppColors.lightSurface),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      left: 20.h,
-                      width: .2.sh,
-                      height: .2.sh,
-                      child: GestureDetector(
+              CustomRefreshIndicator(
+                onRefresh: () async {
+                  final UserListController userListController =
+                      Modular.get<UserListController>();
+                  final user = userListController.state
+                      .getUserByAccountId(accountId: accountIdOfUser);
+                  await userListController.reloadUserInfo(
+                      accountId: accountIdOfUser);
+                  log("User info reloaded");
+                  await Modular.get<PostsController>()
+                      .updatePostsOfAccount(postsOfAccountId: accountIdOfUser);
+                  log("Posts of account reloaded");
+                  if (user.nfts != null) {
+                    await userListController.loadNftsOfAccount(
+                      accountId: accountIdOfUser,
+                    );
+                    log("NFTs of account reloaded");
+                  }
+                  if (user.widgetList != null) {
+                    await userListController.loadWidgetsOfAccount(
+                      accountId: accountIdOfUser,
+                    );
+                    log("Widgets of account reloaded");
+                  }
+                },
+                child: SizedBox(
+                  height: .30.sh,
+                  width: double.infinity,
+                  child: Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      GestureDetector(
                         onTap: () {
                           if (user
-                              .generalAccountInfo.profileImageLink.isEmpty) {
+                              .generalAccountInfo.backgroundImageLink.isEmpty) {
                             return;
                           }
                           Navigator.push(
@@ -145,36 +142,70 @@ class UserPageMainInfo extends StatelessWidget {
                             MaterialPageRoute(
                               builder: (context) => ImageFullScreen(
                                 imageUrl:
-                                    user.generalAccountInfo.profileImageLink,
+                                    user.generalAccountInfo.backgroundImageLink,
                               ),
                             ),
                           );
                         },
-                        child: Container(
-                          padding: REdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                            border: Border.all(color: Colors.black, width: 1),
+                        child: SizedBox(
+                          height: .25.sh,
+                          width: double.infinity,
+                          child: NearNetworkImage(
+                            imageUrl:
+                                user.generalAccountInfo.backgroundImageLink,
+                            errorPlaceholder:
+                                Container(color: AppColors.lightSurface),
                           ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        left: 20.h,
+                        width: .2.sh,
+                        height: .2.sh,
+                        child: GestureDetector(
+                          onTap: () {
+                            if (user
+                                .generalAccountInfo.profileImageLink.isEmpty) {
+                              return;
+                            }
+                            Navigator.push(
+                              Modular
+                                  .routerDelegate.navigatorKey.currentContext!,
+                              MaterialPageRoute(
+                                builder: (context) => ImageFullScreen(
+                                  imageUrl:
+                                      user.generalAccountInfo.profileImageLink,
+                                ),
+                              ),
+                            );
+                          },
                           child: Container(
-                            decoration: const BoxDecoration(
+                            padding: REdgeInsets.all(8),
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
+                              color: Colors.white,
+                              border: Border.all(color: Colors.black, width: 1),
                             ),
-                            clipBehavior: Clip.antiAlias,
-                            child: NearNetworkImage(
-                              imageUrl:
-                                  user.generalAccountInfo.profileImageLink,
-                              errorPlaceholder: Image.asset(
-                                NearAssets.standartAvatar,
-                                fit: BoxFit.cover,
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: NearNetworkImage(
+                                imageUrl:
+                                    user.generalAccountInfo.profileImageLink,
+                                errorPlaceholder: Image.asset(
+                                  NearAssets.standartAvatar,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               SizedBox(height: 10.h),
