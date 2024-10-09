@@ -39,13 +39,13 @@ class _SpinnerLoadingIndicatorState extends State<SpinnerLoadingIndicator>
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return SizedBox(
+      height: widget.size,
+      width: widget.size,
       child: RotationTransition(
         turns: _controller,
         child: SvgPicture.asset(
           "assets/media/icons/loading_indicator.svg",
-          height: widget.size,
-          width: widget.size,
           color: widget.color,
         ),
       ),

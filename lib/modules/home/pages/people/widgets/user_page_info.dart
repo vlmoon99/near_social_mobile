@@ -10,6 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/home/pages/people/widgets/donation_dialog.dart';
 import 'package:near_social_mobile/modules/home/pages/people/widgets/more_actions_for_user_button.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
@@ -199,6 +200,49 @@ class UserPageMainInfo extends StatelessWidget {
                                   NearAssets.standartAvatar,
                                   fit: BoxFit.cover,
                                 ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (accountIdOfUser != authController.state.accountId)
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10)
+                              .r,
+                          child: FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: NEARColors.black,
+                              foregroundColor: NEARColors.white,
+                              disabledForegroundColor: NEARColors.white,
+                              disabledBackgroundColor: NEARColors.black,
+                              elevation: 5,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8).r,
+                                side: const BorderSide(
+                                  color: NEARColors.white,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                            onPressed: () async {
+                              HapticFeedback.lightImpact();
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return DonationDialog(
+                                    receiverId: accountIdOfUser,
+                                  );
+                                },
+                              );
+   
+                            },
+                            child: const Text(
+                              "Donate",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
