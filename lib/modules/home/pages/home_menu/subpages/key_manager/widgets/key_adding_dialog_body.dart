@@ -74,7 +74,7 @@ class _KeyAddingDialogBodyState extends State<KeyAddingDialogBody>
               Modular.get<NearBlockChainService>();
 
           final BlockChainData blockChainData =
-              await nearBlockChainService.getBlockChainDataByDerivationPath(
+              await nearBlockChainService.getBlockChainData(
             mnemonic: mnemonic,
             passphrase: "",
             derivationPath: derivationModel,
