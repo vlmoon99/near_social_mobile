@@ -21,8 +21,8 @@ class TestNetService {
       final wallet = await flutterChainService.generateNewWallet(
           walletName: "GeneratedRandom ${DateTime.now()}", passphrase: '');
 
-      final blockchainData = await nearBlockChainService
-          .getBlockChainDataFromMnemonic(wallet.mnemonic, wallet.passphrase!);
+      final blockchainData = await nearBlockChainService.getBlockChainData(
+          mnemonic: wallet.mnemonic, passphrase: wallet.passphrase);
 
       final secretKey =
           await nearBlockChainService.exportPrivateKeyToTheNearApiJsFormat(

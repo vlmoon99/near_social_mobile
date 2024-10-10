@@ -600,11 +600,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -640,11 +640,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          privateKey: privateKey,
+          toAddress: "social.near",
           args: {
             "data": {
               accountId: {
@@ -678,11 +678,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -716,11 +716,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -754,11 +754,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -817,11 +817,11 @@ class NearSocialApi {
           ? """,\\"image\\":{\\"ipfs_cid\\":\\"${postBody.mediaLink}\\"}"""
           : "";
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -863,11 +863,11 @@ class NearSocialApi {
           ? """,\\"image\\":{\\"ipfs_cid\\":\\"${postBody.mediaLink}\\"}"""
           : "";
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -1139,11 +1139,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -1181,11 +1181,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -1223,11 +1223,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
