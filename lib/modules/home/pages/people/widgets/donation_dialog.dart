@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutterchain/flutterchain_lib/models/chains/near/near_account_info_request.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/exceptions/exceptions.dart';
@@ -137,7 +138,8 @@ class _DonationDialogState extends State<DonationDialog> {
                     SizedBox(height: 10.h),
                     FutureBuilder<String>(
                       future: Modular.get<NearBlockChainService>()
-                          .getWalletBalance(authController.state.accountId),
+                          .getWalletBalance(NearAccountInfoRequest(
+                              accountId: authController.state.accountId)),
                       builder: (context, snapshot) {
                         return Text.rich(
                           TextSpan(

@@ -10,6 +10,7 @@ import 'package:flutterchain/flutterchain_lib/constants/core/blockchain_response
 import 'package:flutterchain/flutterchain_lib/constants/core/blockchains_gas.dart';
 import 'package:flutterchain/flutterchain_lib/constants/core/supported_blockchains.dart';
 import 'package:flutterchain/flutterchain_lib/formaters/chains/near_formater.dart';
+import 'package:flutterchain/flutterchain_lib/models/chains/near/near_account_info_request.dart';
 import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_smart_contract_arguments.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
@@ -606,11 +607,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -646,11 +647,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          privateKey: privateKey,
+          toAddress: "social.near",
           args: {
             "data": {
               accountId: {
@@ -684,11 +685,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -722,11 +723,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -760,11 +761,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -823,11 +824,11 @@ class NearSocialApi {
           ? """,\\"image\\":{\\"ipfs_cid\\":\\"${postBody.mediaLink}\\"}"""
           : "";
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -869,11 +870,11 @@ class NearSocialApi {
           ? """,\\"image\\":{\\"ipfs_cid\\":\\"${postBody.mediaLink}\\"}"""
           : "";
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -1145,11 +1146,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -1187,11 +1188,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -1229,11 +1230,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -1440,8 +1441,8 @@ class NearSocialApi {
   }) async {
     const transactionFeeFor2Transactions = "0.00001";
 
-    final currentBalance =
-        double.parse(await _nearBlockChainService.getWalletBalance(accountId));
+    final currentBalance = double.parse(await _nearBlockChainService
+        .getWalletBalance(NearAccountInfoRequest(accountId: accountId)));
     final neededBalance = double.parse(amountToSend) +
         double.parse(EnterpriseVariables.amountOfServiceFeeForDonation) +
         double.parse(transactionFeeFor2Transactions);
