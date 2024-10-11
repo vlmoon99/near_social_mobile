@@ -28,7 +28,6 @@ class MoreActionsForPostButton extends StatefulWidget {
 }
 
 class _MoreActionsForPostButtonState extends State<MoreActionsForPostButton> {
-
   @override
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
@@ -158,6 +157,9 @@ class _MoreActionsForPostButtonState extends State<MoreActionsForPostButton> {
                       ),
                       leading: const Icon(Icons.person_remove,
                           color: NEARColors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10).r,
+                      ),
                       onTap: () async {
                         showDialog(
                           context: Modular
