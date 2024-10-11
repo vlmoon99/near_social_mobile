@@ -1,15 +1,16 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutterchain/flutterchain_lib/models/chains/near/near_account_info_request.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
-import 'package:near_social_mobile/exceptions/exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
+import 'package:near_social_mobile/shared_widgets/no_full_access_key.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -22,6 +23,9 @@ class DonationDialog extends StatefulWidget {
 }
 
 class _DonationDialogState extends State<DonationDialog> {
+  final formKey = GlobalKey<FormState>();
+  String? balance;
+
   late final bool fullAccessKeyAvailable;
   late final AuthController authController;
   PrivateKeyInfo? selectedKey;
@@ -47,6 +51,68 @@ class _DonationDialogState extends State<DonationDialog> {
             storedKey.privateKeyTypeInfo.type == PrivateKeyType.FullAccess,
       );
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      updateBalance();
+    });
+  }
+
+  Future<void> updateBalance() async {
+    final actualBalance = await Modular.get<NearBlockChainService>()
+        .getWalletBalance(
+            NearAccountInfoRequest(accountId: authController.state.accountId));
+    if (!mounted) {
+      return;
+    }
+    if (balance != null && balance == actualBalance) {
+      await Future.delayed(const Duration(seconds: 3));
+      updateBalance();
+      return;
+    }
+    setState(() {
+      balance = actualBalance;
+    });
+  }
+
+  Future<bool> askToConfirmDonation(double amountToSpend) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            "Are you sure you want to donate?",
+            style: TextStyle(
+              fontSize: 18,
+            ),
+          ),
+          content: Text(
+            "You will spend ${amountToSpend.toStringAsFixed(5)} NEAR to donate to ${widget.receiverId}",
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          actions: [
+            CustomButton(
+              primary: true,
+              onPressed: () {
+                Modular.to.pop(true);
+              },
+              child: const Text("Yes"),
+            ),
+            CustomButton(
+              primary: false,
+              onPressed: () {
+                Modular.to.pop(false);
+              },
+              child: const Text("No"),
+            ),
+          ],
+        );
+      },
+    );
+
+    return confirm ?? false;
   }
 
   @override
@@ -58,7 +124,7 @@ class _DonationDialogState extends State<DonationDialog> {
         child: Padding(
           padding: const EdgeInsets.all(16).r,
           child: !fullAccessKeyAvailable
-              ? noFullAccessKeyAvailable()
+              ? const NoFullAccessKeyBannerBody()
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,42 +187,49 @@ class _DonationDialogState extends State<DonationDialog> {
                       ),
                     ),
                     SizedBox(height: 5.h),
-                    Container(
-                      padding: const EdgeInsets.all(10).r,
-                      decoration: BoxDecoration(
-                        color: Colors.black12,
-                        borderRadius: BorderRadius.circular(10).r,
-                      ),
-                      child: TextField(
-                        style: const TextStyle(fontSize: 15),
-                        controller: _amountTextEditingController,
-                        decoration: const InputDecoration.collapsed(
-                          hintText: "Amount",
+                    Form(
+                      key: formKey,
+                      autovalidateMode: AutovalidateMode.always,
+                      child: Container(
+                        padding: const EdgeInsets.all(10).r,
+                        decoration: BoxDecoration(
+                          color: Colors.black12,
+                          borderRadius: BorderRadius.circular(10).r,
+                        ),
+                        child: TextFormField(
+                          style: const TextStyle(fontSize: 15),
+                          controller: _amountTextEditingController,
+                          decoration: const InputDecoration.collapsed(
+                            hintText: "Amount",
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter amount';
+                            }
+                            if (double.tryParse(value) == null) {
+                              return 'Please enter a valid amount';
+                            }
+                            return null;
+                          },
                         ),
                       ),
                     ),
                     SizedBox(height: 10.h),
-                    FutureBuilder<String>(
-                      future: Modular.get<NearBlockChainService>()
-                          .getWalletBalance(NearAccountInfoRequest(
-                              accountId: authController.state.accountId)),
-                      builder: (context, snapshot) {
-                        return Text.rich(
-                          TextSpan(
-                            style: const TextStyle(fontSize: 15),
-                            children: [
-                              const TextSpan(text: "You have "),
-                              snapshot.connectionState == ConnectionState.done
-                                  ? TextSpan(text: "${snapshot.data}")
-                                  : const WidgetSpan(
-                                      alignment: PlaceholderAlignment.middle,
-                                      child: SpinnerLoadingIndicator(size: 12),
-                                    ),
-                              const TextSpan(text: " NEAR"),
-                            ],
-                          ),
-                        );
-                      },
+                    Text.rich(
+                      TextSpan(
+                        style: const TextStyle(fontSize: 15),
+                        children: [
+                          const TextSpan(text: "You have "),
+                          balance != null
+                              ? TextSpan(text: balance)
+                              : const WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: SpinnerLoadingIndicator(size: 12),
+                                ),
+                          const TextSpan(text: " NEAR"),
+                        ],
+                      ),
                     ),
                     SizedBox(height: 5.h),
                     const Text(
@@ -177,15 +250,10 @@ class _DonationDialogState extends State<DonationDialog> {
                         child: CustomButton(
                           primary: true,
                           onPressed: () async {
-                            if (double.tryParse(
-                                    _amountTextEditingController.text) ==
-                                null) {
-                              throw AppExceptions(
-                                messageForUser:
-                                    "Invalid amount. Check your input.",
-                                messageForDev:
-                                    "Invalid format: ${_amountTextEditingController.text}",
-                              );
+                            HapticFeedback.lightImpact();
+
+                            if (!formKey.currentState!.validate()) {
+                              return;
                             }
 
                             setState(() {
@@ -198,45 +266,11 @@ class _DonationDialogState extends State<DonationDialog> {
                                 double.parse(EnterpriseVariables
                                     .amountOfServiceFeeForDonation);
 
-                            final continueApprove = await showDialog<bool>(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text(
-                                    "Are you sure you want to donate?",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  content: Text(
-                                    "You will spend ${amountToSpend.toStringAsFixed(5)} NEAR to donate to ${widget.receiverId}",
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  actions: [
-                                    CustomButton(
-                                      primary: true,
-                                      onPressed: () {
-                                        Modular.to.pop(true);
-                                      },
-                                      child: const Text("Yes"),
-                                    ),
-                                    CustomButton(
-                                      primary: false,
-                                      onPressed: () {
-                                        Modular.to.pop(false);
-                                      },
-                                      child: const Text("No"),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
+                            final continueApprove =
+                                await askToConfirmDonation(amountToSpend);
 
-                            if (continueApprove == null || !continueApprove) {
-                              print("Action canceled");
+                            if (!continueApprove) {
+                              debugPrint("Action canceled");
                               setState(() {
                                 transactionLoading = false;
                               });
@@ -262,61 +296,7 @@ class _DonationDialogState extends State<DonationDialog> {
                                 amountToSend: _amountTextEditingController.text,
                                 receiverId: widget.receiverId,
                               );
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return Dialog(
-                                    insetPadding:
-                                        REdgeInsets.symmetric(horizontal: 20),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16.0).r,
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Align(
-                                            alignment: Alignment.center,
-                                            child: Text(
-                                              "You have donated successfully!",
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(height: 3.h),
-                                          Text.rich(
-                                            TextSpan(
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                              ),
-                                              children: [
-                                                const TextSpan(
-                                                  text: "Txn Hash: \n",
-                                                ),
-                                                TextSpan(
-                                                  recognizer:
-                                                      TapGestureRecognizer()
-                                                        ..onTap = () {
-                                                          launchUrl(Uri.parse(
-                                                              "https://nearblocks.io/txns/$txHash"));
-                                                        },
-                                                  text:
-                                                      "EkniTwmDYAwkNUcBHiSDv9cGxWwobbokHqura9CChsnb",
-                                                  style: const TextStyle(
-                                                    color: Colors.blue,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
+                              showSuccessDialog(txHash);
                             } catch (err) {
                               rethrow;
                             } finally {
@@ -324,6 +304,8 @@ class _DonationDialogState extends State<DonationDialog> {
                                 transactionLoading = false;
                               });
                             }
+
+                            updateBalance();
                           },
                           child: const Text(
                             "Donate",
@@ -337,44 +319,57 @@ class _DonationDialogState extends State<DonationDialog> {
     );
   }
 
-  Widget noFullAccessKeyAvailable() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text("No Full Access Key available!",
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        SizedBox(height: 5.h),
-        const Text.rich(
-          TextSpan(
-            style: TextStyle(fontSize: 16),
-            children: [
-              TextSpan(text: "To proceed with a donation, please add a "),
-              TextSpan(
-                text: "Full Access Key",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+  void showSuccessDialog(String txHash) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          insetPadding: REdgeInsets.symmetric(horizontal: 20),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0).r,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    "You have donated successfully!",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-              TextSpan(text: " in the "),
-              TextSpan(
-                text: "Key Manager",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                SizedBox(height: 3.h),
+                Text.rich(
+                  TextSpan(
+                    style: const TextStyle(
+                      fontSize: 16,
+                    ),
+                    children: [
+                      const TextSpan(
+                        text: "Txn Hash: \n",
+                      ),
+                      TextSpan(
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            launchUrl(Uri.parse(
+                                "https://nearblocks.io/txns/$txHash"));
+                          },
+                        text: txHash,
+                        style: const TextStyle(
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              TextSpan(text: " section, accessible via the "),
-              TextSpan(
-                text: "Menu",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              TextSpan(text: "."),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

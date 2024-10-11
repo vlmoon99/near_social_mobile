@@ -205,49 +205,49 @@ class UserPageMainInfo extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (accountIdOfUser != authController.state.accountId)
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 10)
-                              .r,
-                          child: FilledButton(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: NEARColors.black,
-                              foregroundColor: NEARColors.white,
-                              disabledForegroundColor: NEARColors.white,
-                              disabledBackgroundColor: NEARColors.black,
-                              elevation: 5,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8).r,
-                                side: const BorderSide(
-                                  color: NEARColors.white,
-                                  width: 2,
+                      if (accountIdOfUser != authController.state.accountId &&
+                          !userIsBlocked)
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10)
+                                .r,
+                            child: FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: NEARColors.black,
+                                foregroundColor: NEARColors.white,
+                                disabledForegroundColor: NEARColors.white,
+                                disabledBackgroundColor: NEARColors.black,
+                                elevation: 5,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8).r,
+                                  side: const BorderSide(
+                                    color: NEARColors.white,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
-                            ),
-                            onPressed: () async {
-                              HapticFeedback.lightImpact();
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return DonationDialog(
-                                    receiverId: accountIdOfUser,
-                                  );
-                                },
-                              );
-   
-                            },
-                            child: const Text(
-                              "Donate",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                              onPressed: () async {
+                                HapticFeedback.lightImpact();
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return DonationDialog(
+                                      receiverId: accountIdOfUser,
+                                    );
+                                  },
+                                );
+                              },
+                              child: const Text(
+                                "Donate",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
