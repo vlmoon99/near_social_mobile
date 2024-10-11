@@ -3,16 +3,15 @@ class Nft {
   final String tokenId;
   final String title;
   final String description;
+  final String imageUrl;
 
   Nft({
     required this.contractId,
     required this.tokenId,
     required this.title,
     required this.description,
+    required this.imageUrl,
   });
-
-  String get imageUrl =>
-      "https://i.near.social/magic/large/https://near.social/magic/img/nft/$contractId/$tokenId";
 
   @override
   String toString() {
@@ -25,5 +24,6 @@ class Nft {
       other is Nft &&
           runtimeType == other.runtimeType &&
           contractId == other.contractId &&
-          tokenId == other.tokenId;
+          tokenId == other.tokenId &&
+          imageUrl == other.imageUrl;
 }
