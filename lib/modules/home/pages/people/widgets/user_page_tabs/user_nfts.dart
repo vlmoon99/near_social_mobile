@@ -87,7 +87,7 @@ class NftCard extends StatelessWidget {
                 );
               },
               child: Hero(
-                tag: nft.imageUrl,
+                tag: "${nft.contractId}${nft.tokenId}",
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     maxHeight: 200.h,

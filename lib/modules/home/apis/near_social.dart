@@ -21,6 +21,7 @@ import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dar
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
 import 'package:near_social_mobile/network/dio_interceptors/retry_on_connection_changed_interceptor.dart';
+import 'package:near_social_mobile/utils/is_web_image_avaliable.dart';
 
 class NearSocialApi {
   final Dio _dio = Dio();
@@ -1259,11 +1260,69 @@ class NearSocialApi {
     final nftListOfAccountResponse = await _dio
         .get("https://api.fastnear.com/v0/account/$accountIdOfUser/nft");
 
-    final List<String> nftContractIds =
-        List<String>.from(nftListOfAccountResponse.data["contract_ids"]);
+    final Set<String> nftContractIds =
+        (List<String>.from(nftListOfAccountResponse.data["contract_ids"]))
+            .toSet();
 
-    final args = {"account_id": accountIdOfUser};
     for (var nftContractId in nftContractIds) {
+      final nftsInfo = await _getAllNFTsMetadataInfoFromContractForUser(
+        nftContractId: nftContractId,
+        accountIdOfUser: accountIdOfUser,
+      );
+
+      for (var nftInfo in nftsInfo) {
+        final tokenId = nftInfo['token_id'];
+
+        final defaultImageUrl =
+            "https://i.near.social/magic/large/https://near.social/magic/img/nft/$nftContractId/$tokenId";
+
+        String? nftImageUrl;
+        final reference = nftInfo["metadata"]["reference"] as String?;
+        final media = nftInfo["metadata"]["media"] as String?;
+
+        if (media != null &&
+            media.startsWith("http") &&
+            !media.contains("ipfs")) {
+          //checking if media available by url
+          final imageAvailable = await isWebImageAvailable(media);
+          if (imageAvailable) {
+            nftImageUrl = media;
+          } else {
+            log("Image not available: $media");
+          }
+        } else if (reference != null &&
+            !reference.contains("ipfs") &&
+            reference.length == 43) {
+          // getting metadata info from arweave
+          try {
+            final metadataInfo =
+                (await _dio.get("https://arweave.net/$reference")).data;
+
+            nftImageUrl = metadataInfo["media"];
+          } catch (err) {
+            log("Failed to get metadata info from arweave: $err");
+          }
+        }
+
+        nftList.add(Nft(
+          contractId: nftContractId,
+          tokenId: tokenId,
+          title: nftInfo["metadata"]["title"] ?? "",
+          description: nftInfo["metadata"]["description"] ?? "",
+          imageUrl: nftImageUrl ?? defaultImageUrl,
+        ));
+      }
+    }
+    return nftList;
+  }
+
+  Future<List<Map<String, dynamic>>>
+      _getAllNFTsMetadataInfoFromContractForUser({
+    required String nftContractId,
+    required String accountIdOfUser,
+  }) async {
+    Future<Map<String, dynamic>> getRawDataFromContract(
+        Map<String, dynamic> args) async {
       final nftInfoResponse =
           await _nearBlockChainService.nearRpcClient.networkClient.dio.request(
         "",
@@ -1286,27 +1345,62 @@ class NearSocialApi {
           },
         ),
       );
-      if (nftInfoResponse.data['error'] != null ||
-          nftInfoResponse.data['result']['error'] != null) {
-        continue;
-      }
-      final decodedResponse = List<Map<String, dynamic>>.from(json.decode(
-        utf8.decode(
-          List<int>.from(
-            nftInfoResponse.data['result']?['result'],
-          ),
-        ),
-      ));
-      for (var nftInfo in decodedResponse) {
-        nftList.add(Nft(
-          contractId: nftContractId,
-          tokenId: nftInfo['token_id'],
-          title: nftInfo["metadata"]["title"] ?? "",
-          description: nftInfo["metadata"]["description"] ?? "",
-        ));
-      }
+
+      return nftInfoResponse.data;
     }
-    return nftList;
+
+    final defaultArgs = {
+      "account_id": accountIdOfUser,
+      "from_index": "0",
+      "limit": 1000 // to get as much data as possible
+    };
+
+    final nftInfoResponse = await getRawDataFromContract(defaultArgs);
+
+    if (nftInfoResponse['error'] != null ||
+        nftInfoResponse['result']['error'] != null) {
+      return [];
+      //TODO: solve problem with very large amount of nfts
+      // if (nftInfoResponse['result']['error'] != null &&
+      //     nftInfoResponse['result']['error'].contains("GasLimitExceeded")) {
+      //   const step = 100;
+      //   final Map<String, dynamic> indexedArgs = {
+      //     "account_id": accountIdOfUser,
+      //     "from_index": "0",
+      //     "limit": step
+      //   };
+      //   final List<Map<String, dynamic>> listOfDecodedResponses = [];
+      //   while (true) {
+      //     final response = await _getRawDataFromContract(indexedArgs);
+      //     final decodedResponse = List<Map<String, dynamic>>.from(json.decode(
+      //       utf8.decode(
+      //         List<int>.from(
+      //           response['result']?['result'],
+      //         ),
+      //       ),
+      //     ));
+      //     listOfDecodedResponses.addAll(decodedResponse);
+      //     if (decodedResponse.length < step) {
+      //       break;
+      //     }
+      //     indexedArgs['from_index'] =
+      //         (int.parse(indexedArgs['from_index']) + step).toString();
+      //   }
+      //   return listOfDecodedResponses;
+      // } else {
+      //   return [];
+      // }
+    }
+
+    final decodedResponse = List<Map<String, dynamic>>.from(json.decode(
+      utf8.decode(
+        List<int>.from(
+          nftInfoResponse['result']?['result'],
+        ),
+      ),
+    ));
+
+    return decodedResponse;
   }
 
   Future<List<Notification>> getNotificationsOfAccount({
