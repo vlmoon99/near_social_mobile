@@ -1492,7 +1492,7 @@ class NearSocialApi {
       }
       if (permission is Map && permission.keys.first == "FunctionCall") {
         return PrivateKeyInfo(
-          publicKey: accountId,
+          publicKey: publicKeyOfSecretKey,
           privateKey: key,
           base58PubKey: base58PubKey,
           privateKeyTypeInfo: PrivateKeyTypeInfo(
@@ -1504,7 +1504,7 @@ class NearSocialApi {
         );
       } else if (permission is String && permission == "FullAccess") {
         return PrivateKeyInfo(
-          publicKey: accountId,
+          publicKey: publicKeyOfSecretKey,
           privateKey: key,
           base58PubKey: base58PubKey,
           privateKeyTypeInfo: PrivateKeyTypeInfo(
