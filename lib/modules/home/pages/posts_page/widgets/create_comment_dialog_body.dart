@@ -1,7 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -36,7 +33,7 @@ class CreateCommentDialog extends StatefulWidget {
 
 class _CreateCommentDialogState extends State<CreateCommentDialog> {
   final TextEditingController _textEditingController = TextEditingController();
-  String? filepathOfMedia;
+  Uint8List? imageData;
 
   @override
   void initState() {
@@ -92,7 +89,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
         if (didPop) {
           return;
         }
-        if (filepathOfMedia == null && _textEditingController.text.isEmpty) {
+        if (imageData == null && _textEditingController.text.isEmpty) {
           Modular.to.pop();
         } else {
           askIfToLeave().then(
@@ -146,8 +143,11 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                         if (file == null) {
                           return;
                         }
-                        setState(() {
-                          filepathOfMedia = file.path;
+
+                        file.readAsBytes().then((value) {
+                          setState(() {
+                            imageData = value;
+                          });
                         });
                       },
                       child: Row(
@@ -166,7 +166,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                         ],
                       ),
                     ),
-                    if (filepathOfMedia != null)
+                    if (imageData != null)
                       SizedBox(
                         width: 60.h,
                         height: 60.h,
@@ -182,8 +182,8 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                                 borderRadius: BorderRadius.circular(10).r,
                               ),
                               clipBehavior: Clip.hardEdge,
-                              child: Image.file(
-                                File(filepathOfMedia!),
+                              child: Image.memory(
+                                imageData!,
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -198,7 +198,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                                     onPressed: () {
                                       HapticFeedback.lightImpact();
                                       setState(() {
-                                        filepathOfMedia = null;
+                                        imageData = null;
                                       });
                                     },
                                     icon: const Icon(Icons.close),
@@ -237,10 +237,10 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                       final String privateKey = authController.state.privateKey;
 
                       String? cidOfMedia;
-                      if (filepathOfMedia != null) {
+                      if (imageData != null) {
                         cidOfMedia =
                             await nearSocialApi.uploadFileToNearFileHosting(
-                          filepath: filepathOfMedia!,
+                          imageData: imageData!,
                         );
                       }
 
@@ -295,7 +295,7 @@ class _CreateCommentDialogState extends State<CreateCommentDialog> {
                   CustomButton(
                     onPressed: () {
                       HapticFeedback.lightImpact();
-                      if (filepathOfMedia == null &&
+                      if (imageData == null &&
                           _textEditingController.text.isEmpty) {
                         Modular.to.pop();
                       } else {

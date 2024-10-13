@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -786,9 +786,9 @@ class NearSocialApi {
     }
   }
 
-  Future<String> uploadFileToNearFileHosting({required String filepath}) async {
+  Future<String> uploadFileToNearFileHosting(
+      {required Uint8List imageData}) async {
     try {
-      final file = File(filepath);
       final headers = {'Content-Type': 'image/jpeg'};
 
       final response = await _dio.request(
@@ -797,7 +797,7 @@ class NearSocialApi {
           method: 'POST',
           headers: headers,
         ),
-        data: file.readAsBytesSync(),
+        data: imageData,
       );
       return response.data["cid"];
     } catch (err) {

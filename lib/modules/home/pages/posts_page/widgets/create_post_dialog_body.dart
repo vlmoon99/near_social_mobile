@@ -1,7 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -25,7 +22,7 @@ class CreatePostDialog extends StatefulWidget {
 
 class _CreatePostDialogState extends State<CreatePostDialog> {
   final TextEditingController _textEditingController = TextEditingController();
-  String? filepathOfMedia;
+  Uint8List? imageData;
 
   Future<bool?> askIfToLeave() async {
     return showDialog(
@@ -75,7 +72,7 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
         if (didPop) {
           return;
         }
-        if (filepathOfMedia == null && _textEditingController.text.isEmpty) {
+        if (imageData == null && _textEditingController.text.isEmpty) {
           Modular.to.pop();
         } else {
           askIfToLeave().then(
@@ -131,8 +128,11 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
                       if (file == null) {
                         return;
                       }
-                      setState(() {
-                        filepathOfMedia = file.path;
+
+                      file.readAsBytes().then((value) {
+                        setState(() {
+                          imageData = value;
+                        });
                       });
                     },
                     child: Row(
@@ -148,7 +148,7 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
                       ],
                     ),
                   ),
-                  if (filepathOfMedia != null)
+                  if (imageData != null)
                     SizedBox(
                       width: 60.h,
                       height: 60.h,
@@ -164,8 +164,8 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
                               borderRadius: BorderRadius.circular(10).r,
                             ),
                             clipBehavior: Clip.hardEdge,
-                            child: Image.file(
-                              File(filepathOfMedia!),
+                            child: Image.memory(
+                              imageData!,
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -180,7 +180,7 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
                                   onPressed: () {
                                     HapticFeedback.lightImpact();
                                     setState(() {
-                                      filepathOfMedia = null;
+                                      imageData = null;
                                     });
                                   },
                                   icon: const Icon(Icons.close),
@@ -219,10 +219,10 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
                       final String privateKey = authController.state.privateKey;
 
                       String? cidOfMedia;
-                      if (filepathOfMedia != null) {
+                      if (imageData != null) {
                         cidOfMedia =
                             await nearSocialApi.uploadFileToNearFileHosting(
-                          filepath: filepathOfMedia!,
+                          imageData: imageData!,
                         );
                       }
 
@@ -270,7 +270,7 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
                   CustomButton(
                     onPressed: () {
                       HapticFeedback.lightImpact();
-                      if (filepathOfMedia == null &&
+                      if (imageData == null &&
                           _textEditingController.text.isEmpty) {
                         Modular.to.pop();
                       } else {
