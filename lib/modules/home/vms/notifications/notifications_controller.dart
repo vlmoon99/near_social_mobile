@@ -50,7 +50,9 @@ class NotificationsController {
     try {
       final notifications = await nearSocialApi.getNotificationsOfAccount(
         accountId: accountId,
-        from: state.notifications.last.blockHeight,
+        from: state.notifications.isNotEmpty
+            ? state.notifications.last.blockHeight
+            : 20,
       );
       notifications.removeWhere((notification) =>
           notification.blockHeight == state.notifications.last.blockHeight);
