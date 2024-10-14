@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -12,7 +11,8 @@ import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/no_full_access_key.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:near_social_mobile/utils/show_confirm_action_dialog.dart';
+import 'package:near_social_mobile/utils/show_success_dialog.dart';
 
 class DonationDialog extends StatefulWidget {
   const DonationDialog({super.key, required this.receiverId});
@@ -74,47 +74,6 @@ class _DonationDialogState extends State<DonationDialog> {
     });
   }
 
-  Future<bool> askToConfirmDonation(double amountToSpend) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text(
-            "Are you sure you want to donate?",
-            style: TextStyle(
-              fontSize: 18,
-            ),
-          ),
-          content: Text(
-            "You will spend ${amountToSpend.toStringAsFixed(5)} NEAR to donate to ${widget.receiverId}",
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          actions: [
-            CustomButton(
-              primary: true,
-              onPressed: () {
-                Modular.to.pop(true);
-              },
-              child: const Text("Yes"),
-            ),
-            CustomButton(
-              primary: false,
-              onPressed: () {
-                Modular.to.pop(false);
-              },
-              child: const Text("No"),
-            ),
-          ],
-        );
-      },
-    );
-
-    return confirm ?? false;
-  }
-
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -154,7 +113,7 @@ class _DonationDialogState extends State<DonationDialog> {
                         isExpanded: true,
                         value: selectedKey,
                         onChanged: (newKey) {
-                          if (newKey == null) return;
+                          if (newKey == null || transactionLoading) return;
                           setState(() {
                             selectedKey = newKey;
                           });
@@ -197,6 +156,7 @@ class _DonationDialogState extends State<DonationDialog> {
                           borderRadius: BorderRadius.circular(10).r,
                         ),
                         child: TextFormField(
+                          readOnly: transactionLoading,
                           style: const TextStyle(fontSize: 15),
                           controller: _amountTextEditingController,
                           decoration: const InputDecoration.collapsed(
@@ -211,6 +171,14 @@ class _DonationDialogState extends State<DonationDialog> {
                               return 'Please enter a valid amount';
                             }
                             return null;
+                          },
+                          onTapOutside: (event) {
+                            if (WidgetsBinding
+                                    .instance.window.viewInsets.bottom !=
+                                0) {
+                              return;
+                            }
+                            FocusScope.of(context).unfocus();
                           },
                         ),
                       ),
@@ -256,26 +224,23 @@ class _DonationDialogState extends State<DonationDialog> {
                               return;
                             }
 
-                            setState(() {
-                              transactionLoading = true;
-                            });
-
                             final amountToSpend = double.parse(
                                   _amountTextEditingController.text,
                                 ) +
                                 double.parse(EnterpriseVariables
                                     .amountOfServiceFeeForDonation);
 
-                            final continueApprove =
-                                await askToConfirmDonation(amountToSpend);
-
-                            if (!continueApprove) {
-                              debugPrint("Action canceled");
-                              setState(() {
-                                transactionLoading = false;
-                              });
+                            if (!await askToConfirmAction(
+                              title: "Are you sure you want to donate?",
+                              content:
+                                  "You will spend ${amountToSpend.toStringAsFixed(5)} NEAR to donate to ${widget.receiverId}",
+                            )) {
                               return;
                             }
+
+                            setState(() {
+                              transactionLoading = true;
+                            });
 
                             final nearSocialApiService =
                                 Modular.get<NearSocialApi>();
@@ -296,7 +261,10 @@ class _DonationDialogState extends State<DonationDialog> {
                                 amountToSend: _amountTextEditingController.text,
                                 receiverId: widget.receiverId,
                               );
-                              showSuccessDialog(txHash);
+                              showSuccessDialog(
+                                title: "You have donated successfully!",
+                                txHash: txHash,
+                              );
                             } catch (err) {
                               rethrow;
                             } finally {
@@ -316,60 +284,6 @@ class _DonationDialogState extends State<DonationDialog> {
                 ),
         ),
       ),
-    );
-  }
-
-  void showSuccessDialog(String txHash) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          insetPadding: REdgeInsets.symmetric(horizontal: 20),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0).r,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Align(
-                  alignment: Alignment.center,
-                  child: Text(
-                    "You have donated successfully!",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 3.h),
-                Text.rich(
-                  TextSpan(
-                    style: const TextStyle(
-                      fontSize: 16,
-                    ),
-                    children: [
-                      const TextSpan(
-                        text: "Txn Hash: \n",
-                      ),
-                      TextSpan(
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            launchUrl(Uri.parse(
-                                "https://nearblocks.io/txns/$txHash"));
-                          },
-                        text: txHash,
-                        style: const TextStyle(
-                          color: Colors.blue,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }
