@@ -1410,6 +1410,53 @@ class NearSocialApi {
     return decodedResponse;
   }
 
+  Future<List<Nft>> getMintbaseNfts({required String accountIdOfUser}) async {
+    final nftListOfAccountResponse = (await _dio
+        .get("https://api.fastnear.com/v0/account/$accountIdOfUser/nft"));
+
+    final Set<String> nftContractIds =
+        (List<String>.from(nftListOfAccountResponse.data["contract_ids"]))
+            .where((nftContractId) => nftContractId.contains("mintbase"))
+            .toSet();
+    final List<Nft> nftList = [];
+
+    for (var nftContractId in nftContractIds) {
+      final nftsInfo = await _getAllNFTsMetadataInfoFromContractForUser(
+        nftContractId: nftContractId,
+        accountIdOfUser: accountIdOfUser,
+      );
+
+      for (var nftInfo in nftsInfo) {
+        final tokenId = nftInfo['token_id'];
+
+        final reference = nftInfo["metadata"]["reference"] as String?;
+
+        if (reference == null ||
+            reference.contains("ipfs") ||
+            reference.length != 43) {
+          log("Not mintbase NFT: $reference");
+          continue;
+        }
+
+        final metadataInfo =
+            (await _dio.get("https://arweave.net/$reference")).data;
+
+        final nftImageUrl = metadataInfo["media"];
+
+        nftList.add(Nft(
+          contractId: nftContractId,
+          tokenId: tokenId,
+          title: nftInfo["metadata"]["title"] ?? "",
+          description: metadataInfo["description"] ??
+              nftInfo["metadata"]["description"] ??
+              "",
+          imageUrl: nftImageUrl,
+        ));
+      }
+    }
+    return nftList;
+  }
+
   Future<List<Notification>> getNotificationsOfAccount({
     required String accountId,
     int? from,
@@ -1499,7 +1546,7 @@ class NearSocialApi {
       }
       if (permission is Map && permission.keys.first == "FunctionCall") {
         return PrivateKeyInfo(
-          publicKey: accountId,
+          publicKey: publicKeyOfSecretKey,
           privateKey: key,
           base58PubKey: base58PubKey,
           privateKeyTypeInfo: PrivateKeyTypeInfo(
@@ -1511,7 +1558,7 @@ class NearSocialApi {
         );
       } else if (permission is String && permission == "FullAccess") {
         return PrivateKeyInfo(
-          publicKey: accountId,
+          publicKey: publicKeyOfSecretKey,
           privateKey: key,
           base58PubKey: base58PubKey,
           privateKeyTypeInfo: PrivateKeyTypeInfo(

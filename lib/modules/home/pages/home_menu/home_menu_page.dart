@@ -217,6 +217,21 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                 ),
                 SizedBox(height: 15.h),
                 HomeMenuListTile(
+                  tile: SvgPicture.asset(
+                    "assets/media/icons/nft-token.svg",
+                    color: IconTheme.of(context).color,
+                    height: IconTheme.of(context).size,
+                  ),
+                  title: "Mintbase Manager",
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    Modular.to.pushNamed(
+                      ".${Routes.home.mintManager}/",
+                    );
+                  },
+                ),
+                SizedBox(height: 15.h),
+                HomeMenuListTile(
                   tile: const Icon(Icons.settings),
                   title: "Settings",
                   onTap: () {

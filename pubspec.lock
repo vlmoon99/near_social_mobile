@@ -45,10 +45,10 @@ packages:
     dependency: transitive
     description:
       name: args
-      sha256: "7cf60b9f0cc88203c5a190b4cd62a99feea42759a7fa695010eb5de1c0b2252a"
+      sha256: bf9f5caeea8d8fe6721a9c358dd8a5c1947b27f1cfaa18b39c301273594919e6
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.0"
+    version: "2.6.0"
   asn1lib:
     dependency: transitive
     description:
@@ -747,7 +747,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "6fff6130cd5d814acb9efba1ed68f3c4f9a5b72a"
+      resolved-ref: "497acc10cd052c59e493127c58724e5a90c96fa5"
       url: "https://github.com/vlmoon99/flutterchain.git"
     source: git
     version: "1.0.0-beta.15"

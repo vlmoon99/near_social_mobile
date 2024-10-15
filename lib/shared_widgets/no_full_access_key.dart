@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/pages/home_menu/subpages/key_manager/key_manager_page.dart';
-import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 
 class NoFullAccessKeyBannerBody extends StatelessWidget {
