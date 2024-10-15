@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -793,9 +793,9 @@ class NearSocialApi {
     }
   }
 
-  Future<String> uploadFileToNearFileHosting({required String filepath}) async {
+  Future<String> uploadFileToNearFileHosting(
+      {required Uint8List imageData}) async {
     try {
-      final file = File(filepath);
       final headers = {'Content-Type': 'image/jpeg'};
 
       final response = await _dio.request(
@@ -804,7 +804,7 @@ class NearSocialApi {
           method: 'POST',
           headers: headers,
         ),
-        data: file.readAsBytesSync(),
+        data: imageData,
       );
       return response.data["cid"];
     } catch (err) {
@@ -1287,6 +1287,8 @@ class NearSocialApi {
         final reference = nftInfo["metadata"]["reference"] as String?;
         final media = nftInfo["metadata"]["media"] as String?;
 
+        String? nftDescription;
+
         if (media != null &&
             media.startsWith("http") &&
             !media.contains("ipfs")) {
@@ -1306,6 +1308,7 @@ class NearSocialApi {
                 (await _dio.get("https://arweave.net/$reference")).data;
 
             nftImageUrl = metadataInfo["media"];
+            nftDescription = metadataInfo["description"];
           } catch (err) {
             log("Failed to get metadata info from arweave: $err");
           }
@@ -1315,7 +1318,8 @@ class NearSocialApi {
           contractId: nftContractId,
           tokenId: tokenId,
           title: nftInfo["metadata"]["title"] ?? "",
-          description: nftInfo["metadata"]["description"] ?? "",
+          description:
+              nftDescription ?? nftInfo["metadata"]["description"] ?? "",
           imageUrl: nftImageUrl ?? defaultImageUrl,
         ));
       }
