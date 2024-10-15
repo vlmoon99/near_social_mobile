@@ -1280,6 +1280,8 @@ class NearSocialApi {
         final reference = nftInfo["metadata"]["reference"] as String?;
         final media = nftInfo["metadata"]["media"] as String?;
 
+        String? nftDescription;
+
         if (media != null &&
             media.startsWith("http") &&
             !media.contains("ipfs")) {
@@ -1299,6 +1301,7 @@ class NearSocialApi {
                 (await _dio.get("https://arweave.net/$reference")).data;
 
             nftImageUrl = metadataInfo["media"];
+            nftDescription = metadataInfo["description"];
           } catch (err) {
             log("Failed to get metadata info from arweave: $err");
           }
@@ -1308,7 +1311,8 @@ class NearSocialApi {
           contractId: nftContractId,
           tokenId: tokenId,
           title: nftInfo["metadata"]["title"] ?? "",
-          description: nftInfo["metadata"]["description"] ?? "",
+          description:
+              nftDescription ?? nftInfo["metadata"]["description"] ?? "",
           imageUrl: nftImageUrl ?? defaultImageUrl,
         ));
       }
