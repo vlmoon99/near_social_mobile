@@ -2,43 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutterchain/flutterchain_lib/models/chains/near/near_account_info_request.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
-import 'package:near_social_mobile/config/constants.dart';
+import 'package:near_social_mobile/modules/home/apis/models/nft.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
-import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/utils/show_confirm_action_dialog.dart';
+import 'package:near_social_mobile/utils/show_success_dialog.dart';
+import 'package:near_social_mobile/modules/home/pages/home_menu/subpages/mint_manager/vm/mintbase_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/no_full_access_key.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
-import 'package:near_social_mobile/utils/show_confirm_action_dialog.dart';
-import 'package:near_social_mobile/utils/show_success_dialog.dart';
 
-class DonationDialog extends StatefulWidget {
-  const DonationDialog({super.key, required this.receiverId});
-  final String receiverId;
+class TransferNftDialog extends StatefulWidget {
+  const TransferNftDialog({super.key, required this.nft});
+
+  final Nft nft;
 
   @override
-  State<DonationDialog> createState() => _DonationDialogState();
+  State<TransferNftDialog> createState() => _TransferNftDialogState();
 }
 
-class _DonationDialogState extends State<DonationDialog> {
+class _TransferNftDialogState extends State<TransferNftDialog> {
   final formKey = GlobalKey<FormState>();
-  String? balance;
 
   late final bool fullAccessKeyAvailable;
-  late final AuthController authController;
+  late final AuthController authController = Modular.get<AuthController>();
+  late final MintbaseController mintbaseController =
+      Modular.get<MintbaseController>();
   PrivateKeyInfo? selectedKey;
 
-  final TextEditingController _amountTextEditingController =
-      TextEditingController()..text = "0.1";
+  final TextEditingController _receiverAddressEditingController =
+      TextEditingController();
 
   bool transactionLoading = false;
 
   @override
   void initState() {
     super.initState();
-    authController = Modular.get<AuthController>();
     fullAccessKeyAvailable =
         authController.state.additionalStoredKeys.values.any(
       (storedKey) =>
@@ -51,27 +51,12 @@ class _DonationDialogState extends State<DonationDialog> {
             storedKey.privateKeyTypeInfo.type == PrivateKeyType.FullAccess,
       );
     }
-
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      updateBalance();
-    });
   }
 
-  Future<void> updateBalance() async {
-    final actualBalance = await Modular.get<NearBlockChainService>()
-        .getWalletBalance(
-            NearAccountInfoRequest(accountId: authController.state.accountId));
-    if (!mounted) {
-      return;
-    }
-    if (balance != null && balance == actualBalance) {
-      await Future.delayed(const Duration(seconds: 3));
-      updateBalance();
-      return;
-    }
-    setState(() {
-      balance = actualBalance;
-    });
+  @override
+  void dispose() {
+    _receiverAddressEditingController.dispose();
+    super.dispose();
   }
 
   @override
@@ -86,15 +71,15 @@ class _DonationDialogState extends State<DonationDialog> {
               ? const NoFullAccessKeyBannerBody()
               : Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  // crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Align(
+                    const Align(
                       alignment: Alignment.center,
                       child: Text(
-                        "Donating to ${widget.receiverId}",
+                        "Transfer NFT",
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -102,7 +87,7 @@ class _DonationDialogState extends State<DonationDialog> {
                     ),
                     SizedBox(height: 10.h),
                     const Text(
-                      "Select a key to donate: ",
+                      "Select a key to perform the transfer: ",
                       style: TextStyle(
                         fontSize: 15,
                       ),
@@ -138,13 +123,6 @@ class _DonationDialogState extends State<DonationDialog> {
                         }).toList(),
                       ),
                     ),
-                    SizedBox(height: 10.h),
-                    const Text(
-                      "Amount to donate: ",
-                      style: TextStyle(
-                        fontSize: 15,
-                      ),
-                    ),
                     SizedBox(height: 5.h),
                     Form(
                       key: formKey,
@@ -158,17 +136,13 @@ class _DonationDialogState extends State<DonationDialog> {
                         child: TextFormField(
                           readOnly: transactionLoading,
                           style: const TextStyle(fontSize: 15),
-                          controller: _amountTextEditingController,
+                          controller: _receiverAddressEditingController,
                           decoration: const InputDecoration.collapsed(
-                            hintText: "Amount",
+                            hintText: "Receiver address",
                           ),
-                          keyboardType: TextInputType.number,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter amount';
-                            }
-                            if (double.tryParse(value) == null) {
-                              return 'Please enter a valid amount';
+                              return 'Please enter receiver address';
                             }
                             return null;
                           },
@@ -184,29 +158,6 @@ class _DonationDialogState extends State<DonationDialog> {
                       ),
                     ),
                     SizedBox(height: 10.h),
-                    Text.rich(
-                      TextSpan(
-                        style: const TextStyle(fontSize: 15),
-                        children: [
-                          const TextSpan(text: "You have "),
-                          balance != null
-                              ? TextSpan(text: balance)
-                              : const WidgetSpan(
-                                  alignment: PlaceholderAlignment.middle,
-                                  child: SpinnerLoadingIndicator(size: 12),
-                                ),
-                          const TextSpan(text: " NEAR"),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 5.h),
-                    const Text(
-                      "Service fee: ${EnterpriseVariables.amountOfServiceFeeForDonation} NEAR",
-                      style: TextStyle(
-                        fontSize: 15,
-                      ),
-                    ),
-                    SizedBox(height: 10.h),
                     if (transactionLoading)
                       const Align(
                         alignment: Alignment.center,
@@ -219,21 +170,14 @@ class _DonationDialogState extends State<DonationDialog> {
                           primary: true,
                           onPressed: () async {
                             HapticFeedback.lightImpact();
-
                             if (!formKey.currentState!.validate()) {
                               return;
                             }
 
-                            final amountToSpend = double.parse(
-                                  _amountTextEditingController.text,
-                                ) +
-                                double.parse(EnterpriseVariables
-                                    .amountOfServiceFeeForDonation);
-
                             if (!await askToConfirmAction(
-                              title: "Are you sure you want to donate?",
+                              title: "Are you sure you want to transfer NFT?",
                               content:
-                                  "You will spend ${amountToSpend.toStringAsFixed(5)} NEAR to donate to ${widget.receiverId}",
+                                  "You will transfer it to ${_receiverAddressEditingController.text}",
                             )) {
                               return;
                             }
@@ -242,28 +186,22 @@ class _DonationDialogState extends State<DonationDialog> {
                               transactionLoading = true;
                             });
 
-                            final nearSocialApiService =
-                                Modular.get<NearSocialApi>();
-                            final nearBlockChainService =
-                                Modular.get<NearBlockChainService>();
-                            final account = authController.state;
-                            final privateKey = await nearBlockChainService
-                                .getPrivateKeyFromSecretKeyFromNearApiJSFormat(
-                              selectedKey!.privateKey.split(":").last,
-                            );
+                            late final String txHash;
 
                             try {
-                              final txHash =
-                                  await nearSocialApiService.donateToAccount(
-                                accountId: account.accountId,
-                                publicKey: account.publicKey,
-                                privateKey: privateKey,
-                                amountToSend: _amountTextEditingController.text,
-                                receiverId: widget.receiverId,
+                              final privateKey = await Modular.get<
+                                      NearBlockChainService>()
+                                  .getPrivateKeyFromSecretKeyFromNearApiJSFormat(
+                                selectedKey!.privateKey.split(":").last,
                               );
-                              showSuccessDialog(
-                                title: "You have donated successfully!",
-                                txHash: txHash,
+                              txHash = await mintbaseController.transferNft(
+                                accountId: authController.state.accountId,
+                                publicKey: selectedKey!.publicKey,
+                                privateKey: privateKey,
+                                nftCollectionContract: widget.nft.contractId,
+                                nftId: widget.nft.tokenId,
+                                receiverAccountId:
+                                    _receiverAddressEditingController.text,
                               );
                             } catch (err) {
                               rethrow;
@@ -273,11 +211,17 @@ class _DonationDialogState extends State<DonationDialog> {
                               });
                             }
 
-                            updateBalance();
+                            showSuccessDialog(
+                              title: "You have transferred NFT successfully!",
+                              txHash: txHash,
+                            ).then(
+                              (_) {
+                                Modular.to.pop();
+                                Modular.to.pop();
+                              },
+                            );
                           },
-                          child: const Text(
-                            "Donate",
-                          ),
+                          child: const Text("Transfer NFT"),
                         ),
                       ),
                   ],

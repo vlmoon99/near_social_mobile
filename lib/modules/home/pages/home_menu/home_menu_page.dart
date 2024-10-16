@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:flutterchain/flutterchain_lib/models/chains/near/near_account_info_request.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
@@ -155,8 +156,8 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                           SizedBox(height: 5.h),
                           FutureBuilder(
                             future: Modular.get<NearBlockChainService>()
-                                .getWalletBalance(
-                                    authController.state.accountId),
+                                .getWalletBalance(NearAccountInfoRequest(
+                                    accountId: authController.state.accountId)),
                             builder: (context, snapshot) {
                               return Row(
                                 children: [
@@ -211,6 +212,21 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                     HapticFeedback.lightImpact();
                     Modular.to.pushNamed(
                       ".${Routes.home.keyManagerPage}",
+                    );
+                  },
+                ),
+                SizedBox(height: 15.h),
+                HomeMenuListTile(
+                  tile: SvgPicture.asset(
+                    "assets/media/icons/nft-token.svg",
+                    color: IconTheme.of(context).color,
+                    height: IconTheme.of(context).size,
+                  ),
+                  title: "Mintbase Manager",
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    Modular.to.pushNamed(
+                      ".${Routes.home.mintManager}/",
                     );
                   },
                 ),

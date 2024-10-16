@@ -8,8 +8,8 @@ import 'package:near_social_mobile/network/dio_interceptors/retry_with_change_ba
 
 class CustomNearNetworkClient extends NearNetworkClient {
   CustomNearNetworkClient({required super.baseUrl, required super.dio}) {
-    dio.interceptors.removeWhere((element) => element is RetryInterceptor);
-    dio.interceptors.addAll(
+    super.dio.interceptors.removeWhere((element) => element is RetryInterceptor);
+    super.dio.interceptors.addAll(
       [
         RetryInterceptorWithSecondaryLink(
           dio: dio,

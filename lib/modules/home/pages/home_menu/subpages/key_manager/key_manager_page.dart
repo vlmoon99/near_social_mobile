@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -22,8 +23,15 @@ class KeyManagerPage extends StatelessWidget {
           ),
         ),
         centerTitle: true,
-        leadingWidth: 0,
-        leading: const SizedBox.shrink(),
+        leadingWidth: kIsWeb ? 50.h : 0,
+        leading: kIsWeb
+            ? IconButton(
+                onPressed: () {
+                  Modular.to.pop();
+                },
+                icon: const Icon(Icons.arrow_back),
+              )
+            : const SizedBox.shrink(),
       ),
       body: SafeArea(
         child: StreamBuilder<AuthInfo>(

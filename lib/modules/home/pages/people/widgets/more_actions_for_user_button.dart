@@ -62,6 +62,9 @@ class _MoreActionsForUserButtonState extends State<MoreActionsForUserButton> {
                             ),
                             leading: const Icon(Icons.person_off,
                                 color: NEARColors.red),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10).r,
+                            ),
                             onTap: () async {
                               showDialog(
                                 context: Modular.routerDelegate.navigatorKey
