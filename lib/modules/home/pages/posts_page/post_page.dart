@@ -74,7 +74,7 @@ class _PostPageState extends State<PostPage> {
       }
     });
     updateCommentsTimer = PausableTimer.periodic(
-      const Duration(seconds: 40),
+      const Duration(minutes: 2),
       () async {
         updateCommentsTimer.pause();
 

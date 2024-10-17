@@ -1,11 +1,13 @@
-class Nft {
+import 'package:equatable/equatable.dart';
+
+class Nft extends Equatable {
   final String contractId;
   final String tokenId;
   final String title;
   final String description;
   final String imageUrl;
 
-  Nft({
+  const Nft({
     required this.contractId,
     required this.tokenId,
     required this.title,
@@ -14,16 +16,9 @@ class Nft {
   });
 
   @override
-  String toString() {
-    return 'Nft{contractId: $contractId, tokenId: $tokenId, title: $title, description: $description, imageUrl: $imageUrl}';
-  }
+  List<Object?> get props =>
+      [contractId, tokenId, title, description, imageUrl];
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Nft &&
-          runtimeType == other.runtimeType &&
-          contractId == other.contractId &&
-          tokenId == other.tokenId &&
-          imageUrl == other.imageUrl;
+  bool? get stringify => true;
 }

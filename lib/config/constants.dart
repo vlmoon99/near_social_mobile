@@ -1,10 +1,11 @@
-class SecureStorageKeys {
+class StorageKeys {
   static const authInfo = 'auth_info';
   static const cryptographicKey = 'cryptographic_key';
   static const additionalCryptographicKeys = 'additional_cryptographic_keys';
   static const networkType = 'network_type';
   static const appPolicyAccepted = 'app_policy_accepted';
   static const filters = 'filters';
+  static const cachedUserList = 'cached_user_list';
 }
 
 class NearAssets {

@@ -92,8 +92,8 @@ class NearSocialApi {
           name: "",
           description: "",
           backgroundImageLink: "",
-          linktree: {},
-          tags: [],
+          linktree: const {},
+          tags: const [],
         );
         ReposterInfo? reposterInfo;
         if (info.reposterPostCreationInfo != null) {
@@ -104,8 +104,8 @@ class NearSocialApi {
               name: "",
               description: "",
               backgroundImageLink: "",
-              linktree: {},
-              tags: [],
+              linktree: const {},
+              tags: const [],
             ),
             blockHeight: info.reposterPostCreationInfo!.blockHeight,
           );
@@ -116,10 +116,10 @@ class NearSocialApi {
             authorInfo: authorInfo,
             blockHeight: info.postCreationInfo.blockHeight,
             date: DateTime.now(),
-            postBody: PostBody(text: "Loading"),
+            postBody: const PostBody(text: "Loading"),
             reposterInfo: reposterInfo,
-            likeList: {},
-            repostList: {},
+            likeList: const [],
+            repostList: const [],
             commentList: null,
           ),
         );
@@ -239,7 +239,7 @@ class NearSocialApi {
         data: data,
       );
       if (response.data[accountId] == null) {
-        return PostBody(text: "", mediaLink: null);
+        return const PostBody(text: "", mediaLink: null);
       }
 
       late final Map<String, dynamic> postInfo;
@@ -259,11 +259,11 @@ class NearSocialApi {
       );
     } catch (err) {
       log("$err\n Post: accountId: $accountId, blockHeight: $blockHeight");
-      return PostBody(text: "", mediaLink: null);
+      return const PostBody(text: "", mediaLink: null);
     }
   }
 
-  Future<Set<Like>> getLikesOfPost({
+  Future<List<Like>> getLikesOfPost({
     required String accountId,
     required int blockHeight,
   }) async {
@@ -294,7 +294,7 @@ class NearSocialApi {
     }
   }
 
-  Set<Like> _convertToLikes(List<Map<String, dynamic>> data) {
+  List<Like> _convertToLikes(List<Map<String, dynamic>> data) {
     Map<String, Map<String, dynamic>> lastRecordOfUser = {};
 
     for (var item in data) {
@@ -317,7 +317,7 @@ class NearSocialApi {
       }
     }
 
-    Set<Like> result = {};
+    List<Like> result = [];
 
     lastRecordOfUser.forEach((key, value) {
       if (value["type"] == "like") {
@@ -328,7 +328,7 @@ class NearSocialApi {
     return result;
   }
 
-  Future<Set<Reposter>> getRepostsOfPost({
+  Future<List<Reposter>> getRepostsOfPost({
     required String accountId,
     required int blockHeight,
   }) async {
@@ -351,7 +351,8 @@ class NearSocialApi {
       );
       final reposts = List<Map<String, dynamic>>.from(response.data)
           .map((info) => Reposter(accountId: info["accountId"]))
-          .toSet();
+          .toSet()
+          .toList();
       return reposts;
     } catch (err) {
       rethrow;
@@ -411,9 +412,9 @@ class NearSocialApi {
           Comment(
             authorInfo: authorInfo,
             blockHeight: info.blockHeight,
-            commentBody: CommentBody(text: "Loading...", mediaLink: null),
+            commentBody: const CommentBody(text: "Loading...", mediaLink: null),
             date: DateTime.now(),
-            likeList: {},
+            likeList: const [],
           ),
         );
       }
@@ -496,7 +497,7 @@ class NearSocialApi {
     }
   }
 
-  Future<Set<Like>> getLikesOfComment(
+  Future<List<Like>> getLikesOfComment(
       {required String accountId, required int blockHeight}) async {
     try {
       final data = {
@@ -957,7 +958,7 @@ class NearSocialApi {
               name: "",
               description: "",
               imageUrl: "",
-              tags: [],
+              tags: const [],
               blockHeight: fullListOfWidgetsWithoutMetadata[accountId]
                       ?["widget"]?[widgetName] ??
                   0,
@@ -1511,7 +1512,7 @@ class NearSocialApi {
           publicKey: publicKeyOfSecretKey,
           privateKey: key,
           base58PubKey: base58PubKey,
-          privateKeyTypeInfo: PrivateKeyTypeInfo(
+          privateKeyTypeInfo: const PrivateKeyTypeInfo(
             type: PrivateKeyType.FullAccess,
           ),
         );

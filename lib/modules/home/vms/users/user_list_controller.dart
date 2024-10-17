@@ -1,17 +1,15 @@
-import 'dart:developer';
-
-import 'package:flutter/foundation.dart';
 import 'package:near_social_mobile/modules/home/apis/models/follower.dart';
 import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
-import 'package:near_social_mobile/modules/home/apis/models/near_widget_info.dart';
-import 'package:near_social_mobile/modules/home/apis/models/nft.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/home/vms/users/models/user_list_state.dart';
 import 'package:rxdart/rxdart.dart';
 
 class UserListController {
   final NearSocialApi nearSocialApi;
 
-  UserListController({required this.nearSocialApi});
+  UserListController({
+    required this.nearSocialApi,
+  });
 
   final BehaviorSubject<UsersList> _streamController =
       BehaviorSubject.seeded(const UsersList());
@@ -25,16 +23,19 @@ class UserListController {
     }
     _streamController.add(state.copyWith(loadingState: UserListState.loading));
     try {
-      final users = await nearSocialApi.getNearSocialAccountList();
+      final generalAccountInfoOfUsers =
+          await nearSocialApi.getNearSocialAccountList();
+      final Map<String, FullUserInfo> users = {};
+      for (var generalAccountInfo in generalAccountInfoOfUsers) {
+        users.putIfAbsent(generalAccountInfo.accountId, () {
+          return FullUserInfo(generalAccountInfo: generalAccountInfo);
+        });
+      }
+
       _streamController.add(
         state.copyWith(
           loadingState: UserListState.loaded,
-          users: users
-              .map(
-                (generalAccountInfo) =>
-                    FullUserInfo(generalAccountInfo: generalAccountInfo),
-              )
-              .toList(),
+          users: users,
         ),
       );
     } catch (err) {
@@ -46,82 +47,51 @@ class UserListController {
 
   Future<void> addGeneralAccountInfoIfNotExists(
       {required GeneralAccountInfo generalAccountInfo}) async {
-    final indexOfUser = state.users.indexWhere(
-      (element) =>
-          element.generalAccountInfo.accountId == generalAccountInfo.accountId,
+    _streamController.add(
+      state.copyWith(
+        users: Map.of(state.users)
+          ..[generalAccountInfo.accountId] = FullUserInfo(
+            generalAccountInfo: generalAccountInfo,
+          ),
+      ),
     );
-    if (indexOfUser == -1) {
-      _streamController.add(state.copyWith(users: [
-        ...state.users,
-        FullUserInfo(generalAccountInfo: generalAccountInfo),
-      ]));
-    }
   }
 
   Future<void> loadAndAddGeneralAccountInfoIfNotExists(
       {required String accountId}) async {
-    final indexOfUser = state.users.indexWhere(
-      (element) => element.generalAccountInfo.accountId == accountId,
-    );
-    if (indexOfUser == -1) {
-      _streamController.add(
-        state.copyWith(
-          users: [
-            FullUserInfo(
-              generalAccountInfo: await nearSocialApi.getGeneralAccountInfo(
-                  accountId: accountId),
-            ),
-            ...state.users
-          ],
-        ),
-      );
+    if (state.users.containsKey(accountId)) {
+      return;
     }
+    _streamController.add(
+      state.copyWith(
+        users: Map.of(state.users)
+          ..[accountId] = FullUserInfo(
+            generalAccountInfo:
+                await nearSocialApi.getGeneralAccountInfo(accountId: accountId),
+          ),
+      ),
+    );
   }
 
   Future<void> loadAdditionalMetadata({required String accountId}) async {
     try {
-      final indexOfUser = state.users.indexWhere(
-        (element) => element.generalAccountInfo.accountId == accountId,
+      final List<Follower> followings =
+          await nearSocialApi.getFollowingsOfAccount(accountId: accountId);
+      final List<Follower> followers =
+          await nearSocialApi.getFollowersOfAccount(accountId: accountId);
+      final List<String> userTags =
+          await nearSocialApi.getUserTagsOfAccount(accountId: accountId);
+
+      _streamController.add(
+        state.copyWith(
+          users: Map.of(state.users)
+            ..[accountId] = state.users[accountId]!.copyWith(
+              followings: followings,
+              followers: followers,
+              userTags: userTags,
+            ),
+        ),
       );
-
-      await nearSocialApi
-          .getFollowingsOfAccount(accountId: accountId)
-          .then((value) {
-        _streamController.add(
-          state.copyWith(
-            users: List.of(state.users)
-              ..[indexOfUser] = state.users[indexOfUser].copyWith(
-                followings: value,
-              ),
-          ),
-        );
-      });
-
-      await nearSocialApi
-          .getFollowersOfAccount(accountId: accountId)
-          .then((value) {
-        _streamController.add(
-          state.copyWith(
-            users: List.of(state.users)
-              ..[indexOfUser] = state.users[indexOfUser].copyWith(
-                followers: value,
-              ),
-          ),
-        );
-      });
-
-      await nearSocialApi
-          .getUserTagsOfAccount(accountId: accountId)
-          .then((value) {
-        _streamController.add(
-          state.copyWith(
-            users: List.of(state.users)
-              ..[indexOfUser] = state.users[indexOfUser].copyWith(
-                userTags: value,
-              ),
-          ),
-        );
-      });
     } catch (err) {
       rethrow;
     }
@@ -133,16 +103,14 @@ class UserListController {
     required String publicKey,
     required String privateKey,
   }) async {
-    final indexOfUser = state.users.indexWhere(
-      (element) => element.generalAccountInfo.accountId == accountIdToFollow,
-    );
     try {
       _streamController.add(
         state.copyWith(
-          users: List.of(state.users)
-            ..[indexOfUser] = state.users[indexOfUser].copyWith(
-              followers: List.of(state.users[indexOfUser].followers ?? [])
-                ..add(Follower(accountId: accountId)),
+          users: Map.of(state.users)
+            ..[accountIdToFollow] = state.users[accountIdToFollow]!.copyWith(
+              followers:
+                  List.of(state.users[accountIdToFollow]?.followers ?? [])
+                    ..add(Follower(accountId: accountId)),
             ),
         ),
       );
@@ -155,9 +123,10 @@ class UserListController {
     } catch (err) {
       _streamController.add(
         state.copyWith(
-          users: List.of(state.users)
-            ..[indexOfUser] = state.users[indexOfUser].copyWith(
-              followers: List.of(state.users[indexOfUser].followers ?? [])
+          users: Map.of(state.users)
+            ..[accountIdToFollow] = state.users[accountIdToFollow]!.copyWith(
+              followers: List.of(
+                  state.users[accountIdToFollow]?.followers ?? [])
                 ..removeWhere((follower) => follower.accountId == accountId),
             ),
         ),
@@ -172,15 +141,14 @@ class UserListController {
     required String publicKey,
     required String privateKey,
   }) async {
-    final indexOfUser = state.users.indexWhere(
-      (element) => element.generalAccountInfo.accountId == accountIdToUnfollow,
-    );
     try {
       _streamController.add(
         state.copyWith(
-          users: List.of(state.users)
-            ..[indexOfUser] = state.users[indexOfUser].copyWith(
-              followers: List.of(state.users[indexOfUser].followers ?? [])
+          users: Map.of(state.users)
+            ..[accountIdToUnfollow] =
+                state.users[accountIdToUnfollow]!.copyWith(
+              followers: List.of(
+                  state.users[accountIdToUnfollow]?.followers ?? [])
                 ..removeWhere((follower) => follower.accountId == accountId),
             ),
         ),
@@ -194,10 +162,12 @@ class UserListController {
     } catch (err) {
       _streamController.add(
         state.copyWith(
-          users: List.of(state.users)
-            ..[indexOfUser] = state.users[indexOfUser].copyWith(
-              followers: List.of(state.users[indexOfUser].followers ?? [])
-                ..add(Follower(accountId: accountId)),
+          users: Map.of(state.users)
+            ..[accountIdToUnfollow] =
+                state.users[accountIdToUnfollow]!.copyWith(
+              followers:
+                  List.of(state.users[accountIdToUnfollow]?.followers ?? [])
+                    ..add(Follower(accountId: accountId)),
             ),
         ),
       );
@@ -206,39 +176,40 @@ class UserListController {
   }
 
   Future<void> reloadUserInfo({required String accountId}) async {
-    final indexOfUser = state.users.indexWhere(
-      (element) => element.generalAccountInfo.accountId == accountId,
-    );
     try {
       final generalAccountInfo =
           await nearSocialApi.getGeneralAccountInfo(accountId: accountId);
-      final user = state.users[indexOfUser];
+      final List<Follower> followings =
+          await nearSocialApi.getFollowingsOfAccount(accountId: accountId);
+      final List<Follower> followers =
+          await nearSocialApi.getFollowersOfAccount(accountId: accountId);
+      final List<String> userTags =
+          await nearSocialApi.getUserTagsOfAccount(accountId: accountId);
+      final user = state.users[accountId];
       _streamController.add(
         state.copyWith(
-          users: List.of(state.users)
-            ..[indexOfUser] = user.copyWith(
+          users: Map.of(state.users)
+            ..[accountId] = user!.copyWith(
               generalAccountInfo: generalAccountInfo,
+              followings: followings,
+              followers: followers,
+              userTags: userTags,
             ),
         ),
       );
-      await loadAdditionalMetadata(accountId: accountId);
     } catch (err) {
       rethrow;
     }
   }
 
   Future<void> loadNftsOfAccount({required String accountId}) async {
-    log("loading nfts");
-    final indexOfUser = state.users.indexWhere(
-      (element) => element.generalAccountInfo.accountId == accountId,
-    );
     try {
       final nfts =
           await nearSocialApi.getNftsOfAccount(accountIdOfUser: accountId);
       _streamController.add(
         state.copyWith(
-          users: List.of(state.users)
-            ..[indexOfUser] = state.users[indexOfUser].copyWith(
+          users: Map.of(state.users)
+            ..[accountId] = state.users[accountId]!.copyWith(
               nfts: nfts,
             ),
         ),
@@ -249,18 +220,14 @@ class UserListController {
   }
 
   Future<void> loadWidgetsOfAccount({required String accountId}) async {
-    log("loading widgets");
-    final indexOfUser = state.users.indexWhere(
-      (element) => element.generalAccountInfo.accountId == accountId,
-    );
     try {
       final widgetList = await nearSocialApi.getWidgetsList(
         accountId: accountId,
       );
       _streamController.add(
         state.copyWith(
-          users: List.of(state.users)
-            ..[indexOfUser] = state.users[indexOfUser].copyWith(
+          users: Map.of(state.users)
+            ..[accountId] = state.users[accountId]!.copyWith(
               widgetList: widgetList,
             ),
         ),
@@ -269,87 +236,4 @@ class UserListController {
       rethrow;
     }
   }
-}
-
-enum UserListState { initial, loading, loaded }
-
-class UsersList {
-  final UserListState loadingState;
-  final List<FullUserInfo> users;
-
-  const UsersList(
-      {this.loadingState = UserListState.initial, this.users = const []});
-
-  UsersList copyWith({UserListState? loadingState, List<FullUserInfo>? users}) {
-    return UsersList(
-      loadingState: loadingState ?? this.loadingState,
-      users: users ?? this.users,
-    );
-  }
-
-  FullUserInfo getUserByAccountId({required String accountId}) {
-    return users.firstWhere(
-        (element) => element.generalAccountInfo.accountId == accountId);
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is UsersList &&
-          runtimeType == other.runtimeType &&
-          loadingState == other.loadingState &&
-          listEquals(users, other.users);
-}
-
-class FullUserInfo {
-  final GeneralAccountInfo generalAccountInfo;
-  // final List<Post>? posts;
-  final List<Nft>? nfts;
-  final List<NearWidgetInfo>? widgetList;
-  final List<Follower>? followers;
-  final List<Follower>? followings;
-  final List<String>? userTags;
-
-  FullUserInfo({
-    required this.generalAccountInfo,
-    this.nfts,
-    this.widgetList,
-    this.followers,
-    this.followings,
-    this.userTags,
-  });
-
-  FullUserInfo copyWith({
-    GeneralAccountInfo? generalAccountInfo,
-    List<Nft>? nfts,
-    List<NearWidgetInfo>? widgetList,
-    List<Follower>? followers,
-    List<Follower>? followings,
-    List<String>? userTags
-  }) {
-    return FullUserInfo(
-      generalAccountInfo: generalAccountInfo ?? this.generalAccountInfo,
-      nfts: nfts ?? this.nfts,
-      widgetList: widgetList ?? this.widgetList,
-      followers: followers ?? this.followers,
-      followings: followings ?? this.followings,
-      userTags: userTags ?? this.userTags,
-    );
-  }
-
-  bool get allMetadataLoaded {
-    return followers != null && followings != null && userTags != null;
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is FullUserInfo &&
-          runtimeType == other.runtimeType &&
-          generalAccountInfo == other.generalAccountInfo &&
-          nfts == other.nfts &&
-          listEquals(widgetList, other.widgetList) &&
-          listEquals(followers, other.followers) &&
-          listEquals(followings, other.followings) &&
-          listEquals(userTags, other.userTags);
 }
