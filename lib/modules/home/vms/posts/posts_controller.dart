@@ -121,7 +121,7 @@ class PostsController {
     required GeneralAccountInfo accountInfo,
     required int blockHeight,
   }) async {
-    if (state.temporaryPosts.length > 1 &&
+    if (state.temporaryPosts.isNotEmpty &&
         state.temporaryPosts.any((element) =>
             element.blockHeight == blockHeight &&
             element.authorInfo.accountId == accountInfo.accountId)) {
