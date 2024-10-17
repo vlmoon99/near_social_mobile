@@ -15,6 +15,7 @@ import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_tex
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
+import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/custom_refresh_indicator.dart';
 import 'package:near_social_mobile/shared_widgets/expandable_wiget.dart';
@@ -104,13 +105,17 @@ class UserPageMainInfo extends StatelessWidget {
                 onRefresh: () async {
                   final UserListController userListController =
                       Modular.get<UserListController>();
+                  final FilterController filterController =
+                      Modular.get<FilterController>();
                   final user = userListController.state
                       .getUserByAccountId(accountId: accountIdOfUser);
                   await userListController.reloadUserInfo(
                       accountId: accountIdOfUser);
                   log("User info reloaded");
-                  await Modular.get<PostsController>()
-                      .updatePostsOfAccount(postsOfAccountId: accountIdOfUser);
+                  await Modular.get<PostsController>().updatePostsOfAccount(
+                    postsOfAccountId: accountIdOfUser,
+                    filters: filterController.state,
+                  );
                   log("Posts of account reloaded");
                   if (user.nfts != null) {
                     await userListController.loadNftsOfAccount(

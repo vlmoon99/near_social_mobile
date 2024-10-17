@@ -506,8 +506,11 @@ class PostsController {
     );
   }
 
-  Future<void> updatePostsOfAccount({required String postsOfAccountId}) async {
+  Future<void> updatePostsOfAccount(
+      {required String postsOfAccountId, Filters? filters}) async {
     try {
+      final FiltersUtil filtersUtil =
+          FiltersUtil(filters: filters ?? const Filters());
       final newPosts = await nearSocialApi.getPosts(
         targetAccounts: [postsOfAccountId],
         limit: 10,
@@ -517,18 +520,23 @@ class PostsController {
           List<Post>.from(state.postsOfAccounts[postsOfAccountId]);
 
       newPosts.removeWhere(
-        (post) => currentPostsOfAccount.any(
+        (post) => state.postsOfAccounts[postsOfAccountId]!.any(
           (element) =>
-              element.blockHeight == post.blockHeight &&
-              element.authorInfo.accountId == post.authorInfo.accountId &&
-              element.reposterInfo == post.reposterInfo,
+              (element.blockHeight == post.blockHeight &&
+                  element.authorInfo.accountId == post.authorInfo.accountId &&
+                  element.reposterInfo == post.reposterInfo) ||
+              filtersUtil.postIsHided(
+                  post.authorInfo.accountId, post.blockHeight),
         ),
       );
 
       _streamController.add(
         state.copyWith(
           postsOfAccounts: Map.of(state.postsOfAccounts)
-            ..[postsOfAccountId] = [...newPosts, ...currentPostsOfAccount],
+            ..[postsOfAccountId] = [
+              ...newPosts,
+              ...state.postsOfAccounts[postsOfAccountId]!
+            ],
           status: PostLoadingStatus.loaded,
         ),
       );
@@ -548,13 +556,11 @@ class PostsController {
               accountId: post.authorInfo.accountId,
               blockHeight: post.blockHeight);
 
-          _updateDataDueToPostsViewMode(
-            post: post,
-            postsViewMode: PostsViewMode.account,
-            postsOfAccountId: postsOfAccountId,
-            repostList: actualRepostsOfPostList,
-            likeList: actualLikeList,
-          );
+      checkPostsForFullLoadAndLoadIfNecessary(
+        postsViewMode: PostsViewMode.account,
+        postsOfAccountId: postsOfAccountId,
+        filters: filters,
+      );
         }
       }
     } catch (err) {
