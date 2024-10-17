@@ -56,7 +56,7 @@ class _PeopleListPageState extends State<PeopleListPage> {
             }
 
             final users = searchController.text != ""
-                ? userListController.state.users.entries
+                ? userListController.state.cachedUsers.entries
                     .where(
                       (entry) {
                         return entry.key.contains(
@@ -71,7 +71,7 @@ class _PeopleListPageState extends State<PeopleListPage> {
                     )
                     .map((e) => e.value)
                     .toList()
-                : userListController.state.users.values.toList();
+                : userListController.state.cachedUsers.values.toList();
             return ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 15).r,
               itemBuilder: (context, index) {

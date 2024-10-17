@@ -12,7 +12,7 @@ class UserListController {
   });
 
   final BehaviorSubject<UsersList> _streamController =
-      BehaviorSubject.seeded(const UsersList());
+      BehaviorSubject.seeded(UsersList());
 
   Stream<UsersList> get stream => _streamController.stream.distinct();
   UsersList get state => _streamController.value;
@@ -35,7 +35,7 @@ class UserListController {
       _streamController.add(
         state.copyWith(
           loadingState: UserListState.loaded,
-          users: users,
+          cachedUsers: users,
         ),
       );
     } catch (err) {
@@ -47,9 +47,13 @@ class UserListController {
 
   Future<void> addGeneralAccountInfoIfNotExists(
       {required GeneralAccountInfo generalAccountInfo}) async {
+    if (state.activeUsers.containsKey(generalAccountInfo.accountId) ||
+        state.cachedUsers.containsKey(generalAccountInfo.accountId)) {
+      return;
+    }
     _streamController.add(
       state.copyWith(
-        users: Map.of(state.users)
+        activeUsers: Map.of(state.activeUsers)
           ..[generalAccountInfo.accountId] = FullUserInfo(
             generalAccountInfo: generalAccountInfo,
           ),
@@ -59,12 +63,23 @@ class UserListController {
 
   Future<void> loadAndAddGeneralAccountInfoIfNotExists(
       {required String accountId}) async {
-    if (state.users.containsKey(accountId)) {
+    if (state.activeUsers.containsKey(accountId) ||
+        state.cachedUsers.containsKey(accountId)) {
       return;
     }
+    if (state.cachedUsers.containsKey(accountId)) {
+      _streamController.add(
+        state.copyWith(
+          activeUsers: Map.of(state.activeUsers)
+            ..[accountId] = state.cachedUsers[accountId]!,
+        ),
+      );
+      return;
+    }
+
     _streamController.add(
       state.copyWith(
-        users: Map.of(state.users)
+        activeUsers: Map.of(state.activeUsers)
           ..[accountId] = FullUserInfo(
             generalAccountInfo:
                 await nearSocialApi.getGeneralAccountInfo(accountId: accountId),
@@ -84,8 +99,8 @@ class UserListController {
 
       _streamController.add(
         state.copyWith(
-          users: Map.of(state.users)
-            ..[accountId] = state.users[accountId]!.copyWith(
+          activeUsers: Map.of(state.activeUsers)
+            ..[accountId] = state.activeUsers[accountId]!.copyWith(
               followings: followings,
               followers: followers,
               userTags: userTags,
@@ -106,10 +121,11 @@ class UserListController {
     try {
       _streamController.add(
         state.copyWith(
-          users: Map.of(state.users)
-            ..[accountIdToFollow] = state.users[accountIdToFollow]!.copyWith(
+          activeUsers: Map.of(state.activeUsers)
+            ..[accountIdToFollow] =
+                state.activeUsers[accountIdToFollow]!.copyWith(
               followers:
-                  List.of(state.users[accountIdToFollow]?.followers ?? [])
+                  List.of(state.activeUsers[accountIdToFollow]?.followers ?? [])
                     ..add(Follower(accountId: accountId)),
             ),
         ),
@@ -123,10 +139,11 @@ class UserListController {
     } catch (err) {
       _streamController.add(
         state.copyWith(
-          users: Map.of(state.users)
-            ..[accountIdToFollow] = state.users[accountIdToFollow]!.copyWith(
+          activeUsers: Map.of(state.activeUsers)
+            ..[accountIdToFollow] =
+                state.activeUsers[accountIdToFollow]!.copyWith(
               followers: List.of(
-                  state.users[accountIdToFollow]?.followers ?? [])
+                  state.activeUsers[accountIdToFollow]?.followers ?? [])
                 ..removeWhere((follower) => follower.accountId == accountId),
             ),
         ),
@@ -144,11 +161,11 @@ class UserListController {
     try {
       _streamController.add(
         state.copyWith(
-          users: Map.of(state.users)
+          activeUsers: Map.of(state.activeUsers)
             ..[accountIdToUnfollow] =
-                state.users[accountIdToUnfollow]!.copyWith(
+                state.activeUsers[accountIdToUnfollow]!.copyWith(
               followers: List.of(
-                  state.users[accountIdToUnfollow]?.followers ?? [])
+                  state.activeUsers[accountIdToUnfollow]?.followers ?? [])
                 ..removeWhere((follower) => follower.accountId == accountId),
             ),
         ),
@@ -162,12 +179,12 @@ class UserListController {
     } catch (err) {
       _streamController.add(
         state.copyWith(
-          users: Map.of(state.users)
+          activeUsers: Map.of(state.activeUsers)
             ..[accountIdToUnfollow] =
-                state.users[accountIdToUnfollow]!.copyWith(
-              followers:
-                  List.of(state.users[accountIdToUnfollow]?.followers ?? [])
-                    ..add(Follower(accountId: accountId)),
+                state.activeUsers[accountIdToUnfollow]!.copyWith(
+              followers: List.of(
+                  state.activeUsers[accountIdToUnfollow]?.followers ?? [])
+                ..add(Follower(accountId: accountId)),
             ),
         ),
       );
@@ -185,18 +202,24 @@ class UserListController {
           await nearSocialApi.getFollowersOfAccount(accountId: accountId);
       final List<String> userTags =
           await nearSocialApi.getUserTagsOfAccount(accountId: accountId);
-      final user = state.users[accountId];
+      final user = state.activeUsers[accountId];
+
       _streamController.add(
         state.copyWith(
-          users: Map.of(state.users)
+          activeUsers: Map<String, FullUserInfo>.from(state.activeUsers)
             ..[accountId] = user!.copyWith(
               generalAccountInfo: generalAccountInfo,
               followings: followings,
               followers: followers,
               userTags: userTags,
             ),
+          cachedUsers: state.cachedUsers
+            ..[accountId] = user.copyWith(
+              generalAccountInfo: generalAccountInfo,
+            ),
         ),
       );
+      // }
     } catch (err) {
       rethrow;
     }
@@ -208,8 +231,8 @@ class UserListController {
           await nearSocialApi.getNftsOfAccount(accountIdOfUser: accountId);
       _streamController.add(
         state.copyWith(
-          users: Map.of(state.users)
-            ..[accountId] = state.users[accountId]!.copyWith(
+          activeUsers: Map.of(state.activeUsers)
+            ..[accountId] = state.activeUsers[accountId]!.copyWith(
               nfts: nfts,
             ),
         ),
@@ -226,8 +249,8 @@ class UserListController {
       );
       _streamController.add(
         state.copyWith(
-          users: Map.of(state.users)
-            ..[accountId] = state.users[accountId]!.copyWith(
+          activeUsers: Map.of(state.activeUsers)
+            ..[accountId] = state.activeUsers[accountId]!.copyWith(
               widgetList: widgetList,
             ),
         ),

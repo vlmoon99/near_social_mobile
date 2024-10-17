@@ -49,16 +49,14 @@ class _BlockedUserTileState extends State<BlockedUserTile> {
       child: StreamBuilder(
           stream: userListController.stream,
           builder: (context, snapshot) {
-            final FullUserInfo? user =
-                userListController.state.users[widget.accountIdOfBlockedUser];
-
             return InkWell(
               borderRadius: BorderRadius.circular(16.0).r,
               onTap: () {
-                if (user != null) {
+                if (userListController.state.activeUsers
+                    .containsKey(userListController.state)) {
                   HapticFeedback.lightImpact();
                   Modular.to.pushNamed(
-                    ".${Routes.home.userPage}?accountId=${user.generalAccountInfo.accountId}",
+                    ".${Routes.home.userPage}?accountId=${widget.accountIdOfBlockedUser}",
                   );
                 }
               },
@@ -69,71 +67,79 @@ class _BlockedUserTileState extends State<BlockedUserTile> {
                   width: double.infinity,
                   child: AnimatedSwitcher(
                     duration: Durations.short4,
-                    child: user != null
-                        ? Row(
-                            children: [
-                              Container(
-                                width: 40.h,
-                                height: 40.h,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10).r,
-                                ),
-                                clipBehavior: Clip.antiAlias,
-                                child: NearNetworkImage(
-                                  imageUrl:
-                                      user.generalAccountInfo.profileImageLink,
-                                  errorPlaceholder: Image.asset(
-                                    NearAssets.standartAvatar,
-                                    fit: BoxFit.cover,
+                    child: userListController.state.activeUsers
+                            .containsKey(userListController.state)
+                        ? Builder(builder: (context) {
+                            final FullUserInfo user = userListController.state
+                                .getUserByAccountId(
+                                    accountId: widget.accountIdOfBlockedUser);
+                            return Row(
+                              children: [
+                                Container(
+                                  width: 40.h,
+                                  height: 40.h,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10).r,
                                   ),
-                                  placeholder: Image.asset(
-                                    NearAssets.standartAvatar,
-                                    fit: BoxFit.cover,
+                                  clipBehavior: Clip.antiAlias,
+                                  child: NearNetworkImage(
+                                    imageUrl: user
+                                        .generalAccountInfo.profileImageLink,
+                                    errorPlaceholder: Image.asset(
+                                      NearAssets.standartAvatar,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    placeholder: Image.asset(
+                                      NearAssets.standartAvatar,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(width: 10.h),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    if (user.generalAccountInfo.name != "")
+                                SizedBox(width: 10.h),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      if (user.generalAccountInfo.name != "")
+                                        Text(
+                                          user.generalAccountInfo.name,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       Text(
-                                        user.generalAccountInfo.name,
+                                        "@${user.generalAccountInfo.accountId}",
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 1,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                        style: user.generalAccountInfo.name !=
+                                                ""
+                                            ? const TextStyle(
+                                                color: NEARColors.grey,
+                                                fontSize: 13,
+                                              )
+                                            : const TextStyle(
+                                                fontWeight: FontWeight.bold),
                                       ),
-                                    Text(
-                                      "@${user.generalAccountInfo.accountId}",
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                      style: user.generalAccountInfo.name != ""
-                                          ? const TextStyle(
-                                              color: NEARColors.grey,
-                                              fontSize: 13,
-                                            )
-                                          : const TextStyle(
-                                              fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(width: 10.h),
-                              FittedBox(
-                                child: CustomButton(
-                                  primary: true,
-                                  onPressed: widget.actionToDoOnPressed,
-                                  child: Text(
-                                    widget.actionToDoTile,
+                                    ],
                                   ),
                                 ),
-                              ),
-                            ],
-                          )
+                                SizedBox(width: 10.h),
+                                FittedBox(
+                                  child: CustomButton(
+                                    primary: true,
+                                    onPressed: widget.actionToDoOnPressed,
+                                    child: Text(
+                                      widget.actionToDoTile,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          })
                         : const Center(
                             child: SpinnerLoadingIndicator(),
                           ),

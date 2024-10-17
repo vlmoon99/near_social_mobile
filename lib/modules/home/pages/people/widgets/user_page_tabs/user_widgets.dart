@@ -36,8 +36,9 @@ class _WidgetsViewState extends State<WidgetsView> {
     return StreamBuilder(
       stream: userListController.stream,
       builder: (context, snapshot) {
-        final widgets =
-            userListController.state.users[widget.accountIdOfUser]!.widgetList;
+        final widgets = userListController.state
+            .getUserByAccountId(accountId: widget.accountIdOfUser)
+            .widgetList;
         if (widgets == null) {
           return const Center(child: SpinnerLoadingIndicator());
         } else if (widgets.isEmpty) {

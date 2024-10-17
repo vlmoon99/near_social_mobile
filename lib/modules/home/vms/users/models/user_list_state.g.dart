@@ -10,7 +10,12 @@ UsersList _$UsersListFromJson(Map<String, dynamic> json) => UsersList(
       loadingState:
           $enumDecodeNullable(_$UserListStateEnumMap, json['loadingState']) ??
               UserListState.initial,
-      users: (json['users'] as Map<String, dynamic>?)?.map(
+      cachedUsers: (json['cachedUsers'] as Map<String, dynamic>?)?.map(
+            (k, e) =>
+                MapEntry(k, FullUserInfo.fromJson(e as Map<String, dynamic>)),
+          ) ??
+          const {},
+      activeUsers: (json['activeUsers'] as Map<String, dynamic>?)?.map(
             (k, e) =>
                 MapEntry(k, FullUserInfo.fromJson(e as Map<String, dynamic>)),
           ) ??
@@ -19,7 +24,8 @@ UsersList _$UsersListFromJson(Map<String, dynamic> json) => UsersList(
 
 Map<String, dynamic> _$UsersListToJson(UsersList instance) => <String, dynamic>{
       'loadingState': _$UserListStateEnumMap[instance.loadingState]!,
-      'users': instance.users,
+      'cachedUsers': instance.cachedUsers,
+      'activeUsers': instance.activeUsers,
     };
 
 const _$UserListStateEnumMap = {

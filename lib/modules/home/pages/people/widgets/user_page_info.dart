@@ -94,8 +94,13 @@ class UserPageMainInfo extends StatelessWidget {
     final AuthController authController = Modular.get<AuthController>();
     final UserListController userListController =
         Modular.get<UserListController>();
+    final FilterController filterController = Modular.get<FilterController>();
     return StreamBuilder(
-        stream: userListController.stream,
+        stream: userListController.stream.distinct(
+          (previous, next) =>
+              previous.getUserByAccountId(accountId: accountIdOfUser) ==
+              next.getUserByAccountId(accountId: accountIdOfUser),
+        ),
         builder: (context, snapshot) {
           final user = userListController.state
               .getUserByAccountId(accountId: accountIdOfUser);
@@ -103,12 +108,6 @@ class UserPageMainInfo extends StatelessWidget {
             children: [
               CustomRefreshIndicator(
                 onRefresh: () async {
-                  final UserListController userListController =
-                      Modular.get<UserListController>();
-                  final FilterController filterController =
-                      Modular.get<FilterController>();
-                  final user = userListController.state
-                      .getUserByAccountId(accountId: accountIdOfUser);
                   await userListController.reloadUserInfo(
                       accountId: accountIdOfUser);
                   log("User info reloaded");

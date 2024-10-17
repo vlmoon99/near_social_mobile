@@ -12,21 +12,29 @@ enum UserListState { initial, loading, loaded }
 @JsonSerializable()
 class UsersList extends Equatable {
   final UserListState loadingState;
-  final Map<String, FullUserInfo> users;
+  final Map<String, FullUserInfo> cachedUsers;
+  final Map<String, FullUserInfo> activeUsers;
 
-  const UsersList(
-      {this.loadingState = UserListState.initial, this.users = const {}});
+  UsersList({
+    this.loadingState = UserListState.initial,
+    Map<String, FullUserInfo>? cachedUsers,
+    Map<String, FullUserInfo>? activeUsers,
+  })  : activeUsers = activeUsers ?? <String, FullUserInfo>{},
+        cachedUsers = cachedUsers ?? <String, FullUserInfo>{};
 
   UsersList copyWith(
-      {UserListState? loadingState, Map<String, FullUserInfo>? users}) {
+      {UserListState? loadingState,
+      Map<String, FullUserInfo>? cachedUsers,
+      Map<String, FullUserInfo>? activeUsers}) {
     return UsersList(
       loadingState: loadingState ?? this.loadingState,
-      users: users ?? this.users,
+      cachedUsers: cachedUsers ?? this.cachedUsers,
+      activeUsers: activeUsers ?? this.activeUsers,
     );
   }
 
   FullUserInfo getUserByAccountId({required String accountId}) {
-    return users[accountId]!;
+    return activeUsers.putIfAbsent(accountId, () => cachedUsers[accountId]!);
   }
 
   Map<String, dynamic> toJson() => _$UsersListToJson(this);
@@ -35,7 +43,7 @@ class UsersList extends Equatable {
       _$UsersListFromJson(json);
 
   @override
-  List<Object?> get props => [loadingState, users];
+  List<Object?> get props => [loadingState, cachedUsers, activeUsers];
 
   @override
   bool? get stringify => true;
