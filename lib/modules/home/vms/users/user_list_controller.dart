@@ -63,10 +63,10 @@ class UserListController {
 
   Future<void> loadAndAddGeneralAccountInfoIfNotExists(
       {required String accountId}) async {
-    if (state.activeUsers.containsKey(accountId) ||
-        state.cachedUsers.containsKey(accountId)) {
+    if (state.activeUsers.containsKey(accountId)) {
       return;
     }
+    
     if (state.cachedUsers.containsKey(accountId)) {
       _streamController.add(
         state.copyWith(
