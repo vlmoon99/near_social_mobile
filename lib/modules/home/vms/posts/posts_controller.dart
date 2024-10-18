@@ -1012,6 +1012,44 @@ class Posts extends Equatable {
     );
   }
 
+  Post getPost({
+    required String authorId,
+    required int blockHeight,
+    ReposterInfo? reposterInfo,
+    required PostsViewMode postsViewMode,
+    String? postsOfAccountId,
+  }) {
+    switch (postsViewMode) {
+      case PostsViewMode.main:
+        {
+          return posts.firstWhere(
+            (element) =>
+                element.blockHeight == blockHeight &&
+                element.authorInfo.accountId == authorId &&
+                element.reposterInfo == reposterInfo,
+          );
+        }
+      case PostsViewMode.account:
+        {
+          return postsOfAccounts[postsOfAccountId]!.firstWhere(
+            (element) =>
+                element.blockHeight == blockHeight &&
+                element.authorInfo.accountId == authorId &&
+                element.reposterInfo == reposterInfo,
+          );
+        }
+      case PostsViewMode.temporary:
+        {
+          return temporaryPosts.firstWhere(
+            (element) =>
+                element.blockHeight == blockHeight &&
+                element.authorInfo.accountId == authorId &&
+                element.reposterInfo == reposterInfo,
+          );
+        }
+    }
+  }
+
   @override
   List<Object?> get props => [
         posts,
