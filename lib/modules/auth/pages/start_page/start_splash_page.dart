@@ -70,7 +70,7 @@ class _StartSplashPageState extends State<StartSplashPage>
   //                 final FlutterSecureStorage secureStorage =
   //                     Modular.get<FlutterSecureStorage>();
   //                 secureStorage.write(
-  //                     key: SecureStorageKeys.appPolicyAccepted, value: 'true');
+  //                     key: StorageKeys.appPolicyAccepted, value: 'true');
   //                 Modular.to.pop();
   //               },
   //               child: const Text(

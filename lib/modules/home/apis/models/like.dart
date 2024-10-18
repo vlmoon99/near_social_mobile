@@ -1,20 +1,15 @@
-class Like {
-  String accountId;
+import 'package:equatable/equatable.dart';
 
-  Like({
+class Like extends Equatable {
+  final String accountId;
+
+  const Like({
     required this.accountId,
   });
 
   @override
-  String toString() {
-    return 'Like(accountId: $accountId)';
-  }
-
-  @override
-  operator ==(Object other) => other is Like && other.accountId == accountId;
+  List<Object?> get props => [accountId];
   
   @override
-  int get hashCode => accountId.hashCode;
-  
+  bool? get stringify => true;
 }
-

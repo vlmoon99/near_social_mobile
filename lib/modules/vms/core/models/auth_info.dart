@@ -1,10 +1,9 @@
-import 'package:flutter/foundation.dart';
+import 'package:equatable/equatable.dart';
 import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dart';
 
 enum AuthInfoStatus { unauthenticated, authenticated }
 
-@immutable
-class AuthInfo {
+class AuthInfo extends Equatable {
   final String accountId;
   final String publicKey;
   final String secretKey;
@@ -40,14 +39,15 @@ class AuthInfo {
   }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is AuthInfo &&
-          runtimeType == other.runtimeType &&
-          accountId == other.accountId &&
-          publicKey == other.publicKey &&
-          secretKey == other.secretKey &&
-          privateKey == other.privateKey &&
-          status == other.status &&
-          mapEquals(additionalStoredKeys, other.additionalStoredKeys);
+  List<Object?> get props => [
+        accountId,
+        publicKey,
+        secretKey,
+        privateKey,
+        status,
+        additionalStoredKeys,
+      ];
+
+  @override
+  bool? get stringify => true;
 }

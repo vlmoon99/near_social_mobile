@@ -85,7 +85,14 @@ class _PostsFeedPageState extends State<PostsFeedPage> {
     final FilterController filterController = Modular.get<FilterController>();
     return Scaffold(
       body: StreamBuilder<dynamic>(
-        stream: Rx.merge([postsController.stream, filterController.stream]),
+        stream: Rx.merge([
+          postsController.stream.distinct(
+            (previous, next) =>
+                previous.posts.length == next.posts.length ||
+                previous.status == next.status,
+          ),
+          filterController.stream
+        ]),
         builder: (context, _) {
           final postsState = postsController.state;
           final filterUtil = FiltersUtil(filters: filterController.state);

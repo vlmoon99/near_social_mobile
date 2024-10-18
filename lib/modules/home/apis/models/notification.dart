@@ -1,11 +1,12 @@
+import 'package:equatable/equatable.dart';
 import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
 
-class Notification {
+class Notification extends Equatable {
   final GeneralAccountInfo authorInfo;
   final int blockHeight;
   final DateTime date;
   final NotificationType notificationType;
-  Notification({
+  const Notification({
     required this.authorInfo,
     required this.blockHeight,
     required this.date,
@@ -13,14 +14,15 @@ class Notification {
   });
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Notification &&
-          runtimeType == other.runtimeType &&
-          authorInfo == other.authorInfo &&
-          blockHeight == other.blockHeight &&
-          date == other.date &&
-          notificationType == other.notificationType;
+  List<Object?> get props => [
+        authorInfo,
+        blockHeight,
+        date,
+        notificationType,
+      ];
+
+  @override
+  bool? get stringify => true;
 }
 
 enum NotificationTypes {
@@ -35,13 +37,20 @@ enum NotificationTypes {
   unknown
 }
 
-class NotificationType {
+class NotificationType extends Equatable {
   final NotificationTypes type;
-  Map<String, dynamic> data;
-  NotificationType({
+  final Map<String, dynamic> data;
+
+  const NotificationType({
     required this.type,
     required this.data,
   });
+
+  @override
+  List<Object?> get props => [type, data];
+      
+  @override
+  bool? get stringify => true;
 }
 
 NotificationTypes getNotificationType(String type) {

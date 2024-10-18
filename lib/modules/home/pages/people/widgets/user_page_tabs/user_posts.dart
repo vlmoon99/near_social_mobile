@@ -20,22 +20,25 @@ class UserPostsView extends StatefulWidget {
 }
 
 class _UserPostsViewState extends State<UserPostsView> {
-  bool allPostsLoaded = false;
-  bool loadingMorePosts = false;
+  final ValueNotifier<bool> loadingMorePosts = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> allPostsLoaded = ValueNotifier<bool>(false);
 
   @override
   Widget build(BuildContext context) {
     final PostsController postsController = Modular.get<PostsController>();
     return StreamBuilder(
-      stream: postsController.stream,
+      stream: postsController.stream.distinct(
+        (previous, next) =>
+            previous.postsOfAccounts[widget.accountIdOfUser]?.length ==
+            next.postsOfAccounts[widget.accountIdOfUser]?.length,
+      ),
       builder: (context, snapshot) {
         if (postsController.state.postsOfAccounts[widget.accountIdOfUser] ==
             null) {
           return const Center(child: SpinnerLoadingIndicator());
         }
-        final List<Post> posts = List<Post>.from(
-            postsController.state.postsOfAccounts[widget.accountIdOfUser] ??
-                []);
+        final List<Post> posts =
+            postsController.state.postsOfAccounts[widget.accountIdOfUser]!;
         if (posts.isEmpty) {
           return const Center(child: Text('No posts yet'));
         }
@@ -44,17 +47,22 @@ class _UserPostsViewState extends State<UserPostsView> {
           padding: const EdgeInsets.symmetric(horizontal: 20).r,
           itemBuilder: (context, index) {
             if (index == posts.length) {
-              return loadingMorePosts
-                  ? const Center(child: SpinnerLoadingIndicator())
-                  : CustomButton(
+              return AnimatedBuilder(
+                animation: Listenable.merge([
+                  loadingMorePosts,
+                  allPostsLoaded,
+                ]),
+                builder: (context, _) {
+                  if (loadingMorePosts.value) {
+                    return const Center(child: SpinnerLoadingIndicator());
+                  } else {
+                    return CustomButton(
                       primary: true,
-                      onPressed: allPostsLoaded
+                      onPressed: allPostsLoaded.value
                           ? null
                           : () async {
                               try {
-                                setState(() {
-                                  loadingMorePosts = true;
-                                });
+                                loadingMorePosts.value = true;
                                 final posts =
                                     await Modular.get<PostsController>()
                                         .loadMorePosts(
@@ -62,27 +70,28 @@ class _UserPostsViewState extends State<UserPostsView> {
                                   postsViewMode: PostsViewMode.account,
                                 );
                                 if (posts.isEmpty) {
-                                  setState(() {
-                                    allPostsLoaded = true;
-                                  });
+                                  allPostsLoaded.value = true;
                                 }
                               } catch (err) {
                                 rethrow;
                               } finally {
                                 if (mounted) {
-                                  setState(() {
-                                    loadingMorePosts = false;
-                                  });
+                                  loadingMorePosts.value = false;
                                 }
                               }
                             },
                       child: Text(
-                        allPostsLoaded ? "No more posts" : "Load more posts",
+                        allPostsLoaded.value
+                            ? "No more posts"
+                            : "Load more posts",
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     );
+                  }
+                },
+              );
             }
             return PostCard(
               post: posts[index],

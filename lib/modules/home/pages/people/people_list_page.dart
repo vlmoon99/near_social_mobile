@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/modules/home/pages/people/widgets/user_tile.dart';
+import 'package:near_social_mobile/modules/home/vms/users/models/user_list_state.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/shared_widgets/search_textfield.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
@@ -53,19 +54,24 @@ class _PeopleListPageState extends State<PeopleListPage> {
             if (userListController.state.loadingState != UserListState.loaded) {
               return const Center(child: SpinnerLoadingIndicator());
             }
+
             final users = searchController.text != ""
-                ? userListController.state.users
+                ? userListController.state.cachedUsers.entries
                     .where(
-                      (user) =>
-                          user.generalAccountInfo.name.contains(
-                            RegExp(searchController.text, caseSensitive: false),
-                          ) ||
-                          user.generalAccountInfo.accountId.contains(
-                            RegExp(searchController.text, caseSensitive: false),
-                          ),
+                      (entry) {
+                        return entry.key.contains(
+                              RegExp(searchController.text,
+                                  caseSensitive: false),
+                            ) ||
+                            entry.key.contains(
+                              RegExp(searchController.text,
+                                  caseSensitive: false),
+                            );
+                      },
                     )
+                    .map((e) => e.value)
                     .toList()
-                : userListController.state.users;
+                : userListController.state.cachedUsers.values.toList();
             return ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 15).r,
               itemBuilder: (context, index) {

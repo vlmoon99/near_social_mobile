@@ -36,11 +36,11 @@ class _EncryptionScreenState extends State<EncryptionScreen> {
     await cryptoStorageService.saveCryptographicKeyToStorage(
         cryptographicKey: cryptographicKey);
     await cryptoStorageService.write(
-      storageKey: SecureStorageKeys.authInfo,
+      storageKey: StorageKeys.authInfo,
       data: jsonEncode(widget.authorizationCredentials),
     );
     await Modular.get<FlutterSecureStorage>()
-        .write(key: SecureStorageKeys.networkType, value: "mainnet");
+        .write(key: StorageKeys.networkType, value: "mainnet");
     final authController = Modular.get<AuthController>();
     await authController
         .login(

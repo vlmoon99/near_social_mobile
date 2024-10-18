@@ -1,12 +1,13 @@
 // ignore_for_file: hash_and_equals
 
+import 'package:equatable/equatable.dart';
 import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
 
-class ReposterInfo {
+class ReposterInfo extends Equatable {
   final GeneralAccountInfo accountInfo;
   final int blockHeight;
 
-  ReposterInfo({
+  const ReposterInfo({
     required this.accountInfo,
     required this.blockHeight,
   });
@@ -22,10 +23,8 @@ class ReposterInfo {
   }
 
   @override
-  operator ==(Object other) =>
-      identical(this, other) ||
-      other is ReposterInfo &&
-          runtimeType == other.runtimeType &&
-          accountInfo.accountId == other.accountInfo.accountId &&
-          blockHeight == other.blockHeight;
+  List<Object?> get props => [accountInfo.accountId, blockHeight];
+
+  @override
+  bool? get stringify => true;
 }

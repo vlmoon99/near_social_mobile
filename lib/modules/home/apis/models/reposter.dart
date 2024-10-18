@@ -1,21 +1,15 @@
+import 'package:equatable/equatable.dart';
 
-class Reposter {
-  String accountId;
+class Reposter extends Equatable {
+  final String accountId;
 
-  Reposter({
+  const Reposter({
     required this.accountId,
   });
 
   @override
-  operator ==(Object other) =>
-      other is Reposter && other.accountId == accountId;
-
+  List<Object?> get props => [accountId];
+      
   @override
-  int get hashCode => accountId.hashCode;
-  
-  @override
-  String toString() {
-    return 'Reposter(accountId: $accountId)';
-  }
-  
+  bool? get stringify => true;
 }

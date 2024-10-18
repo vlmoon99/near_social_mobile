@@ -1,26 +1,29 @@
 import 'dart:developer';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:rxdart/rxdart.dart';
 
-class AppExceptions {
-  String messageForUser;
-  String messageForDev;
-  AppExceptions({
+class AppExceptions extends Equatable {
+  final String messageForUser;
+  final String messageForDev;
+  const AppExceptions({
     required this.messageForUser,
     required this.messageForDev,
   });
 
   @override
   String toString() => "messageForDev$messageForDev";
+
+  @override
+  List<Object?> get props => [messageForUser, messageForDev];
 }
 
 class Catcher {
-  final FlutterSecureStorage secureStorage;
-  Catcher(this.secureStorage) {
+  bool dialogIsOpen = false;
+  Catcher() {
     exceptionsHandler.listen((value) {
       log("exceptionsHandler catch the exception --> ${value.toString()}");
       showDialogForError(value);
@@ -29,9 +32,11 @@ class Catcher {
 
   final exceptionsHandler = BehaviorSubject<AppExceptions>();
 
-  void showDialogForError(
-    AppExceptions exception,
-  ) {
+  void showDialogForError(AppExceptions exception) {
+    if (dialogIsOpen) {
+      return;
+    }
+    dialogIsOpen = true;
     showDialog(
       builder: (context) => AlertDialog(
         title: const Text('Error!'),
@@ -53,6 +58,10 @@ class Catcher {
         ],
       ),
       context: Modular.routerDelegate.navigatorKey.currentContext!,
+    ).then(
+      (_) {
+        dialogIsOpen = false;
+      },
     );
   }
 }
