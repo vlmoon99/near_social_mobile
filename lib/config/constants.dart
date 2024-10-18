@@ -5,7 +5,6 @@ class StorageKeys {
   static const networkType = 'network_type';
   static const appPolicyAccepted = 'app_policy_accepted';
   static const filters = 'filters';
-  static const cachedUserList = 'cached_user_list';
 }
 
 class NearAssets {
