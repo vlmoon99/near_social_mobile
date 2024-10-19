@@ -16,6 +16,7 @@ import 'package:near_social_mobile/shared_widgets/custom_button.dart';
 import 'package:near_social_mobile/shared_widgets/scale_animated_iconbutton.dart';
 import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:near_social_mobile/utils/date_to_string.dart';
+import 'package:near_social_mobile/utils/no_scrollbar_behavior.dart';
 
 class PostCard extends StatelessWidget {
   const PostCard({
@@ -192,26 +193,29 @@ class PostCard extends StatelessWidget {
                       constraints: BoxConstraints(
                         maxHeight: 200.h,
                       ),
-                      child: ListView(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        children: [
-                          RawTextToContentFormatter(
-                            rawText: currentPost.postBody.text.trim(),
-                            heroAnimForImages: false,
-                            imageHeight: .5.sh,
-                            responsive: false,
-                          ),
-                          if (currentPost.postBody.mediaLink != null) ...[
-                            ConstrainedBox(
-                              constraints: BoxConstraints(maxHeight: .5.sh),
-                              child: NearNetworkImage(
-                                imageUrl: currentPost.postBody.mediaLink!,
-                                boxFit: BoxFit.contain,
-                              ),
+                      child: ScrollConfiguration(
+                        behavior: NoScrollbarScrollBehavior(),
+                        child: ListView(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: [
+                            RawTextToContentFormatter(
+                              rawText: currentPost.postBody.text.trim(),
+                              heroAnimForImages: false,
+                              imageHeight: .5.sh,
+                              responsive: false,
                             ),
+                            if (currentPost.postBody.mediaLink != null) ...[
+                              ConstrainedBox(
+                                constraints: BoxConstraints(maxHeight: .5.sh),
+                                child: NearNetworkImage(
+                                  imageUrl: currentPost.postBody.mediaLink!,
+                                  boxFit: BoxFit.contain,
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ),
                     Row(
