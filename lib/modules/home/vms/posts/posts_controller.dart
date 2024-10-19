@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:flutter/foundation.dart';
+import 'package:equatable/equatable.dart';
 import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
 import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/like.dart';
@@ -20,7 +20,7 @@ class PostsController {
   final BehaviorSubject<Posts> _streamController =
       BehaviorSubject.seeded(const Posts());
 
-  Stream<Posts> get stream => _streamController.stream;
+  Stream<Posts> get stream => _streamController.stream.distinct();
   Posts get state => _streamController.value;
 
   final FutureQueue _futureQueue = FutureQueue(
@@ -121,7 +121,7 @@ class PostsController {
     required GeneralAccountInfo accountInfo,
     required int blockHeight,
   }) async {
-    if (state.temporaryPosts.length > 1 &&
+    if (state.temporaryPosts.isNotEmpty &&
         state.temporaryPosts.any((element) =>
             element.blockHeight == blockHeight &&
             element.authorInfo.accountId == accountInfo.accountId)) {
@@ -164,27 +164,26 @@ class PostsController {
 
   List<Post> getPostsDueToPostsViewMode(PostsViewMode postsViewMode,
       [String? postsOfAccountId]) {
-    late final List<Post> choosedPosts;
+    late final List<Post> chosenPosts;
 
     switch (postsViewMode) {
       case PostsViewMode.main:
         {
-          choosedPosts = state.posts;
+          chosenPosts = List.of(state.posts);
           break;
         }
       case PostsViewMode.account:
         {
-          choosedPosts =
-              List<Post>.from(state.postsOfAccounts[postsOfAccountId]!);
+          chosenPosts = List.of(state.postsOfAccounts[postsOfAccountId]!);
           break;
         }
       case PostsViewMode.temporary:
         {
-          choosedPosts = state.temporaryPosts;
+          chosenPosts = List.of(state.temporaryPosts);
           break;
         }
     }
-    return choosedPosts;
+    return chosenPosts;
   }
 
   Future<List<Post>> loadMorePosts(
@@ -199,22 +198,22 @@ class PostsController {
         ),
       );
 
-      final List<Post> choosedPosts = getPostsDueToPostsViewMode(
+      final List<Post> chosenPosts = getPostsDueToPostsViewMode(
         postsViewMode,
         postsOfAccountId,
       );
 
-      final lastBlockHeightIndexOfPosts = choosedPosts
-          .lastIndexWhere((element) => element.reposterInfo == null);
-      final lastBlockHeightIndexOfReposts = choosedPosts
-          .lastIndexWhere((element) => element.reposterInfo != null);
+      final lastBlockHeightIndexOfPosts =
+          chosenPosts.lastIndexWhere((element) => element.reposterInfo == null);
+      final lastBlockHeightIndexOfReposts =
+          chosenPosts.lastIndexWhere((element) => element.reposterInfo != null);
       final posts = await nearSocialApi.getPosts(
         lastBlockHeightIndexOfPosts: lastBlockHeightIndexOfPosts == -1
             ? null
-            : choosedPosts.elementAt(lastBlockHeightIndexOfPosts).blockHeight,
+            : chosenPosts.elementAt(lastBlockHeightIndexOfPosts).blockHeight,
         lastBlockHeightIndexOfReposts: lastBlockHeightIndexOfReposts == -1
             ? null
-            : choosedPosts.elementAt(lastBlockHeightIndexOfReposts).blockHeight,
+            : chosenPosts.elementAt(lastBlockHeightIndexOfReposts).blockHeight,
         targetAccounts: postsOfAccountId == null ? null : [postsOfAccountId],
         limit: 15,
       );
@@ -222,18 +221,18 @@ class PostsController {
       if (lastBlockHeightIndexOfPosts != -1) {
         posts.removeWhere((post) =>
             post.blockHeight ==
-            choosedPosts.elementAt(lastBlockHeightIndexOfPosts).blockHeight);
+            chosenPosts.elementAt(lastBlockHeightIndexOfPosts).blockHeight);
       }
 
       if (lastBlockHeightIndexOfReposts != -1) {
         posts.removeWhere(
           (post) =>
               post.blockHeight ==
-              choosedPosts.elementAt(lastBlockHeightIndexOfReposts).blockHeight,
+              chosenPosts.elementAt(lastBlockHeightIndexOfReposts).blockHeight,
         );
       }
 
-      final newPosts = [...choosedPosts, ...posts];
+      final newPosts = [...chosenPosts, ...posts];
 
       switch (postsViewMode) {
         case PostsViewMode.main:
@@ -395,18 +394,19 @@ class PostsController {
     switch (postsViewMode) {
       case PostsViewMode.main:
         {
-          commentsOfPost = state.posts[indexOfPost].commentList!;
+          commentsOfPost = List.of(state.posts[indexOfPost].commentList!);
           break;
         }
       case PostsViewMode.account:
         {
-          commentsOfPost = state
-              .postsOfAccounts[postsOfAccountId]![indexOfPost].commentList!;
+          commentsOfPost = List.of(state
+              .postsOfAccounts[postsOfAccountId]![indexOfPost].commentList!);
           break;
         }
       case PostsViewMode.temporary:
         {
-          commentsOfPost = state.temporaryPosts[indexOfPost].commentList!;
+          commentsOfPost =
+              List.of(state.temporaryPosts[indexOfPost].commentList!);
           break;
         }
     }
@@ -469,7 +469,7 @@ class PostsController {
       blockHeight: comment.blockHeight,
     );
 
-    final Set<Like> likes = await nearSocialApi.getLikesOfComment(
+    final List<Like> likes = await nearSocialApi.getLikesOfComment(
       accountId: comment.authorInfo.accountId,
       blockHeight: comment.blockHeight,
     );
@@ -478,18 +478,20 @@ class PostsController {
     switch (postsViewMode) {
       case PostsViewMode.main:
         {
-          commentsOfPost = state.posts[indexOfPost].commentList!;
+          commentsOfPost =
+              List<Comment>.of(state.posts[indexOfPost].commentList!);
           break;
         }
       case PostsViewMode.account:
         {
-          commentsOfPost = state
-              .postsOfAccounts[postsOfAccountId]![indexOfPost].commentList!;
+          commentsOfPost = List<Comment>.of(state
+              .postsOfAccounts[postsOfAccountId]![indexOfPost].commentList!);
           break;
         }
       case PostsViewMode.temporary:
         {
-          commentsOfPost = state.temporaryPosts[indexOfPost].commentList!;
+          commentsOfPost =
+              List<Comment>.of(state.temporaryPosts[indexOfPost].commentList!);
           break;
         }
     }
@@ -506,38 +508,43 @@ class PostsController {
     );
   }
 
-  Future<void> updatePostsOfAccount({required String postsOfAccountId}) async {
+  Future<void> updatePostsOfAccount(
+      {required String postsOfAccountId, Filters? filters}) async {
     try {
+      final FiltersUtil filtersUtil =
+          FiltersUtil(filters: filters ?? const Filters());
       final newPosts = await nearSocialApi.getPosts(
         targetAccounts: [postsOfAccountId],
         limit: 10,
       );
 
-      final List<Post> currentPostsOfAccount =
-          List<Post>.from(state.postsOfAccounts[postsOfAccountId]);
-
       newPosts.removeWhere(
-        (post) => currentPostsOfAccount.any(
+        (post) => state.postsOfAccounts[postsOfAccountId]!.any(
           (element) =>
-              element.blockHeight == post.blockHeight &&
-              element.authorInfo.accountId == post.authorInfo.accountId &&
-              element.reposterInfo == post.reposterInfo,
+              (element.blockHeight == post.blockHeight &&
+                  element.authorInfo.accountId == post.authorInfo.accountId &&
+                  element.reposterInfo == post.reposterInfo) ||
+              filtersUtil.postIsHided(
+                  post.authorInfo.accountId, post.blockHeight),
         ),
       );
 
       _streamController.add(
         state.copyWith(
           postsOfAccounts: Map.of(state.postsOfAccounts)
-            ..[postsOfAccountId] = [...newPosts, ...currentPostsOfAccount],
+            ..[postsOfAccountId] = [
+              ...newPosts,
+              ...state.postsOfAccounts[postsOfAccountId]!
+            ],
           status: PostLoadingStatus.loaded,
         ),
       );
-      for (var indexOfPost = 0;
-          indexOfPost < state.postsOfAccounts[postsOfAccountId]!.length;
-          indexOfPost++) {
-        _loadPostsDataAsync(
-            indexOfPost, PostsViewMode.account, postsOfAccountId);
-      }
+
+      checkPostsForFullLoadAndLoadIfNecessary(
+        postsViewMode: PostsViewMode.account,
+        postsOfAccountId: postsOfAccountId,
+        filters: filters,
+      );
     } catch (err) {
       rethrow;
     }
@@ -658,7 +665,7 @@ class PostsController {
         _updateDataDueToPostsViewMode(
           postsViewMode: postsViewMode,
           post: post,
-          likeList: Set.of(post.likeList)
+          likeList: List.of(post.likeList)
             ..removeWhere((element) => element.accountId == accountId),
           postsOfAccountId: postsOfAccountId,
         );
@@ -675,7 +682,7 @@ class PostsController {
         _updateDataDueToPostsViewMode(
           postsViewMode: postsViewMode,
           post: post,
-          likeList: Set.of(post.likeList)
+          likeList: List.of(post.likeList)
             ..add(
               Like(accountId: accountId),
             ),
@@ -687,7 +694,7 @@ class PostsController {
         _updateDataDueToPostsViewMode(
           postsViewMode: postsViewMode,
           post: post,
-          likeList: Set.of(post.likeList)
+          likeList: List.of(post.likeList)
             ..add(
               Like(accountId: accountId),
             ),
@@ -697,7 +704,7 @@ class PostsController {
         _updateDataDueToPostsViewMode(
           postsViewMode: postsViewMode,
           post: post,
-          likeList: Set.of(post.likeList)
+          likeList: List.of(post.likeList)
             ..removeWhere((element) => element.accountId == accountId),
           postsOfAccountId: postsOfAccountId,
         );
@@ -724,24 +731,22 @@ class PostsController {
     final isLiked = post.commentList![indexOfComment].likeList
         .any((element) => element.accountId == accountId);
 
-    late final List<Comment> commentsOfPost;
-    switch (postsViewMode) {
-      case PostsViewMode.main:
-        {
-          commentsOfPost = state.posts[indexOfPost].commentList!;
-          break;
-        }
-      case PostsViewMode.account:
-        {
-          commentsOfPost = state
-              .postsOfAccounts[postsOfAccountId]![indexOfPost].commentList!;
-          break;
-        }
-      case PostsViewMode.temporary:
-        {
-          commentsOfPost = state.temporaryPosts[indexOfPost].commentList!;
-          break;
-        }
+    List<Comment> commentsOfPost() {
+      switch (postsViewMode) {
+        case PostsViewMode.main:
+          {
+            return List.of(state.posts[indexOfPost].commentList!);
+          }
+        case PostsViewMode.account:
+          {
+            return List.of(state
+                .postsOfAccounts[postsOfAccountId]![indexOfPost].commentList!);
+          }
+        case PostsViewMode.temporary:
+          {
+            return List.of(state.temporaryPosts[indexOfPost].commentList!);
+          }
+      }
     }
 
     try {
@@ -759,12 +764,10 @@ class PostsController {
         _updateDataDueToPostsViewMode(
           postsViewMode: postsViewMode,
           post: post,
-          commentList: commentsOfPost
-            ..[indexOfComment].copyWith(
-              likeList: comment.likeList
-                ..removeWhere(
-                  (element) => element.accountId == accountId,
-                ),
+          commentList: commentsOfPost()
+            ..[indexOfComment] = commentsOfPost()[indexOfComment].copyWith(
+              likeList: List.of(comment.likeList)
+                ..removeWhere((element) => element.accountId == accountId),
             ),
           postsOfAccountId: postsOfAccountId,
         );
@@ -778,22 +781,17 @@ class PostsController {
             privateKey: privateKey,
           ),
         );
+        _updateDataDueToPostsViewMode(
+          postsViewMode: postsViewMode,
+          post: post,
+          commentList: commentsOfPost()
+            ..[indexOfComment] = commentsOfPost()[indexOfComment].copyWith(
+              likeList: List.of(comment.likeList)
+                ..add(Like(accountId: accountId)),
+            ),
+          postsOfAccountId: postsOfAccountId,
+        );
       }
-
-      _updateDataDueToPostsViewMode(
-        postsViewMode: postsViewMode,
-        post: post,
-        commentList: commentsOfPost
-          ..[indexOfComment].copyWith(
-            likeList: comment.likeList
-              ..add(
-                Like(
-                  accountId: accountId,
-                ),
-              ),
-          ),
-        postsOfAccountId: postsOfAccountId,
-      );
     } catch (err) {
       rethrow;
     }
@@ -821,7 +819,7 @@ class PostsController {
       _updateDataDueToPostsViewMode(
         postsViewMode: postsViewMode,
         post: post,
-        repostList: Set.of(post.repostList)
+        repostList: List.of(post.repostList)
           ..add(
             Reposter(accountId: accountId),
           ),
@@ -836,9 +834,9 @@ class PostsController {
     required PostsViewMode postsViewMode,
     required Post post,
     String? postsOfAccountId,
-    Set<Like>? likeList,
+    List<Like>? likeList,
     List<Comment>? commentList,
-    Set<Reposter>? repostList,
+    List<Reposter>? repostList,
     PostBody? postBody,
     GeneralAccountInfo? authorInfo,
     ReposterInfo? reposterInfo,
@@ -846,12 +844,15 @@ class PostsController {
     bool? fullyLoaded,
   }) {
     final indexOfPost = _getIndexOfPost(post, postsViewMode, postsOfAccountId);
+    if (indexOfPost == -1) {
+      return;
+    }
     switch (postsViewMode) {
       case PostsViewMode.main:
         {
           _streamController.add(
             state.copyWith(
-              posts: List.of(state.posts)
+              posts: List<Post>.of(state.posts)
                 ..[indexOfPost] = state.posts[indexOfPost].copyWith(
                   likeList: likeList ?? state.posts[indexOfPost].likeList,
                   commentList:
@@ -871,36 +872,38 @@ class PostsController {
         }
       case PostsViewMode.account:
         {
-          final newlistOfPostsForUser = List.from(
-              state.postsOfAccounts[postsOfAccountId])
+          final newListOfPostsForUser = List<Post>.of(
+              state.postsOfAccounts[postsOfAccountId]!)
             ..[indexOfPost] =
-                state.postsOfAccounts[postsOfAccountId][indexOfPost].copyWith(
+                state.postsOfAccounts[postsOfAccountId]![indexOfPost].copyWith(
               likeList: likeList ??
-                  state.postsOfAccounts[postsOfAccountId][indexOfPost].likeList,
+                  state
+                      .postsOfAccounts[postsOfAccountId]![indexOfPost].likeList,
               commentList: commentList ??
-                  state.postsOfAccounts[postsOfAccountId][indexOfPost]
+                  state.postsOfAccounts[postsOfAccountId]![indexOfPost]
                       .commentList,
               repostList: repostList ??
-                  state.postsOfAccounts[postsOfAccountId][indexOfPost]
+                  state.postsOfAccounts[postsOfAccountId]![indexOfPost]
                       .repostList,
               postBody: postBody ??
-                  state.postsOfAccounts[postsOfAccountId][indexOfPost].postBody,
+                  state
+                      .postsOfAccounts[postsOfAccountId]![indexOfPost].postBody,
               authorInfo: authorInfo ??
-                  state.postsOfAccounts[postsOfAccountId][indexOfPost]
+                  state.postsOfAccounts[postsOfAccountId]![indexOfPost]
                       .authorInfo,
               reposterInfo: reposterInfo ??
-                  state.postsOfAccounts[postsOfAccountId][indexOfPost]
+                  state.postsOfAccounts[postsOfAccountId]![indexOfPost]
                       .reposterInfo,
               date: date ??
-                  state.postsOfAccounts[postsOfAccountId][indexOfPost].date,
+                  state.postsOfAccounts[postsOfAccountId]![indexOfPost].date,
               fullyLoaded: fullyLoaded ??
-                  state.postsOfAccounts[postsOfAccountId][indexOfPost]
+                  state.postsOfAccounts[postsOfAccountId]![indexOfPost]
                       .fullyLoaded,
             );
           _streamController.add(
             state.copyWith(
-              postsOfAccounts: Map<String, dynamic>.from(state.postsOfAccounts)
-                ..[postsOfAccountId!] = newlistOfPostsForUser,
+              postsOfAccounts: Map<String, List<Post>>.of(state.postsOfAccounts)
+                ..[postsOfAccountId!] = newListOfPostsForUser,
             ),
           );
           break;
@@ -949,7 +952,7 @@ class PostsController {
         }
       case PostsViewMode.account:
         {
-          return state.postsOfAccounts[postsOfAccountId].indexWhere(
+          return state.postsOfAccounts[postsOfAccountId]!.indexWhere(
             (element) =>
                 element.blockHeight == post.blockHeight &&
                 element.authorInfo.accountId == post.authorInfo.accountId &&
@@ -971,7 +974,6 @@ class PostsController {
   Future<void> clear() async {
     _streamController.add(const Posts());
   }
-
 }
 
 enum PostLoadingStatus {
@@ -983,11 +985,10 @@ enum PostLoadingStatus {
 
 enum PostsViewMode { main, account, temporary }
 
-@immutable
-class Posts {
+class Posts extends Equatable {
   final List<Post> posts;
   final List<Post> temporaryPosts;
-  final Map<String, dynamic> postsOfAccounts;
+  final Map<String, List<Post>> postsOfAccounts;
   final PostLoadingStatus status;
 
   const Posts({
@@ -1000,7 +1001,7 @@ class Posts {
   Posts copyWith({
     List<Post>? posts,
     List<Post>? temporaryPosts,
-    Map<String, dynamic>? postsOfAccounts,
+    Map<String, List<Post>>? postsOfAccounts,
     PostLoadingStatus? status,
   }) {
     return Posts(
@@ -1011,13 +1012,52 @@ class Posts {
     );
   }
 
+  Post getPost({
+    required String authorId,
+    required int blockHeight,
+    ReposterInfo? reposterInfo,
+    required PostsViewMode postsViewMode,
+    String? postsOfAccountId,
+  }) {
+    switch (postsViewMode) {
+      case PostsViewMode.main:
+        {
+          return posts.firstWhere(
+            (element) =>
+                element.blockHeight == blockHeight &&
+                element.authorInfo.accountId == authorId &&
+                element.reposterInfo == reposterInfo,
+          );
+        }
+      case PostsViewMode.account:
+        {
+          return postsOfAccounts[postsOfAccountId]!.firstWhere(
+            (element) =>
+                element.blockHeight == blockHeight &&
+                element.authorInfo.accountId == authorId &&
+                element.reposterInfo == reposterInfo,
+          );
+        }
+      case PostsViewMode.temporary:
+        {
+          return temporaryPosts.firstWhere(
+            (element) =>
+                element.blockHeight == blockHeight &&
+                element.authorInfo.accountId == authorId &&
+                element.reposterInfo == reposterInfo,
+          );
+        }
+    }
+  }
+
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Posts &&
-          runtimeType == other.runtimeType &&
-          listEquals(posts, other.posts) &&
-          listEquals(temporaryPosts, other.temporaryPosts) &&
-          mapEquals(postsOfAccounts, other.postsOfAccounts) &&
-          status == other.status;
+  List<Object?> get props => [
+        posts,
+        temporaryPosts,
+        postsOfAccounts,
+        status,
+      ];
+
+  @override
+  bool? get stringify => true;
 }

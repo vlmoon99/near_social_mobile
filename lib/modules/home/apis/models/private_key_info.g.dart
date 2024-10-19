@@ -10,8 +10,7 @@ PrivateKeyInfo _$PrivateKeyInfoFromJson(Map<String, dynamic> json) =>
     PrivateKeyInfo(
       publicKey: json['publicKey'] as String,
       privateKey: json['privateKey'] as String,
-      privateKeyInNearApiJsFormat:
-          json['privateKeyInNearApiJsFormat'] as String,
+      base58PubKey: json['base58PubKey'] as String,
       privateKeyTypeInfo: PrivateKeyTypeInfo.fromJson(
           json['privateKeyTypeInfo'] as Map<String, dynamic>),
     );
@@ -20,7 +19,7 @@ Map<String, dynamic> _$PrivateKeyInfoToJson(PrivateKeyInfo instance) =>
     <String, dynamic>{
       'publicKey': instance.publicKey,
       'privateKey': instance.privateKey,
-      'privateKeyInNearApiJsFormat': instance.privateKeyInNearApiJsFormat,
+      'base58PubKey': instance.base58PubKey,
       'privateKeyTypeInfo': instance.privateKeyTypeInfo,
     };
 

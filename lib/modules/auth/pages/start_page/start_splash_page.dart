@@ -70,7 +70,7 @@ class _StartSplashPageState extends State<StartSplashPage>
   //                 final FlutterSecureStorage secureStorage =
   //                     Modular.get<FlutterSecureStorage>();
   //                 secureStorage.write(
-  //                     key: SecureStorageKeys.appPolicyAccepted, value: 'true');
+  //                     key: StorageKeys.appPolicyAccepted, value: 'true');
   //                 Modular.to.pop();
   //               },
   //               child: const Text(
@@ -128,11 +128,15 @@ class _StartSplashPageState extends State<StartSplashPage>
         if (remainingTime > Duration.zero) {
           await Future.delayed(remainingTime, () {
             localyAuthenticated.value = checkedAuthentication;
-            _controller.forward();
+            if (mounted) {
+              _controller.forward();
+            }
           });
         } else {
           localyAuthenticated.value = checkedAuthentication;
-          _controller.forward();
+          if (mounted) {
+            _controller.forward();
+          }
         }
       },
     );

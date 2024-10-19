@@ -22,7 +22,6 @@ class MoreActionsForCommentButton extends StatefulWidget {
 
 class _MoreActionsForCommentButtonState
     extends State<MoreActionsForCommentButton> {
-
   @override
   Widget build(BuildContext context) {
     final AuthController authController = Modular.get<AuthController>();
@@ -52,6 +51,9 @@ class _MoreActionsForCommentButtonState
                       ),
                       leading:
                           const Icon(Icons.person_off, color: NEARColors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10).r,
+                      ),
                       onTap: () async {
                         showDialog(
                           context: Modular

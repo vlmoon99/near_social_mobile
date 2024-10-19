@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
-import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_data.dart';
 import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_smart_contract_arguments.dart';
-import 'package:flutterchain/flutterchain_lib/models/core/wallet.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/modules/home/apis/models/follower.dart';
@@ -23,6 +21,7 @@ import 'package:near_social_mobile/modules/home/apis/models/private_key_info.dar
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
 import 'package:near_social_mobile/network/dio_interceptors/retry_on_connection_changed_interceptor.dart';
+import 'package:near_social_mobile/utils/is_web_image_avaliable.dart';
 
 class NearSocialApi {
   final Dio _dio = Dio();
@@ -93,8 +92,8 @@ class NearSocialApi {
           name: "",
           description: "",
           backgroundImageLink: "",
-          linktree: {},
-          tags: [],
+          linktree: const {},
+          tags: const [],
         );
         ReposterInfo? reposterInfo;
         if (info.reposterPostCreationInfo != null) {
@@ -105,8 +104,8 @@ class NearSocialApi {
               name: "",
               description: "",
               backgroundImageLink: "",
-              linktree: {},
-              tags: [],
+              linktree: const {},
+              tags: const [],
             ),
             blockHeight: info.reposterPostCreationInfo!.blockHeight,
           );
@@ -117,10 +116,10 @@ class NearSocialApi {
             authorInfo: authorInfo,
             blockHeight: info.postCreationInfo.blockHeight,
             date: DateTime.now(),
-            postBody: PostBody(text: "Loading"),
+            postBody: const PostBody(text: "Loading"),
             reposterInfo: reposterInfo,
-            likeList: {},
-            repostList: {},
+            likeList: const [],
+            repostList: const [],
             commentList: null,
           ),
         );
@@ -240,7 +239,7 @@ class NearSocialApi {
         data: data,
       );
       if (response.data[accountId] == null) {
-        return PostBody(text: "", mediaLink: null);
+        return const PostBody(text: "", mediaLink: null);
       }
 
       late final Map<String, dynamic> postInfo;
@@ -260,11 +259,11 @@ class NearSocialApi {
       );
     } catch (err) {
       log("$err\n Post: accountId: $accountId, blockHeight: $blockHeight");
-      return PostBody(text: "", mediaLink: null);
+      return const PostBody(text: "", mediaLink: null);
     }
   }
 
-  Future<Set<Like>> getLikesOfPost({
+  Future<List<Like>> getLikesOfPost({
     required String accountId,
     required int blockHeight,
   }) async {
@@ -295,7 +294,7 @@ class NearSocialApi {
     }
   }
 
-  Set<Like> _convertToLikes(List<Map<String, dynamic>> data) {
+  List<Like> _convertToLikes(List<Map<String, dynamic>> data) {
     Map<String, Map<String, dynamic>> lastRecordOfUser = {};
 
     for (var item in data) {
@@ -318,7 +317,7 @@ class NearSocialApi {
       }
     }
 
-    Set<Like> result = {};
+    List<Like> result = [];
 
     lastRecordOfUser.forEach((key, value) {
       if (value["type"] == "like") {
@@ -329,7 +328,7 @@ class NearSocialApi {
     return result;
   }
 
-  Future<Set<Reposter>> getRepostsOfPost({
+  Future<List<Reposter>> getRepostsOfPost({
     required String accountId,
     required int blockHeight,
   }) async {
@@ -352,7 +351,8 @@ class NearSocialApi {
       );
       final reposts = List<Map<String, dynamic>>.from(response.data)
           .map((info) => Reposter(accountId: info["accountId"]))
-          .toSet();
+          .toSet()
+          .toList();
       return reposts;
     } catch (err) {
       rethrow;
@@ -412,9 +412,9 @@ class NearSocialApi {
           Comment(
             authorInfo: authorInfo,
             blockHeight: info.blockHeight,
-            commentBody: CommentBody(text: "Loading...", mediaLink: null),
+            commentBody: const CommentBody(text: "Loading...", mediaLink: null),
             date: DateTime.now(),
-            likeList: {},
+            likeList: const [],
           ),
         );
       }
@@ -497,7 +497,7 @@ class NearSocialApi {
     }
   }
 
-  Future<Set<Like>> getLikesOfComment(
+  Future<List<Like>> getLikesOfComment(
       {required String accountId, required int blockHeight}) async {
     try {
       final data = {
@@ -602,11 +602,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -642,11 +642,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          privateKey: privateKey,
+          toAddress: "social.near",
           args: {
             "data": {
               accountId: {
@@ -680,11 +680,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -718,11 +718,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -756,11 +756,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -787,9 +787,9 @@ class NearSocialApi {
     }
   }
 
-  Future<String> uploadFileToNearFileHosting({required String filepath}) async {
+  Future<String> uploadFileToNearFileHosting(
+      {required Uint8List imageData}) async {
     try {
-      final file = File(filepath);
       final headers = {'Content-Type': 'image/jpeg'};
 
       final response = await _dio.request(
@@ -798,7 +798,7 @@ class NearSocialApi {
           method: 'POST',
           headers: headers,
         ),
-        data: file.readAsBytesSync(),
+        data: imageData,
       );
       return response.data["cid"];
     } catch (err) {
@@ -819,11 +819,11 @@ class NearSocialApi {
           ? """,\\"image\\":{\\"ipfs_cid\\":\\"${postBody.mediaLink}\\"}"""
           : "";
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -865,11 +865,11 @@ class NearSocialApi {
           ? """,\\"image\\":{\\"ipfs_cid\\":\\"${postBody.mediaLink}\\"}"""
           : "";
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -958,7 +958,7 @@ class NearSocialApi {
               name: "",
               description: "",
               imageUrl: "",
-              tags: [],
+              tags: const [],
               blockHeight: fullListOfWidgetsWithoutMetadata[accountId]
                       ?["widget"]?[widgetName] ??
                   0,
@@ -1141,11 +1141,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -1183,11 +1183,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -1225,11 +1225,11 @@ class NearSocialApi {
   }) async {
     try {
       final response = await _nearBlockChainService.callSmartContractFunction(
-        "social.near",
-        accountId,
-        privateKey,
-        publicKey,
         NearBlockChainSmartContractArguments(
+          accountId: accountId,
+          publicKey: publicKey,
+          toAddress: "social.near",
+          privateKey: privateKey,
           args: {
             "data": {
               accountId: {
@@ -1261,11 +1261,73 @@ class NearSocialApi {
     final nftListOfAccountResponse = await _dio
         .get("https://api.fastnear.com/v0/account/$accountIdOfUser/nft");
 
-    final List<String> nftContractIds =
-        List<String>.from(nftListOfAccountResponse.data["contract_ids"]);
+    final Set<String> nftContractIds =
+        (List<String>.from(nftListOfAccountResponse.data["contract_ids"]))
+            .toSet();
 
-    final args = {"account_id": accountIdOfUser};
     for (var nftContractId in nftContractIds) {
+      final nftsInfo = await _getAllNFTsMetadataInfoFromContractForUser(
+        nftContractId: nftContractId,
+        accountIdOfUser: accountIdOfUser,
+      );
+
+      for (var nftInfo in nftsInfo) {
+        final tokenId = nftInfo['token_id'];
+
+        final defaultImageUrl =
+            "https://i.near.social/magic/large/https://near.social/magic/img/nft/$nftContractId/$tokenId";
+
+        String? nftImageUrl;
+        final reference = nftInfo["metadata"]["reference"] as String?;
+        final media = nftInfo["metadata"]["media"] as String?;
+
+        String? nftDescription;
+
+        if (media != null &&
+            media.startsWith("http") &&
+            !media.contains("ipfs")) {
+          //checking if media available by url
+          final imageAvailable = await isWebImageAvailable(media);
+          if (imageAvailable) {
+            nftImageUrl = media;
+          } else {
+            log("Image not available: $media");
+          }
+        } else if (reference != null &&
+            !reference.contains("ipfs") &&
+            reference.length == 43) {
+          // getting metadata info from arweave
+          try {
+            final metadataInfo =
+                (await _dio.get("https://arweave.net/$reference")).data;
+
+            nftImageUrl = metadataInfo["media"];
+            nftDescription = metadataInfo["description"];
+          } catch (err) {
+            log("Failed to get metadata info from arweave: $err");
+          }
+        }
+
+        nftList.add(Nft(
+          contractId: nftContractId,
+          tokenId: tokenId,
+          title: nftInfo["metadata"]["title"] ?? "",
+          description:
+              nftDescription ?? nftInfo["metadata"]["description"] ?? "",
+          imageUrl: nftImageUrl ?? defaultImageUrl,
+        ));
+      }
+    }
+    return nftList;
+  }
+
+  Future<List<Map<String, dynamic>>>
+      _getAllNFTsMetadataInfoFromContractForUser({
+    required String nftContractId,
+    required String accountIdOfUser,
+  }) async {
+    Future<Map<String, dynamic>> getRawDataFromContract(
+        Map<String, dynamic> args) async {
       final nftInfoResponse =
           await _nearBlockChainService.nearRpcClient.networkClient.dio.request(
         "",
@@ -1288,27 +1350,62 @@ class NearSocialApi {
           },
         ),
       );
-      if (nftInfoResponse.data['error'] != null ||
-          nftInfoResponse.data['result']['error'] != null) {
-        continue;
-      }
-      final decodedResponse = List<Map<String, dynamic>>.from(json.decode(
-        utf8.decode(
-          List<int>.from(
-            nftInfoResponse.data['result']?['result'],
-          ),
-        ),
-      ));
-      for (var nftInfo in decodedResponse) {
-        nftList.add(Nft(
-          contractId: nftContractId,
-          tokenId: nftInfo['token_id'],
-          title: nftInfo["metadata"]["title"] ?? "",
-          description: nftInfo["metadata"]["description"] ?? "",
-        ));
-      }
+
+      return nftInfoResponse.data;
     }
-    return nftList;
+
+    final defaultArgs = {
+      "account_id": accountIdOfUser,
+      "from_index": "0",
+      "limit": 1000 // to get as much data as possible
+    };
+
+    final nftInfoResponse = await getRawDataFromContract(defaultArgs);
+
+    if (nftInfoResponse['error'] != null ||
+        nftInfoResponse['result']['error'] != null) {
+      return [];
+      //TODO: solve problem with very large amount of nfts
+      // if (nftInfoResponse['result']['error'] != null &&
+      //     nftInfoResponse['result']['error'].contains("GasLimitExceeded")) {
+      //   const step = 100;
+      //   final Map<String, dynamic> indexedArgs = {
+      //     "account_id": accountIdOfUser,
+      //     "from_index": "0",
+      //     "limit": step
+      //   };
+      //   final List<Map<String, dynamic>> listOfDecodedResponses = [];
+      //   while (true) {
+      //     final response = await _getRawDataFromContract(indexedArgs);
+      //     final decodedResponse = List<Map<String, dynamic>>.from(json.decode(
+      //       utf8.decode(
+      //         List<int>.from(
+      //           response['result']?['result'],
+      //         ),
+      //       ),
+      //     ));
+      //     listOfDecodedResponses.addAll(decodedResponse);
+      //     if (decodedResponse.length < step) {
+      //       break;
+      //     }
+      //     indexedArgs['from_index'] =
+      //         (int.parse(indexedArgs['from_index']) + step).toString();
+      //   }
+      //   return listOfDecodedResponses;
+      // } else {
+      //   return [];
+      // }
+    }
+
+    final decodedResponse = List<Map<String, dynamic>>.from(json.decode(
+      utf8.decode(
+        List<int>.from(
+          nftInfoResponse['result']?['result'],
+        ),
+      ),
+    ));
+
+    return decodedResponse;
   }
 
   Future<List<Notification>> getNotificationsOfAccount({
@@ -1372,21 +1469,8 @@ class NearSocialApi {
     try {
       final publicKeyOfSecretKey = await _nearBlockChainService
           .getPublicKeyFromSecretKeyFromNearApiJSFormat(key.split(":").last);
-      final privateKeyInNearApiJsFormat =
-          await _nearBlockChainService.exportPrivateKeyToTheNearApiJsFormat(
-        currentBlockchainData: NearBlockChainData(
-          publicKey: publicKeyOfSecretKey,
-          privateKey: key,
-          passphrase: '',
-          derivationPath: const DerivationPath(
-            accountNumber: '',
-            purpose: '',
-            coinType: '',
-            address: '',
-            change: '',
-          ),
-        ),
-      );
+      final base58PubKey = await _nearBlockChainService
+          .getBase58PubKeyFromHexValue(hexEncodedPubKey: publicKeyOfSecretKey);
       final request = {
         "jsonrpc": "2.0",
         "id": "dontcare",
@@ -1395,7 +1479,7 @@ class NearSocialApi {
           "request_type": "view_access_key",
           "finality": "final",
           "account_id": accountId,
-          "public_key": privateKeyInNearApiJsFormat
+          "public_key": base58PubKey
         }
       };
       final response =
@@ -1413,9 +1497,9 @@ class NearSocialApi {
       }
       if (permission is Map && permission.keys.first == "FunctionCall") {
         return PrivateKeyInfo(
-          publicKey: accountId,
+          publicKey: publicKeyOfSecretKey,
           privateKey: key,
-          privateKeyInNearApiJsFormat: privateKeyInNearApiJsFormat,
+          base58PubKey: base58PubKey,
           privateKeyTypeInfo: PrivateKeyTypeInfo(
             type: PrivateKeyType.FunctionCall,
             receiverId: permission["FunctionCall"]["receiver_id"],
@@ -1425,10 +1509,10 @@ class NearSocialApi {
         );
       } else if (permission is String && permission == "FullAccess") {
         return PrivateKeyInfo(
-          publicKey: accountId,
+          publicKey: publicKeyOfSecretKey,
           privateKey: key,
-          privateKeyInNearApiJsFormat: privateKeyInNearApiJsFormat,
-          privateKeyTypeInfo: PrivateKeyTypeInfo(
+          base58PubKey: base58PubKey,
+          privateKeyTypeInfo: const PrivateKeyTypeInfo(
             type: PrivateKeyType.FullAccess,
           ),
         );

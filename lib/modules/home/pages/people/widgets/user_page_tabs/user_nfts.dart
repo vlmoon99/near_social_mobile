@@ -26,7 +26,7 @@ class _NftsViewState extends State<NftsView> {
             Modular.get<UserListController>();
         final user = userListController.state
             .getUserByAccountId(accountId: widget.accountIdOfUser);
-        if (user.nfts == null && !user.nftsUpdating) {
+        if (user.nfts == null) {
           Modular.get<UserListController>()
               .loadNftsOfAccount(accountId: widget.accountIdOfUser);
         }
@@ -50,6 +50,7 @@ class _NftsViewState extends State<NftsView> {
           return const Center(child: Text('No NFTs yet'));
         } else {
           return ListView.builder(
+            shrinkWrap: true,
             padding: const EdgeInsets.symmetric(horizontal: 20).r,
             itemBuilder: (context, index) {
               return NftCard(nft: nfts[index]);
@@ -86,7 +87,7 @@ class NftCard extends StatelessWidget {
                 );
               },
               child: Hero(
-                tag: nft.imageUrl,
+                tag: "${nft.contractId}${nft.tokenId}",
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     maxHeight: 200.h,

@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:near_social_mobile/shared_widgets/spinner_loading_indicator.dart';
 
-class NearNetworkImage extends StatelessWidget {
+class NearNetworkImage extends StatefulWidget {
   const NearNetworkImage({
     super.key,
     required this.imageUrl,
@@ -20,20 +20,27 @@ class NearNetworkImage extends StatelessWidget {
   final Widget? placeholder;
   final BoxFit boxFit;
 
+  @override
+  State<NearNetworkImage> createState() => _NearNetworkImageState();
+}
+
+class _NearNetworkImageState extends State<NearNetworkImage>
+    with AutomaticKeepAliveClientMixin {
   final httpHeaders = const {"Referer": "https://near.social/"};
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return CachedNetworkImage(
-      imageUrl: imageUrl,
+      imageUrl: widget.imageUrl,
       httpHeaders: httpHeaders,
-      fit: boxFit,
+      fit: widget.boxFit,
       errorWidget: (context, error, stackTrace) {
         if (stackTrace.toString().contains("Invalid image data")) {
           return SvgPictureSupport(
-            imageUrl: imageUrl,
+            imageUrl: widget.imageUrl,
             headers: httpHeaders,
-            placeholder: errorPlaceholder ??
+            placeholder: widget.errorPlaceholder ??
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -42,7 +49,7 @@ class NearNetworkImage extends StatelessWidget {
                 ),
           );
         }
-        return errorPlaceholder ??
+        return widget.errorPlaceholder ??
             const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -51,7 +58,7 @@ class NearNetworkImage extends StatelessWidget {
             );
       },
       placeholder: (context, url) =>
-          placeholder ??
+          widget.placeholder ??
           SizedBox(
             height: 30.h,
             child: const Row(
@@ -63,6 +70,9 @@ class NearNetworkImage extends StatelessWidget {
           ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class SvgPictureSupport extends StatelessWidget {

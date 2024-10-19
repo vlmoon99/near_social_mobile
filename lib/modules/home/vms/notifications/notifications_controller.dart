@@ -1,5 +1,4 @@
-
-import 'package:flutter/material.dart' hide Notification;
+import 'package:equatable/equatable.dart';
 import 'package:near_social_mobile/modules/home/apis/models/notification.dart';
 import 'package:rxdart/rxdart.dart' hide Notification;
 
@@ -13,7 +12,7 @@ class NotificationsController {
   final BehaviorSubject<Notifications> _streamController =
       BehaviorSubject.seeded(const Notifications());
 
-  Stream<Notifications> get stream => _streamController.stream;
+  Stream<Notifications> get stream => _streamController.stream.distinct();
   Notifications get state => _streamController.value;
 
   Future<void> loadNotifications({
@@ -30,6 +29,9 @@ class NotificationsController {
         accountId: accountId,
         from: from,
       );
+      if (state.status != NotificationsLoadingState.loading) {
+        return;
+      }
       _streamController.add(
         state.copyWith(
           status: NotificationsLoadingState.loaded,
@@ -43,11 +45,14 @@ class NotificationsController {
     }
   }
 
-  Future<List<Notification>> loadMoreNotifications({required String accountId}) async {
+  Future<List<Notification>> loadMoreNotifications(
+      {required String accountId}) async {
     try {
       final notifications = await nearSocialApi.getNotificationsOfAccount(
         accountId: accountId,
-        from: state.notifications.last.blockHeight,
+        from: state.notifications.isNotEmpty
+            ? state.notifications.last.blockHeight
+            : 20,
       );
       notifications.removeWhere((notification) =>
           notification.blockHeight == state.notifications.last.blockHeight);
@@ -65,13 +70,11 @@ class NotificationsController {
   Future<void> clear() async {
     _streamController.add(const Notifications());
   }
-
 }
 
 enum NotificationsLoadingState { initial, loading, loaded }
 
-@immutable
-class Notifications {
+class Notifications extends Equatable {
   final NotificationsLoadingState status;
   final List<Notification> notifications;
 
@@ -89,4 +92,10 @@ class Notifications {
       notifications: notifications ?? this.notifications,
     );
   }
+
+  @override
+  List<Object?> get props => [status, notifications];
+
+  @override
+  bool? get stringify => true;
 }

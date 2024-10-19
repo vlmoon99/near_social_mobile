@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -14,7 +13,6 @@ import 'package:near_social_mobile/modules/home/pages/people/widgets/user_page_t
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
-import 'package:near_social_mobile/services/pausable_timer.dart';
 import 'package:palette_generator/palette_generator.dart';
 
 class UserPage extends StatefulWidget {
@@ -26,13 +24,9 @@ class UserPage extends StatefulWidget {
   State<UserPage> createState() => _UserPageState();
 }
 
-class _UserPageState extends State<UserPage>
-    with SingleTickerProviderStateMixin {
+class _UserPageState extends State<UserPage> with TickerProviderStateMixin {
   Color backgroundColor = AppColors.background;
   late final _tabController = TabController(length: 3, vsync: this);
-  late final PausableTimer _generalProfileInfoTimer;
-  PausableTimer? _nftsUpdatingTimer;
-  PausableTimer? _widgetsUpdatingTimer;
 
   @override
   void initState() {
@@ -42,129 +36,27 @@ class _UserPageState extends State<UserPage>
     final user = userListController.state
         .getUserByAccountId(accountId: widget.accountId);
 
-    _generalProfileInfoTimer = PausableTimer.periodic(
-      const Duration(seconds: 40),
-      () async {
-        _generalProfileInfoTimer.pause();
-        await Modular.get<UserListController>()
-            .reloadUserInfo(accountId: widget.accountId);
-        await Modular.get<PostsController>()
-            .updatePostsOfAccount(postsOfAccountId: widget.accountId);
-        _generalProfileInfoTimer.start();
-      },
-    );
+    final PostsController postsController = Modular.get<PostsController>();
 
-    //nft auto update
-
-    //nfts never vere loaded
-    if (user.timeOfLastNftsUpdate == null) {
-      _nftsUpdatingTimer = PausableTimer.periodic(
-        const Duration(minutes: 6),
-        () async {
-          _nftsUpdatingTimer?.pause();
-          if (user.nfts != null) {
-            await userListController.loadNftsOfAccount(
-              accountId: widget.accountId,
-            );
-          }
-          _nftsUpdatingTimer?.start();
-        },
-      )..start();
-    } else {
-      //calculate time for remaining time to load nfts
-      final difference = DateTime.now().difference(user.timeOfLastNftsUpdate!);
-      final delayedTime = difference.inMinutes >= 6
-          ? const Duration(seconds: 5)
-          : (const Duration(minutes: 6) - difference);
-      Future.delayed(
-        delayedTime,
-        () {
-          userListController
-              .loadNftsOfAccount(
-            accountId: widget.accountId,
-          )
-              .then(
-            (_) {
-              _nftsUpdatingTimer = PausableTimer.periodic(
-                const Duration(minutes: 6),
-                () async {
-                  _nftsUpdatingTimer?.pause();
-                  if (user.nfts != null) {
-                    await userListController.loadNftsOfAccount(
-                      accountId: widget.accountId,
-                    );
-                  }
-                  _nftsUpdatingTimer?.start();
-                },
-              )..start();
-            },
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!user.allMetadataLoaded) {
+        await userListController.loadAdditionalMetadata(
+            accountId: widget.accountId);
+        if (postsController.state.postsOfAccounts[widget.accountId] == null) {
+          await postsController.loadPosts(
+            postsViewMode: PostsViewMode.account,
+            postsOfAccountId: widget.accountId,
           );
-        },
-      );
-    }
+        }
+      }
+    });
 
-    if (user.timeOfLastWidgetsUpdate == null) {
-      _widgetsUpdatingTimer = PausableTimer.periodic(
-        const Duration(minutes: 5),
-        () async {
-          _widgetsUpdatingTimer?.pause();
-          if (user.widgetList != null) {
-            await userListController.loadWidgetsOfAccount(
-              accountId: widget.accountId,
-            );
-          }
-          _widgetsUpdatingTimer?.start();
-        },
-      )..start();
-    } else {
-      //calculate time for remaining time to load widgets
-      final difference =
-          DateTime.now().difference(user.timeOfLastWidgetsUpdate!);
-      final delayedTime = difference.inMinutes >= 5
-          ? const Duration(seconds: 10)
-          : (const Duration(minutes: 5) - difference);
-      Future.delayed(
-        delayedTime,
-        () {
-          userListController
-              .loadWidgetsOfAccount(
-            accountId: widget.accountId,
-          )
-              .then(
-            (_) {
-              _widgetsUpdatingTimer = PausableTimer.periodic(
-                const Duration(minutes: 5),
-                () async {
-                  _widgetsUpdatingTimer?.pause();
-                  if (user.widgetList != null) {
-                    await userListController.loadWidgetsOfAccount(
-                      accountId: widget.accountId,
-                    );
-                  }
-                  _widgetsUpdatingTimer?.start();
-                },
-              )..start();
-            },
-          );
-        },
-      );
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final UserListController userListController =
-        Modular.get<UserListController>();
-    final currentUser = userListController.state
-        .getUserByAccountId(accountId: widget.accountId);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
-        if (currentUser.generalAccountInfo.backgroundImageLink != "" &&
-            !kIsWeb) {
+        if (user.generalAccountInfo.backgroundImageLink != "" && !kIsWeb) {
           PaletteGenerator.fromImageProvider(
             CachedNetworkImageProvider(
-              currentUser.generalAccountInfo.backgroundImageLink,
+              user.generalAccountInfo.backgroundImageLink,
               maxHeight: 640,
               maxWidth: 640,
               headers: const {"Referer": "https://near.social/"},
@@ -186,31 +78,11 @@ class _UserPageState extends State<UserPage>
         }
       } catch (err) {}
     });
-    final PostsController postsController = Modular.get<PostsController>();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!userListController.state.users
-          .firstWhere(
-              (user) => user.generalAccountInfo.accountId == widget.accountId)
-          .allMetadataLoaded) {
-        await userListController.loadAdditionalMetadata(
-            accountId: widget.accountId);
-        if (postsController.state.postsOfAccounts[widget.accountId] == null) {
-          await postsController.loadPosts(
-            postsViewMode: PostsViewMode.account,
-            postsOfAccountId: widget.accountId,
-          );
-        }
-        _generalProfileInfoTimer.start();
-      }
-    });
   }
 
   @override
   void dispose() {
-    _generalProfileInfoTimer.cancel();
-    _nftsUpdatingTimer?.cancel();
-    _widgetsUpdatingTimer?.cancel();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -258,6 +130,7 @@ class _UserPageState extends State<UserPage>
                         ];
                       },
                       body: TabBarView(
+                        physics: const NeverScrollableScrollPhysics(),
                         controller: _tabController,
                         children: [
                           UserPostsView(

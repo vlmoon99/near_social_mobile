@@ -38,6 +38,7 @@ dependencies:
   dio_smart_retry: 6.0.0
   easy_localization: 3.0.5
   encrypt: 5.0.3
+  equatable: 2.0.5
   firebase_auth: 4.20.0
   firebase_core: 2.32.0
   firebase_messaging: 14.9.4
@@ -51,7 +52,8 @@ dependencies:
   flutter_screenutil: 5.9.0
   flutter_secure_storage: 9.0.0
   flutter_svg: 2.0.10+1
-  flutterchain: 1.0.0-beta.14
+  flutterchain: 
+    git: https://github.com/vlmoon99/flutterchain.git
   google_fonts: 6.2.1
   html: 0.15.4
   image_picker: 1.0.7
@@ -59,6 +61,8 @@ dependencies:
   json_annotation: ^4.8.1
   local_auth: 2.2.0
   mockito: 5.4.4
+  near_wallet_selector:
+    git: https://github.com/ArturLevchuk/near_wallet_selector.git
   palette_generator: ^0.3.3+4
   photo_view: 0.15.0
   qr_code_scanner: 1.0.1
