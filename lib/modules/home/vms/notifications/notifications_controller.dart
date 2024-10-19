@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' hide Notification;
+import 'package:equatable/equatable.dart';
 import 'package:near_social_mobile/modules/home/apis/models/notification.dart';
 import 'package:rxdart/rxdart.dart' hide Notification;
 
@@ -12,7 +12,7 @@ class NotificationsController {
   final BehaviorSubject<Notifications> _streamController =
       BehaviorSubject.seeded(const Notifications());
 
-  Stream<Notifications> get stream => _streamController.stream;
+  Stream<Notifications> get stream => _streamController.stream.distinct();
   Notifications get state => _streamController.value;
 
   Future<void> loadNotifications({
@@ -74,8 +74,7 @@ class NotificationsController {
 
 enum NotificationsLoadingState { initial, loading, loaded }
 
-@immutable
-class Notifications {
+class Notifications extends Equatable {
   final NotificationsLoadingState status;
   final List<Notification> notifications;
 
@@ -93,4 +92,10 @@ class Notifications {
       notifications: notifications ?? this.notifications,
     );
   }
+
+  @override
+  List<Object?> get props => [status, notifications];
+
+  @override
+  bool? get stringify => true;
 }

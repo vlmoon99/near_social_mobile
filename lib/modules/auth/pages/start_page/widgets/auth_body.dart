@@ -27,7 +27,7 @@ class AuthenticatedBody extends StatelessWidget {
     final cryptoStorageService =
         CryptoStorageService(secureStorage: secureStorage);
     final encodedData = await cryptoStorageService.read(
-      storageKey: SecureStorageKeys.authInfo,
+      storageKey: StorageKeys.authInfo,
     );
     final authController = Modular.get<AuthController>();
     final Map<String, dynamic> decodedData = jsonDecode(encodedData);
@@ -39,13 +39,13 @@ class AuthenticatedBody extends StatelessWidget {
         .then(
       (_) {
         if (!kIsWeb) {
-                  Modular.get<NotificationSubscriptionService>().subscribeToNotifications(
-          decodedData["accountId"],
-        );
+          Modular.get<NotificationSubscriptionService>()
+              .subscribeToNotifications(
+            decodedData["accountId"],
+          );
         }
       },
     );
-    ;
   }
 
   @override

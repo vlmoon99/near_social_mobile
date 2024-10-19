@@ -38,6 +38,7 @@ dependencies:
   dio_smart_retry: 6.0.0
   easy_localization: 3.0.5
   encrypt: 5.0.3
+  equatable: 2.0.5
   firebase_auth: 4.20.0
   firebase_core: 2.32.0
   firebase_messaging: 14.9.4

@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
+import 'package:equatable/equatable.dart';
 
-class NearWidgetInfo {
+class NearWidgetInfo extends Equatable {
   final String accountId;
   final String urlName;
   final String name;
@@ -9,7 +9,7 @@ class NearWidgetInfo {
   final List<String> tags;
   final int blockHeight;
 
-  NearWidgetInfo({
+  const NearWidgetInfo({
     required this.accountId,
     required this.urlName,
     required this.name,
@@ -42,15 +42,16 @@ class NearWidgetInfo {
   }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is NearWidgetInfo &&
-          runtimeType == other.runtimeType &&
-          accountId == other.accountId &&
-          urlName == other.urlName &&
-          name == other.name &&
-          description == other.description &&
-          imageUrl == other.imageUrl &&
-          blockHeight == other.blockHeight &&
-          listEquals(tags, other.tags);
+  List<Object?> get props => [
+        accountId,
+        urlName,
+        name,
+        description,
+        imageUrl,
+        tags,
+        blockHeight,
+      ];
+      
+  @override
+  bool? get stringify => true;
 }
