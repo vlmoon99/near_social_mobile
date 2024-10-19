@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:photo_view/photo_view.dart';
 
 class ImageFullScreen extends StatelessWidget {
@@ -24,6 +25,13 @@ class ImageFullScreen extends StatelessWidget {
                   imageUrl,
                   headers: const {"Referer": "https://near.social/"},
                 ),
+                errorBuilder: (context, error, stackTrace) {
+                  return SvgPictureSupport(
+                    imageUrl: imageUrl,
+                    headers: const {"Referer": "https://near.social/"},
+                    placeholder: const Center(child: Icon(Icons.broken_image)),
+                  );
+                },
                 filterQuality: FilterQuality.high,
                 minScale: PhotoViewComputedScale.contained * 1.0,
                 maxScale: PhotoViewComputedScale.contained * 1.0,

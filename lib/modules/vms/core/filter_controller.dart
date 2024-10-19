@@ -19,7 +19,7 @@ class FilterController extends Disposable {
   Future<void> loadFilters() async {
     _streamController.add(state.copyWith(status: FilterLoadStatus.loading));
     final Map<String, dynamic> filters =
-        jsonDecode(await storage.read(key: SecureStorageKeys.filters) ?? "{}");
+        jsonDecode(await storage.read(key: StorageKeys.filters) ?? "{}");
     if (filters.isEmpty) {
       _streamController.add(state.copyWith(status: FilterLoadStatus.loaded));
       return;
@@ -88,14 +88,14 @@ class FilterController extends Disposable {
 
   Future<void> _updateFilters() async {
     return storage.write(
-      key: SecureStorageKeys.filters,
+      key: StorageKeys.filters,
       value: jsonEncode(state.toJson()),
     );
   }
 
   Future<void> clear() async {
     _streamController.add(const Filters());
-    await storage.delete(key: SecureStorageKeys.filters);
+    await storage.delete(key: StorageKeys.filters);
   }
 
   @override

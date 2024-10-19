@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutterchain/flutterchain_lib/constants/core/blockchain_response.dart';
 import 'package:flutterchain/flutterchain_lib/models/chains/near/mintbase_category_nft.dart';
@@ -21,7 +22,8 @@ class MintbaseController {
     const MintbaseAccountState(),
   );
 
-  Stream<MintbaseAccountState> get stream => _streamController.stream;
+  Stream<MintbaseAccountState> get stream =>
+      _streamController.stream.distinct();
 
   MintbaseAccountState get state => _streamController.value;
 
@@ -54,9 +56,9 @@ class MintbaseController {
     final ownCollections = List<String>.from(
         await nearBlockChainService.checkOwnerCollection(owner_id: accountId));
 
-    final newOwnCollections = state.ownCollections
+    final newOwnCollections = List.of(state.ownCollections
         .where((collection) => ownCollections.contains(collection.contractId))
-        .toList();
+        .toList());
 
     for (final collectionId in ownCollections) {
       if (!newOwnCollections
@@ -409,7 +411,7 @@ class MintbaseController {
 
 enum MintbaseAccountStateLoadStatus { init, loading, loaded }
 
-class MintbaseAccountState {
+class MintbaseAccountState extends Equatable {
   final MintbaseAccountStateLoadStatus loadStatus;
   final List<MintbaseCollection> ownCollections;
   final List<Nft> nftList;
@@ -433,20 +435,18 @@ class MintbaseAccountState {
   }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is MintbaseAccountState &&
-          loadStatus == other.loadStatus &&
-          listEquals(ownCollections, other.ownCollections) &&
-          listEquals(nftList, other.nftList);
+  List<Object?> get props => [loadStatus, ownCollections, nftList];
+
+  @override
+  bool? get stringify => true;
 }
 
-class MintbaseCollection {
+class MintbaseCollection extends Equatable {
   final String contractId;
   final List<String>? mintersIds;
   final DateTime? lastUpdate;
 
-  MintbaseCollection({
+  const MintbaseCollection({
     required this.contractId,
     this.lastUpdate,
     this.mintersIds,
@@ -462,10 +462,8 @@ class MintbaseCollection {
   }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is MintbaseCollection &&
-          contractId == other.contractId &&
-          lastUpdate == other.lastUpdate &&
-          listEquals(mintersIds, other.mintersIds);
+  List<Object?> get props => [contractId, lastUpdate, mintersIds];
+
+  @override
+  bool? get stringify => true;
 }

@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:near_social_mobile/modules/home/apis/models/near_widget_info.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:rxdart/rxdart.dart';
@@ -43,7 +44,7 @@ class NearWidgetsController {
 
 enum NearWidgetStatus { initial, loading, loaded }
 
-class NearWidgets {
+class NearWidgets extends Equatable {
   final NearWidgetStatus status;
   final List<NearWidgetInfo> widgetList;
 
@@ -60,4 +61,10 @@ class NearWidgets {
         status: status ?? this.status,
         widgetList: widgetList ?? this.widgetList,
       );
+
+  @override
+  List<Object?> get props => [status, widgetList];
+
+  @override
+  bool? get stringify => true;
 }

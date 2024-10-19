@@ -1,24 +1,24 @@
 // ignore_for_file: hash_and_equals
 
-import 'package:flutter/foundation.dart';
+import 'package:equatable/equatable.dart';
 import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
 import 'package:near_social_mobile/modules/home/apis/models/like.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter.dart';
 import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
 
-class Post {
+class Post extends Equatable {
   final GeneralAccountInfo authorInfo;
   final int blockHeight;
   final DateTime date;
   final PostBody postBody;
   final ReposterInfo? reposterInfo;
-  final Set<Like> likeList;
-  final Set<Reposter> repostList;
+  final List<Like> likeList;
+  final List<Reposter> repostList;
   final List<Comment>? commentList;
   final bool fullyLoaded;
 
-  Post({
+  const Post({
     required this.authorInfo,
     required this.blockHeight,
     required this.date,
@@ -36,8 +36,8 @@ class Post {
     DateTime? date,
     PostBody? postBody,
     ReposterInfo? reposterInfo,
-    Set<Like>? likeList,
-    Set<Reposter>? repostList,
+    List<Like>? likeList,
+    List<Reposter>? repostList,
     List<Comment>? commentList,
     bool? fullyLoaded,
   }) {
@@ -55,84 +55,66 @@ class Post {
   }
 
   @override
-  operator ==(Object other) =>
-      other is Post &&
-      other.blockHeight == blockHeight &&
-      other.authorInfo == authorInfo &&
-      other.date == date &&
-      other.postBody == postBody &&
-      other.reposterInfo == reposterInfo &&
-      setEquals(other.likeList, likeList) &&
-      setEquals(other.repostList, repostList) &&
-      listEquals(other.commentList, commentList) &&
-      other.fullyLoaded == fullyLoaded;
+  List<Object?> get props => [
+        authorInfo,
+        blockHeight,
+        date,
+        postBody,
+        reposterInfo,
+        likeList,
+        repostList,
+        commentList,
+        fullyLoaded,
+      ];
 
   @override
-  String toString() {
-    return """Post(authorAccountId: ${authorInfo.accountId}, blockHeight: $blockHeight, 
-    date: $date, postBody: $postBody, authorProfileImageLink: ${authorInfo.profileImageLink}, 
-    reposterInfo: $reposterInfo, likeList: $likeList, repostList: $repostList, 
-    commentList: $commentList, fullyLoaded: $fullyLoaded)""";
-  }
+  bool? get stringify => true;
 }
 
-class FullPostCreationInfo {
+class FullPostCreationInfo extends Equatable {
   final PostCreationInfo postCreationInfo;
   final PostCreationInfo? reposterPostCreationInfo;
 
-  FullPostCreationInfo({
+  const FullPostCreationInfo({
     required this.postCreationInfo,
     this.reposterPostCreationInfo,
   });
 
   @override
-  String toString() {
-    return 'FullPostCreationInfo(postCreationInfo: $postCreationInfo, reposterPostCreationInfo: $reposterPostCreationInfo)';
-  }
-
+  List<Object?> get props => [postCreationInfo, reposterPostCreationInfo];
+      
   @override
-  operator ==(Object other) =>
-      other is FullPostCreationInfo &&
-      other.postCreationInfo == postCreationInfo &&
-      other.reposterPostCreationInfo == reposterPostCreationInfo;
+  bool? get stringify => true;
 }
 
-class PostCreationInfo {
-  String accountId;
-  int blockHeight;
+class PostCreationInfo extends Equatable {
+  final String accountId;
+  final int blockHeight;
 
-  PostCreationInfo({
+  const PostCreationInfo({
     required this.accountId,
     required this.blockHeight,
   });
 
   @override
-  String toString() {
-    return 'PostCreationInfo(accountId: $accountId, blockHeight: $blockHeight)';
-  }
-
+  List<Object?> get props => [accountId, blockHeight];
+      
   @override
-  operator ==(Object other) =>
-      other is PostCreationInfo &&
-      other.accountId == accountId &&
-      other.blockHeight == blockHeight;
+  bool? get stringify => true;
 }
 
-class PostBody {
-  String text;
-  String? mediaLink;
+class PostBody extends Equatable {
+  final String text;
+  final String? mediaLink;
 
-  PostBody({
+  const PostBody({
     required this.text,
     this.mediaLink,
   });
 
   @override
-  operator ==(Object other) =>
-      other is PostBody && other.text == text && other.mediaLink == mediaLink;
-
+  List<Object?> get props => [text, mediaLink];
+      
   @override
-  String toString() {
-    return 'PostBody(text: $text, mediaLink: $mediaLink)';
-  }
+  bool? get stringify => true;
 }

@@ -23,7 +23,7 @@ class AuthController extends Disposable {
       : cryptoStorageService =
             CryptoStorageService(secureStorage: secureStorage);
 
-  Stream<AuthInfo> get stream => _streamController.stream;
+  Stream<AuthInfo> get stream => _streamController.stream.distinct();
 
   AuthInfo get state => _streamController.value;
 
@@ -54,7 +54,7 @@ class AuthController extends Disposable {
           publicKey: accountId,
           privateKey: secretKey,
           base58PubKey: base58PubKey,
-          privateKeyTypeInfo: PrivateKeyTypeInfo(
+          privateKeyTypeInfo: const PrivateKeyTypeInfo(
             type: PrivateKeyType.FunctionCall,
             receiverId: "social.near",
             methodNames: [],
@@ -78,9 +78,8 @@ class AuthController extends Disposable {
 
   Future<void> logout() async {
     try {
-      await secureStorage.delete(key: SecureStorageKeys.authInfo);
-      await secureStorage.delete(
-          key: SecureStorageKeys.additionalCryptographicKeys);
+      await secureStorage.delete(key: StorageKeys.authInfo);
+      await secureStorage.delete(key: StorageKeys.additionalCryptographicKeys);
       _streamController.add(const AuthInfo());
     } catch (err) {
       throw AppExceptions(
@@ -96,11 +95,11 @@ class AuthController extends Disposable {
   }) async {
     try {
       final newState = state.copyWith(
-        additionalStoredKeys: state.additionalStoredKeys
+        additionalStoredKeys: Map.of(state.additionalStoredKeys)
           ..putIfAbsent(accessKeyName, () => privateKeyInfo),
       );
       await cryptoStorageService.write(
-        storageKey: SecureStorageKeys.additionalCryptographicKeys,
+        storageKey: StorageKeys.additionalCryptographicKeys,
         data: jsonEncode(newState.additionalStoredKeys),
       );
       _streamController.add(newState);
@@ -117,10 +116,11 @@ class AuthController extends Disposable {
   Future<void> removeAccessKey({required String accessKeyName}) async {
     try {
       final newState = state.copyWith(
-        additionalStoredKeys: state.additionalStoredKeys..remove(accessKeyName),
+        additionalStoredKeys: Map.of(state.additionalStoredKeys)
+          ..remove(accessKeyName),
       );
       await cryptoStorageService.write(
-        storageKey: SecureStorageKeys.additionalCryptographicKeys,
+        storageKey: StorageKeys.additionalCryptographicKeys,
         data: jsonEncode(newState.additionalStoredKeys),
       );
       _streamController.add(newState);
@@ -136,7 +136,7 @@ class AuthController extends Disposable {
   Future<Map<String, PrivateKeyInfo>> _getAdditionalAccessKeys() async {
     try {
       final encodedData = await cryptoStorageService.read(
-        storageKey: SecureStorageKeys.additionalCryptographicKeys,
+        storageKey: StorageKeys.additionalCryptographicKeys,
       );
       final decodedData = jsonDecode(encodedData) as Map<String, dynamic>?;
       if (decodedData == null) {

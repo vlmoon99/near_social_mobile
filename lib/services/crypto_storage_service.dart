@@ -16,7 +16,7 @@ class CryptoStorageService {
     try {
       final storedData = await secureStorage.read(key: storageKey);
       final storedEncodedKey =
-          await secureStorage.read(key: SecureStorageKeys.cryptographicKey);
+          await secureStorage.read(key: StorageKeys.cryptographicKey);
       if (storedData == null || storedEncodedKey == null) {
         throw Exception(
             "Failed to read data from storage: $storedEncodedKey $storedData");
@@ -38,7 +38,7 @@ class CryptoStorageService {
   }) async {
     try {
       final storedEncodedKey =
-          await secureStorage.read(key: SecureStorageKeys.cryptographicKey);
+          await secureStorage.read(key: StorageKeys.cryptographicKey);
       if (storedEncodedKey == null) {
         throw Exception("Failed to read crypto key from storage");
       }
@@ -58,7 +58,7 @@ class CryptoStorageService {
   }) async {
     final encodedKey = CryptoUtils.uint8ListKeyToBase64Key(cryptographicKey);
     await secureStorage.write(
-      key: SecureStorageKeys.cryptographicKey,
+      key: StorageKeys.cryptographicKey,
       value: encodedKey,
     );
   }

@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
+import 'package:near_social_mobile/modules/home/vms/users/models/user_list_state.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/routes/routes.dart';
 import 'package:near_social_mobile/shared_widgets/custom_button.dart';
@@ -46,37 +47,35 @@ class _BlockedUserTileState extends State<BlockedUserTile> {
         borderRadius: BorderRadius.circular(16.0).r,
       ),
       child: StreamBuilder(
-          stream: userListController.stream,
-          builder: (context, snapshot) {
-            final userLoaded = userListController.state.users.any((element) =>
-                element.generalAccountInfo.accountId ==
-                widget.accountIdOfBlockedUser);
-
-            FullUserInfo? user;
-            if (userLoaded) {
-              user = userListController.state
-                  .getUserByAccountId(accountId: widget.accountIdOfBlockedUser);
-            }
-
-            return InkWell(
-              borderRadius: BorderRadius.circular(16.0).r,
-              onTap: () {
-                if (user != null) {
-                  HapticFeedback.lightImpact();
-                  Modular.to.pushNamed(
-                    ".${Routes.home.userPage}?accountId=${user.generalAccountInfo.accountId}",
-                  );
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(15).r,
-                child: SizedBox(
-                  height: 40.h,
-                  width: double.infinity,
-                  child: AnimatedSwitcher(
-                    duration: Durations.short4,
-                    child: userLoaded
-                        ? Row(
+        stream: userListController.stream,
+        builder: (context, snapshot) {
+          return InkWell(
+            borderRadius: BorderRadius.circular(16.0).r,
+            onTap: () {
+              if (userListController.state.activeUsers
+                  .containsKey(userListController.state)) {
+                HapticFeedback.lightImpact();
+                Modular.to.pushNamed(
+                  ".${Routes.home.userPage}?accountId=${widget.accountIdOfBlockedUser}",
+                );
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(15).r,
+              child: SizedBox(
+                height: 40.h,
+                width: double.infinity,
+                child: AnimatedSwitcher(
+                  duration: Durations.short4,
+                  child: (userListController.state.activeUsers
+                              .containsKey(widget.accountIdOfBlockedUser) ||
+                          userListController.state.cachedUsers
+                              .containsKey(widget.accountIdOfBlockedUser))
+                      ? Builder(builder: (context) {
+                          final FullUserInfo user = userListController.state
+                              .getUserByAccountId(
+                                  accountId: widget.accountIdOfBlockedUser);
+                          return Row(
                             children: [
                               Container(
                                 width: 40.h,
@@ -87,7 +86,7 @@ class _BlockedUserTileState extends State<BlockedUserTile> {
                                 clipBehavior: Clip.antiAlias,
                                 child: NearNetworkImage(
                                   imageUrl:
-                                      user!.generalAccountInfo.profileImageLink,
+                                      user.generalAccountInfo.profileImageLink,
                                   errorPlaceholder: Image.asset(
                                     NearAssets.standartAvatar,
                                     fit: BoxFit.cover,
@@ -139,15 +138,17 @@ class _BlockedUserTileState extends State<BlockedUserTile> {
                                 ),
                               ),
                             ],
-                          )
-                        : const Center(
-                            child: SpinnerLoadingIndicator(),
-                          ),
-                  ),
+                          );
+                        })
+                      : const Center(
+                          child: SpinnerLoadingIndicator(),
+                        ),
                 ),
               ),
-            );
-          }),
+            ),
+          );
+        },
+      ),
     );
   }
 }
