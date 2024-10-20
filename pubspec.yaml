@@ -69,6 +69,8 @@ dependencies:
   qrcode_reader_web: 1.1.1
   rxdart: 0.27.7
   url_launcher: 6.2.5
+  file_picker: ^8.0.7
+  dash_chat_2: 0.0.21
 
 dependency_overrides:
   flutter_inappwebview_web:

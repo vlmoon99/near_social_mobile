@@ -7,6 +7,7 @@ import 'package:near_social_mobile/modules/home/pages/home_menu/subpages/setting
 import 'package:near_social_mobile/modules/home/pages/home_menu/subpages/settings/sub_pages/hided_posts_users/hidden_posts_users_page.dart';
 import 'package:near_social_mobile/modules/home/pages/home_page.dart';
 import 'package:near_social_mobile/modules/home/pages/home_menu/subpages/key_manager/key_manager_page.dart';
+import 'package:near_social_mobile/modules/home/pages/messages/user_messages_page.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_app_page.dart';
 import 'package:near_social_mobile/modules/home/pages/near_widgets/widget_list_page.dart';
 import 'package:near_social_mobile/modules/home/pages/notifications/notifications_page.dart';
@@ -65,6 +66,10 @@ class HomeModule extends Module {
         ChildRoute(
           Routes.home.homeMenu,
           child: (context) => const HomeMenuPage(),
+        ),
+        ChildRoute(
+          Routes.home.messagesPage,
+          child: (context) => const UserMessagesPage(),
         )
       ],
     );

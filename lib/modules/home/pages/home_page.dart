@@ -43,6 +43,8 @@ class _HomePageState extends State<HomePage> {
       return 3;
     } else if (currentRoute.contains(Routes.home.homeMenu)) {
       return 4;
+    } else if (currentRoute.contains(Routes.home.messagesPage)) {
+      return 5;
     } else {
       return 0;
     }
@@ -90,6 +92,10 @@ class _HomePageState extends State<HomePage> {
                   icon: Icon(Icons.menu),
                   label: "Menu",
                 ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.message),
+                  label: "Messages",
+                ),
               ],
               onTap: (value) {
                 HapticFeedback.lightImpact();
@@ -109,6 +115,10 @@ class _HomePageState extends State<HomePage> {
                   case 4:
                     Modular.to.navigate(".${Routes.home.homeMenu}");
                     break;
+                  case 5:
+                    Modular.to.navigate(".${Routes.home.messagesPage}");
+                    break;
+
                   default:
                     Modular.to.navigate(".${Routes.home.postsFeed}");
                     break;
