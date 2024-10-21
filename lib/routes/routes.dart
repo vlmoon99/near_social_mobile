@@ -28,6 +28,12 @@ class _Home extends RouteClass {
   String settingsPage = '/settings';
   String blockedUsersPage = '/blocked_users';
   String hiddenPostsPage = '/hided_posts';
+  String mintManager = '/mint_manager';
+  String allMintbaseNftsPage = '/all_mintbase_nfts';
+  String nftDetailsAndActionsPage = '/nft_details_and_actions';
+  String mintbaseCollectionsPage = '/mintbase_collections';
+  String mintersControlPage = '/minters_control';
+  String mintNftPage = '/mint_nft';
 }
 
 abstract class RouteClass {

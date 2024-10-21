@@ -6,9 +6,16 @@ import 'dart:typed_data';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
+import 'package:flutterchain/flutterchain_lib/constants/core/blockchain_response.dart';
+import 'package:flutterchain/flutterchain_lib/constants/core/blockchains_gas.dart';
+import 'package:flutterchain/flutterchain_lib/constants/core/supported_blockchains.dart';
+import 'package:flutterchain/flutterchain_lib/formaters/chains/near_formater.dart';
+import 'package:flutterchain/flutterchain_lib/models/chains/near/near_account_info_request.dart';
 import 'package:flutterchain/flutterchain_lib/models/chains/near/near_blockchain_smart_contract_arguments.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
+import 'package:near_social_mobile/exceptions/exceptions.dart';
+import 'package:near_social_mobile/exceptions/near_social_api_exceptions.dart';
 import 'package:near_social_mobile/modules/home/apis/models/follower.dart';
 import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/comment.dart';
@@ -1408,6 +1415,53 @@ class NearSocialApi {
     return decodedResponse;
   }
 
+  Future<List<Nft>> getMintbaseNfts({required String accountIdOfUser}) async {
+    final nftListOfAccountResponse = (await _dio
+        .get("https://api.fastnear.com/v0/account/$accountIdOfUser/nft"));
+
+    final Set<String> nftContractIds =
+        (List<String>.from(nftListOfAccountResponse.data["contract_ids"]))
+            .where((nftContractId) => nftContractId.contains("mintbase"))
+            .toSet();
+    final List<Nft> nftList = [];
+
+    for (var nftContractId in nftContractIds) {
+      final nftsInfo = await _getAllNFTsMetadataInfoFromContractForUser(
+        nftContractId: nftContractId,
+        accountIdOfUser: accountIdOfUser,
+      );
+
+      for (var nftInfo in nftsInfo) {
+        final tokenId = nftInfo['token_id'];
+
+        final reference = nftInfo["metadata"]["reference"] as String?;
+
+        if (reference == null ||
+            reference.contains("ipfs") ||
+            reference.length != 43) {
+          log("Not mintbase NFT: $reference");
+          continue;
+        }
+
+        final metadataInfo =
+            (await _dio.get("https://arweave.net/$reference")).data;
+
+        final nftImageUrl = metadataInfo["media"];
+
+        nftList.add(Nft(
+          contractId: nftContractId,
+          tokenId: tokenId,
+          title: nftInfo["metadata"]["title"] ?? "",
+          description: metadataInfo["description"] ??
+              nftInfo["metadata"]["description"] ??
+              "",
+          imageUrl: nftImageUrl,
+        ));
+      }
+    }
+    return nftList;
+  }
+
   Future<List<Notification>> getNotificationsOfAccount({
     required String accountId,
     int? from,
@@ -1522,5 +1576,155 @@ class NearSocialApi {
     } catch (err) {
       rethrow;
     }
+  }
+
+  Future<String> donateToAccount({
+    required String accountId,
+    required String publicKey,
+    required String privateKey,
+    required String amountToSend,
+    required String receiverId,
+  }) async {
+    const transactionFeeFor2Transactions = "0.00001";
+
+    final currentBalance = double.parse(await _nearBlockChainService
+        .getWalletBalance(NearAccountInfoRequest(accountId: accountId)));
+    final neededBalance = double.parse(amountToSend) +
+        double.parse(EnterpriseVariables.amountOfServiceFeeForDonation) +
+        double.parse(transactionFeeFor2Transactions);
+
+    if (currentBalance < neededBalance) {
+      throw AppExceptions(
+        messageForUser:
+            "Not enough balance. You have $currentBalance NEAR, but you need $neededBalance NEAR.",
+        messageForDev:
+            "Not enough balance. You have $currentBalance NEAR, but you need $neededBalance NEAR.",
+      );
+    }
+
+    final txInfo = await _nearBlockChainService.getTransactionInfo(
+      accountId: accountId,
+      publicKey: publicKey,
+    );
+
+    late String txHash;
+
+    try {
+      txHash = await _sendTransferTransactions(
+        fromAddress: accountId,
+        toAddress: receiverId,
+        privateKey: privateKey,
+        transferAmount: amountToSend,
+        nonce: txInfo.nonce,
+        blockHash: txInfo.blockHash,
+      );
+    } on IncorrectNonceException catch (err) {
+      final newNonce = err.data["data"]["TxExecutionError"]["InvalidTxError"]
+          ["InvalidNonce"]["ak_nonce"];
+      txHash = await _sendTransferTransactions(
+        fromAddress: accountId,
+        toAddress: receiverId,
+        privateKey: privateKey,
+        transferAmount: amountToSend,
+        nonce: newNonce,
+        blockHash: txInfo.blockHash,
+      );
+    } on AppExceptions catch (_) {
+      rethrow;
+    } catch (err) {
+      throw AppExceptions(
+        messageForUser: "Failed to send transfer.",
+        messageForDev: "Error while sending transfer: ${err.toString()}",
+      );
+    }
+
+    return txHash;
+  }
+
+  Future<String> _formTransferSignedAction({
+    required String fromAddress,
+    required String toAddress,
+    required String privateKey,
+    required String transferAmount,
+    required String gas,
+    required int nonce,
+    required String blockHash,
+  }) async {
+    final transferAction = [
+      {
+        "type": "transfer",
+        "data": {"amount": NearFormatter.nearToYoctoNear(transferAmount)}
+      }
+    ];
+
+    final signedAction = await _nearBlockChainService.signNearActions(
+      fromAddress: fromAddress,
+      toAddress: toAddress,
+      transferAmount: NearFormatter.nearToYoctoNear(transferAmount),
+      privateKey: privateKey,
+      gas: gas,
+      nonce: nonce,
+      blockHash: blockHash,
+      actions: transferAction,
+    );
+    return signedAction;
+  }
+
+  Future<String> _sendTransferTransactions({
+    required String fromAddress,
+    required String toAddress,
+    required String privateKey,
+    required String transferAmount,
+    required int nonce,
+    required String blockHash,
+  }) async {
+    final gas = BlockchainGas.gas[BlockChains.near];
+
+    final mainTransferSignedAction = await _formTransferSignedAction(
+      fromAddress: fromAddress,
+      toAddress: toAddress,
+      privateKey: privateKey,
+      transferAmount: transferAmount,
+      gas: gas!,
+      nonce: nonce,
+      blockHash: blockHash,
+    );
+
+    final serviceFeeTransferSignedAction = await _formTransferSignedAction(
+      fromAddress: fromAddress,
+      toAddress: EnterpriseVariables.accountForCollectingServiceFee,
+      transferAmount: EnterpriseVariables.amountOfServiceFeeForDonation,
+      privateKey: privateKey,
+      gas: gas,
+      nonce: nonce + 1,
+      blockHash: blockHash,
+    );
+
+    final mainTransfer = await _nearBlockChainService.nearRpcClient
+        .sendSyncTx([mainTransferSignedAction]);
+
+    if (mainTransfer.status != BlockchainResponses.success) {
+      if (mainTransfer.data["cause"]["name"] == "INVALID_TRANSACTION" &&
+          mainTransfer.data["data"]["TxExecutionError"]["InvalidTxError"]
+                  ["InvalidNonce"] !=
+              null) {
+        throw IncorrectNonceException(data: mainTransfer.data);
+      } else {
+        throw AppExceptions(
+          messageForUser: "Failed to send transfer.",
+          messageForDev:
+              "Error while sending transfer: ${mainTransfer.data.toString()}",
+        );
+      }
+    }
+
+    while ((await _nearBlockChainService.nearRpcClient
+                .sendSyncTx([serviceFeeTransferSignedAction]))
+            .status !=
+        BlockchainResponses.success) {
+      log("Retrying to send service fee transfer...");
+    }
+
+    return mainTransfer.data["txHash"];
   }
 }

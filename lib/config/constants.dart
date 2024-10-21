@@ -30,3 +30,9 @@ class NearSocialMobileUrls {
   static const privacyPolicyUrl =
       "https://docs.google.com/document/d/1T-g8ZSH5Bg2_nUVOzUELmzK43a5UFp3o8G9pHnVb16k/edit";
 }
+
+class EnterpriseVariables {
+  static const amountOfServiceFeeForDonation = "0.01";
+  static const accountForCollectingServiceFee =
+      "3c826b466f4127b15506070b557f2c213a35acf2e42ca838f263194b8fe27ee0";
+}
