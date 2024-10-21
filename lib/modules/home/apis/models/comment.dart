@@ -1,17 +1,17 @@
 // ignore_for_file: hash_and_equals
 
-import 'package:flutter/foundation.dart';
+import 'package:equatable/equatable.dart';
 import 'package:near_social_mobile/modules/home/apis/models/general_account_info.dart';
 import 'package:near_social_mobile/modules/home/apis/models/like.dart';
 
-class Comment {
+class Comment extends Equatable {
   final GeneralAccountInfo authorInfo;
   final int blockHeight;
   final DateTime date;
   final CommentBody commentBody;
-  final Set<Like> likeList;
+  final List<Like> likeList;
 
-  Comment({
+  const Comment({
     required this.authorInfo,
     required this.blockHeight,
     required this.date,
@@ -24,7 +24,7 @@ class Comment {
     int? blockHeight,
     DateTime? date,
     CommentBody? commentBody,
-    Set<Like>? likeList,
+    List<Like>? likeList,
   }) {
     return Comment(
       authorInfo: authorInfo ?? this.authorInfo,
@@ -36,39 +36,38 @@ class Comment {
   }
 
   @override
-  operator ==(Object other) =>
-      other is Comment &&
-      other.blockHeight == blockHeight &&
-      other.authorInfo == authorInfo &&
-      other.date == date &&
-      other.commentBody == commentBody &&
-      setEquals(other.likeList, likeList);
+  List<Object?> get props =>
+      [authorInfo, blockHeight, date, commentBody, likeList];
 
   @override
-  String toString() {
-    return 'Comment(authorAccountId: ${authorInfo.accountId}, blockHeight: $blockHeight, date: $date, text: ${commentBody.text}, authorProfileImageLink: ${authorInfo.profileImageLink}, likeList: $likeList)';
-  }
+  bool? get stringify => true;
 }
 
-class CommentCreationInfo {
+class CommentCreationInfo extends Equatable {
   final String accountId;
   final int blockHeight;
 
-  CommentCreationInfo({
+  const CommentCreationInfo({
     required this.accountId,
     required this.blockHeight,
   });
+
+  @override
+  List<Object?> get props => [accountId, blockHeight];
+
+  @override
+  bool? get stringify => true;
 }
 
-class CommentBody {
+class CommentBody extends Equatable {
   final String text;
   final String? mediaLink;
 
-  CommentBody({required this.text, required this.mediaLink});
+  const CommentBody({required this.text, required this.mediaLink});
 
   @override
-  operator ==(Object other) =>
-      other is CommentBody &&
-      other.text == text &&
-      other.mediaLink == mediaLink;
+  List<Object?> get props => [text, mediaLink];
+
+  @override
+  bool? get stringify => true;
 }

@@ -6,7 +6,7 @@ enum NearNetworkType { testnet, mainnet }
 
 Future<NearNetworkType> getNearNetworkType() async {
   final secureStorage = Modular.get<FlutterSecureStorage>();
-  final networkType = await secureStorage.read(key: SecureStorageKeys.networkType);
+  final networkType = await secureStorage.read(key: StorageKeys.networkType);
   if (networkType == "mainnet") {
     return NearNetworkType.mainnet;
   } else {
