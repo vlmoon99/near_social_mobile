@@ -3,6 +3,8 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:near_social_mobile/modules/core_module.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/pages/home_menu/home_menu_page.dart';
+import 'package:near_social_mobile/modules/home/pages/home_menu/subpages/mint_manager/mintbase_module.dart';
+import 'package:near_social_mobile/modules/home/pages/home_menu/subpages/mint_manager/vm/mintbase_controller.dart';
 import 'package:near_social_mobile/modules/home/pages/home_menu/subpages/settings/sub_pages/blocked_users/blocked_users_page.dart';
 import 'package:near_social_mobile/modules/home/pages/home_menu/subpages/settings/sub_pages/hided_posts_users/hidden_posts_users_page.dart';
 import 'package:near_social_mobile/modules/home/pages/home_page.dart';
@@ -37,6 +39,7 @@ class HomeModule extends Module {
     i.addSingleton(UserListController.new);
     i.addSingleton(NotificationsController.new);
     i.addSingleton(FilterController.new);
+    i.addSingleton(MintbaseController.new);
   }
 
   @override
@@ -108,5 +111,6 @@ class HomeModule extends Module {
         child: (context) => const BlockedUsersPage());
     r.child(Routes.home.hiddenPostsPage,
         child: (context) => const HiddenPostsUsersPage());
+    r.module(Routes.home.mintManager, module: MintbaseModule());
   }
 }
