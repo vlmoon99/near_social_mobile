@@ -41,7 +41,7 @@ class _UserChatPageState extends State<UserChatPage> {
             final chatUser = ChatUser(
               id: stateUserAccount.publicKey,
               firstName: generalAccountInfo!.accountId,
-              lastName: generalAccountInfo!.name,
+              lastName: generalAccountInfo.name,
             );
 
             return DashChat(

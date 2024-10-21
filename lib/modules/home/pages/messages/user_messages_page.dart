@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'package:near_social_mobile/modules/home/pages/messages/user_chat_page.dart';
 import 'package:near_social_mobile/modules/vms/core/auth_controller.dart';
 
@@ -23,7 +22,7 @@ class _UserMessagesPageState extends State<UserMessagesPage> {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('chats')
-          .where('users', arrayContains: publicKey)
+          .where('pubKeys', arrayContains: publicKey)
           .get();
 
       for (var doc in querySnapshot.docs) {
@@ -37,10 +36,10 @@ class _UserMessagesPageState extends State<UserMessagesPage> {
   @override
   void initState() {
     super.initState();
-    
+
     final authController = Modular.get<AuthController>();
     final stateUserAccount = authController.state;
-
+    log(stateUserAccount.toString());
     getChatsWithPublicKey(stateUserAccount.publicKey);
 
     _filteredUsernames = _usernames;

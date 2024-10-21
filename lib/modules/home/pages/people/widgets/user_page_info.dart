@@ -10,6 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/home/pages/messages/user_chat_page.dart';
 import 'package:near_social_mobile/modules/home/pages/people/widgets/more_actions_for_user_button.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
@@ -363,6 +364,32 @@ class UserPageMainInfo extends StatelessWidget {
                               "👈 Poke",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          RPadding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: CustomButton(
+                              primary: true,
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                // ScaffoldMessenger.of(context).showSnackBar(
+                                //   const SnackBar(
+                                //     content: Text("Chat was created"),
+                                //   ),
+                                // );
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => UserChatPage(),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                "Message",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),

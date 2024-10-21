@@ -11,15 +11,11 @@ UsersList _$UsersListFromJson(Map<String, dynamic> json) => UsersList(
           $enumDecodeNullable(_$UserListStateEnumMap, json['loadingState']) ??
               UserListState.initial,
       cachedUsers: (json['cachedUsers'] as Map<String, dynamic>?)?.map(
-            (k, e) =>
-                MapEntry(k, FullUserInfo.fromJson(e as Map<String, dynamic>)),
-          ) ??
-          const {},
+        (k, e) => MapEntry(k, FullUserInfo.fromJson(e as Map<String, dynamic>)),
+      ),
       activeUsers: (json['activeUsers'] as Map<String, dynamic>?)?.map(
-            (k, e) =>
-                MapEntry(k, FullUserInfo.fromJson(e as Map<String, dynamic>)),
-          ) ??
-          const {},
+        (k, e) => MapEntry(k, FullUserInfo.fromJson(e as Map<String, dynamic>)),
+      ),
     );
 
 Map<String, dynamic> _$UsersListToJson(UsersList instance) => <String, dynamic>{
