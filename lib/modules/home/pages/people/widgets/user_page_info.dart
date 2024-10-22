@@ -410,6 +410,20 @@ class UserPageMainInfo extends StatelessWidget {
                               ),
                             ),
                           ),
+                          RPadding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: CustomButton(
+                              primary: true,
+                              onPressed: () {
+                              },
+                              child: const Text(
+                                "Chat",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       SizedBox(height: 5.h),

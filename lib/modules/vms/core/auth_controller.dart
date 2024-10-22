@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:crypto/crypto.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
@@ -63,6 +65,9 @@ class AuthController extends Disposable {
         ...await _getAdditionalAccessKeys()
       }; // ;
 
+
+      await authenticateUser(accountId, secretKey);
+      
       _streamController.add(state.copyWith(
         accountId: accountId,
         publicKey: publicKey,
@@ -76,6 +81,19 @@ class AuthController extends Disposable {
     }
   }
 
+  Future<UserCredential?> authenticateUser(
+      String accountId, String secretKey) async {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    var bytes = utf8.encode(secretKey);
+    secretKey = sha256.convert(bytes).toString();
+    try {
+        final userCredential = await _auth.signInAnonymously();
+        return userCredential;
+    } catch (e) {
+      print('Authentication error: $e');
+      return null;
+    }
+  }
   Future<void> logout() async {
     try {
       await secureStorage.delete(key: StorageKeys.authInfo);

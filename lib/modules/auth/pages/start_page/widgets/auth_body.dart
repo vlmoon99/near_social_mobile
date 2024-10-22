@@ -22,6 +22,7 @@ class AuthenticatedBody extends StatelessWidget {
 
   final void Function(bool authenticated) authenticatedStatusChanged;
 
+
   Future<void> decryptDataAndLogin() async {
     final secureStorage = Modular.get<FlutterSecureStorage>();
     final cryptoStorageService =
@@ -38,6 +39,11 @@ class AuthenticatedBody extends StatelessWidget {
     )
         .then(
       (_) {
+        //Check if you autheticated
+        //if not - check if ther account
+        //if not - registered
+        //if yes go futher
+        
         if (!kIsWeb) {
           Modular.get<NotificationSubscriptionService>()
               .subscribeToNotifications(

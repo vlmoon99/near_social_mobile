@@ -15,5 +15,9 @@ Future<void> initOfApp() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     LocalNotificationService.init();
+  } else {
+        await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   }
 }
