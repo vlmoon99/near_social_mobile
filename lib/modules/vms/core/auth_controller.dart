@@ -129,8 +129,7 @@ class AuthController extends Disposable {
   Future<UserCredential?> authenticateUser(
       String accountId, String secretKey) async {
     final FirebaseAuth auth = FirebaseAuth.instance;
-    if (auth.currentUser == null) {
-      final userCredential = await auth.signInAnonymously();
+    final userCredential = await auth.signInAnonymously();
 
       print("secretKey  :::  " + secretKey);
       final privateKey = await nearBlockChainService
@@ -209,13 +208,11 @@ class AuthController extends Disposable {
         print('Authentication error: $e');
         return null;
       }
-    } else {
-      print("User alredy log in with uid  :: " + auth.currentUser!.uid);
-    }
   }
 
   Future<void> logout() async {
     try {
+      await FirebaseAuth.instance.signOut();
       await secureStorage.delete(key: StorageKeys.authInfo);
       await secureStorage.delete(key: StorageKeys.additionalCryptographicKeys);
       _streamController.add(const AuthInfo());
