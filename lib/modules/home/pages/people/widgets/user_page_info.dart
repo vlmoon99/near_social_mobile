@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -414,7 +417,16 @@ class UserPageMainInfo extends StatelessWidget {
                             padding: const EdgeInsets.only(left: 10),
                             child: CustomButton(
                               primary: true,
-                              onPressed: () {
+                              onPressed: ()async {
+                                // FirebaseFirestore.instance.collection('users').get({"lastName" :accountIdOfUser})
+                              // final res = (await FirebaseFirestore.instance
+                              //       .collection('users')
+                              //       .where('lastName',
+                              //           isEqualTo: accountIdOfUser)
+                              //       .get()).docs;
+
+                              //   types.User.fromJson();
+                              //   final room = await FirebaseChatCore.instance.createRoom(otherUser);
                               },
                               child: const Text(
                                 "Chat",

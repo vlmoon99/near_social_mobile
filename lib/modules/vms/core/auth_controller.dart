@@ -1,11 +1,16 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:flutterchain/flutterchain_lib/constants/core/blockchains_gas.dart';
 import 'package:flutterchain/flutterchain_lib/constants/core/supported_blockchains.dart';
 import 'package:flutterchain/flutterchain_lib/models/core/wallet.dart';
+import 'package:near_social_mobile/modules/home/apis/near_social.dart';
 import 'dart:typed_data';
 import 'package:webcrypto/webcrypto.dart' as webcrypto;
 import 'package:cloud_functions/cloud_functions.dart';
+
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -71,7 +76,13 @@ class AuthController extends Disposable {
         ...await _getAdditionalAccessKeys()
       };
 
-      await authenticateUser(accountId, secretKey);
+      try {
+        authenticateUser(accountId, secretKey);
+
+      } catch (e) {
+        print("Error while auth uesr using firebase");
+      }
+
 
       _streamController.add(state.copyWith(
         accountId: accountId,
@@ -117,58 +128,89 @@ class AuthController extends Disposable {
 
   Future<UserCredential?> authenticateUser(
       String accountId, String secretKey) async {
-
     final FirebaseAuth auth = FirebaseAuth.instance;
+    if (auth.currentUser == null) {
+      final userCredential = await auth.signInAnonymously();
 
-    final userCredential = await auth.signInAnonymously();
+      print("secretKey  :::  " + secretKey);
+      final privateKey = await nearBlockChainService
+          .getPrivateKeyFromSecretKeyFromNearApiJSFormat(
+        secretKey.split(":").last,
+      );
+      final publicKey = await nearBlockChainService
+          .getPublicKeyFromSecretKeyFromNearApiJSFormat(
+        secretKey.split(":").last,
+      );
 
-    print("secretKey  :::  " + secretKey);
-    final privateKey = await nearBlockChainService
-        .getPrivateKeyFromSecretKeyFromNearApiJSFormat(
-      secretKey.split(":").last,
-    );
-    final publicKey = await nearBlockChainService
-        .getPublicKeyFromSecretKeyFromNearApiJSFormat(
-      secretKey.split(":").last,
-    );
+      final actions = [
+        {
+          "type": "transfer",
+          "data": {"amount": "1"}
+        }
+      ];
 
-    final actions = [
-      {
-        "type": "transfer",
-        "data": {"amount": "1"}
+      final info = await nearBlockChainService.getTransactionInfo(
+          accountId: accountId, publicKey: publicKey);
+
+      String signedTx = await nearBlockChainService.signNearActions(
+        fromAddress: accountId,
+        toAddress: "fake.near",
+        transferAmount: "1",
+        privateKey: privateKey,
+        gas: BlockchainGas.gas[BlockChains.near]!,
+        nonce: info.nonce,
+        blockHash: info.blockHash,
+        actions: actions,
+      );
+
+      print("signedTx  " + signedTx);
+
+       verifyTransaction(
+        signedTx: signedTx,
+        publicKeyStr: publicKey,
+        uuid: FirebaseAuth.instance.currentUser!.uid,
+        accountId: accountId,
+      ).then((resVerefication) async {
+        final DocumentSnapshot res = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(accountId)
+            .get();
+
+
+        if (res.exists) {
+          print('User data: ${res.data()}');
+        } else {
+          print('No user found with ID: $accountId');
+        }
+
+        if (resVerefication && !res.exists) {
+          final accountInfo = await NearSocialApi(
+                  nearBlockChainService:
+                      NearBlockChainService.defaultInstance())
+              .getGeneralAccountInfo(accountId: accountId);
+          print("accountInfo  " + accountInfo.toString());
+
+          FirebaseChatCore.instance.createUserInFirestore(
+            types.User(
+              firstName: accountInfo.name,
+              id: accountInfo.accountId,
+              imageUrl: accountInfo.profileImageLink,
+              lastName: "No data exist",
+              role: types.Role.user,
+            ),
+          );
+          print("resVerefication  " + resVerefication.toString());
+        }
+      });
+
+      try {
+        return userCredential;
+      } catch (e) {
+        print('Authentication error: $e');
+        return null;
       }
-    ];
-
-   final info = await  nearBlockChainService.getTransactionInfo(accountId: accountId, publicKey: publicKey);
-
-    String signedTx = await nearBlockChainService.signNearActions(
-      fromAddress: accountId,
-      toAddress: "fake.near",
-      transferAmount: "1",
-      privateKey: privateKey,
-      gas: BlockchainGas.gas[BlockChains.near]!,
-      nonce: info.nonce,
-      blockHash: info.blockHash,
-      actions: actions,
-    );
-
-    print("signedTx  " + signedTx);
-
-    bool resVerefication = await verifyTransaction(
-      signedTx: signedTx,
-      publicKeyStr: publicKey,
-      uuid: FirebaseAuth.instance.currentUser!.uid,
-      accountId: accountId,
-    );
-    
-    print("resVerefication  " + resVerefication.toString());
-  
-    try {
-
-      return userCredential;
-    } catch (e) {
-      print('Authentication error: $e');
-      return null;
+    } else {
+      print("User alredy log in with uid  :: " + auth.currentUser!.uid);
     }
   }
 

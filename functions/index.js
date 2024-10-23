@@ -53,7 +53,7 @@ function extractTxAndSignature(signedTx) {
 
     const signatureLength = 64;
 
-    const txData = decodedTx.slice(0, decodedTx.length - signatureLength);
+    const txData = decodedTx.slice(0, decodedTx.length - signatureLength - 1);
     const signature = decodedTx.slice(decodedTx.length - signatureLength);
 
     return { txData, signature };
