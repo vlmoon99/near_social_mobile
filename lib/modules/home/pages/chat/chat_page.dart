@@ -5,6 +5,8 @@ import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 class ChatPage extends StatelessWidget {
   const ChatPage({Key? key, required this.room}) : super(key: key);
   final types.Room room;
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(

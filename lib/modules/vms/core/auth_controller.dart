@@ -83,17 +83,18 @@ class AuthController extends Disposable {
 
   Future<UserCredential?> authenticateUser(
       String accountId, String secretKey) async {
-    final FirebaseAuth _auth = FirebaseAuth.instance;
+    final FirebaseAuth auth = FirebaseAuth.instance;
     var bytes = utf8.encode(secretKey);
     secretKey = sha256.convert(bytes).toString();
     try {
-        final userCredential = await _auth.signInAnonymously();
+        final userCredential = await auth.signInAnonymously();
         return userCredential;
     } catch (e) {
       print('Authentication error: $e');
       return null;
     }
   }
+  
   Future<void> logout() async {
     try {
       await secureStorage.delete(key: StorageKeys.authInfo);
