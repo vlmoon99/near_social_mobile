@@ -30,9 +30,15 @@ import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
 import 'package:near_social_mobile/network/dio_interceptors/retry_on_connection_changed_interceptor.dart';
 import 'package:near_social_mobile/utils/is_web_image_avaliable.dart';
 
+
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
+
 class NearSocialApi {
   final Dio _dio = Dio();
   final NearBlockChainService _nearBlockChainService;
+
+  
 
   NearSocialApi({required NearBlockChainService nearBlockChainService})
       : _nearBlockChainService = nearBlockChainService {
@@ -51,6 +57,31 @@ class NearSocialApi {
       ),
     ]);
   }
+
+  Future<void> createUserInChat () async {
+    await FirebaseChatCore.instance.createUserInFirestore(
+      types.User(
+        firstName: 'John',
+        id: "",
+        imageUrl: 'https://i.pravatar.cc/300',
+        lastName: 'Doe',
+      ),
+    );
+  }
+
+    Future<void> sendMessages(types.Message message,String roomId) async {
+
+      FirebaseChatCore.instance.sendMessage(message, roomId);
+
+    }
+
+
+    Future<void> updateMessage(types.Message message, String roomId) async {
+    
+      FirebaseChatCore.instance.updateMessage(message, roomId);
+    
+    }
+
 
   Future<List<Post>> getPosts({
     int? lastBlockHeightIndexOfPosts,

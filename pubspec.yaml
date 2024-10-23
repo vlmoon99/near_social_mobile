@@ -69,6 +69,8 @@ dependencies:
   qrcode_reader_web: 1.1.1
   rxdart: 0.27.7
   url_launcher: 6.2.5
+  flutter_firebase_chat_core: ^1.6.7
+  flutter_chat_ui: ^1.6.15
 
 dependency_overrides:
   flutter_inappwebview_web:
