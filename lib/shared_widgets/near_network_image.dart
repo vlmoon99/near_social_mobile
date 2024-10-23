@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -75,22 +76,54 @@ class _NearNetworkImageState extends State<NearNetworkImage>
   bool get wantKeepAlive => true;
 }
 
-class SvgPictureSupport extends StatelessWidget {
+class SvgPictureSupport extends StatefulWidget {
   const SvgPictureSupport({
     super.key,
     required this.imageUrl,
     required this.headers,
     required this.placeholder,
+    this.boxFit = BoxFit.cover,
   });
 
   final String imageUrl;
   final Map<String, String>? headers;
   final Widget placeholder;
+  final BoxFit boxFit;
 
-  Future<Uint8List> loadAsset() async {
+  @override
+  State<SvgPictureSupport> createState() => _SvgPictureSupportState();
+}
+
+class _SvgPictureSupportState extends State<SvgPictureSupport> {
+  late Widget _currentImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentImage = widget.placeholder;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateImage());
+  }
+
+  Future<void> _updateImage() async {
+    final imageBytes = await _loadAsset();
+    if (!mounted) return;
+
+    setState(() {
+      _currentImage = SvgPicture.memory(
+        imageBytes,
+        fit: widget.boxFit,
+        key: ValueKey(widget.imageUrl),
+        placeholderBuilder: (context) {
+          return widget.placeholder;
+        },
+      );
+    });
+  }
+
+  Future<Uint8List> _loadAsset() async {
     try {
-      final file =
-          await DefaultCacheManager().getSingleFile(imageUrl, headers: headers);
+      final file = await DefaultCacheManager()
+          .getSingleFile(widget.imageUrl, headers: widget.headers);
       if (file.path.endsWith(".svg")) {
         return file.readAsBytesSync();
       } else {
@@ -103,20 +136,11 @@ class SvgPictureSupport extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Uint8List>(
-      future: loadAsset(),
-      builder: (context, snapshot) {
-        return AnimatedSwitcher(
-          duration: const Duration(
-            milliseconds: 500,
-          ),
-          switchInCurve: Curves.easeIn,
-          switchOutCurve: Curves.easeOut,
-          child: snapshot.data != null && snapshot.data!.isNotEmpty
-              ? SvgPicture.memory(snapshot.data!)
-              : placeholder,
-        );
-      },
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      switchInCurve: Curves.easeIn,
+      switchOutCurve: Curves.easeOut,
+      child: _currentImage,
     );
   }
 }
