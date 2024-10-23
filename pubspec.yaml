@@ -71,6 +71,9 @@ dependencies:
   url_launcher: 6.2.5
   flutter_firebase_chat_core: ^1.6.7
   flutter_chat_ui: ^1.6.15
+  convert: ^3.1.2
+  webcrypto: ^0.5.7
+  cloud_functions: ^4.7.6
 
 dependency_overrides:
   flutter_inappwebview_web:
