@@ -1,7 +1,3 @@
-import 'dart:developer';
-
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,7 +9,6 @@ import 'package:near_social_mobile/modules/home/pages/people/widgets/user_page_t
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/users/user_list_controller.dart';
 import 'package:near_social_mobile/modules/vms/core/filter_controller.dart';
-import 'package:palette_generator/palette_generator.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key, required this.accountId});
@@ -25,7 +20,6 @@ class UserPage extends StatefulWidget {
 }
 
 class _UserPageState extends State<UserPage> with TickerProviderStateMixin {
-  Color backgroundColor = AppColors.background;
   late final _tabController = TabController(length: 3, vsync: this);
 
   @override
@@ -50,34 +44,6 @@ class _UserPageState extends State<UserPage> with TickerProviderStateMixin {
         }
       }
     });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      try {
-        if (user.generalAccountInfo.backgroundImageLink != "" && !kIsWeb) {
-          PaletteGenerator.fromImageProvider(
-            CachedNetworkImageProvider(
-              user.generalAccountInfo.backgroundImageLink,
-              maxHeight: 640,
-              maxWidth: 640,
-              headers: const {"Referer": "https://near.social/"},
-              errorListener: (err) {
-                log(err.toString());
-              },
-            ),
-            timeout: Duration.zero,
-          ).then(
-            (palette) {
-              final dominantColor = palette.dominantColor?.color;
-              if (dominantColor != null) {
-                setState(() {
-                  backgroundColor = dominantColor;
-                });
-              }
-            },
-          );
-        }
-      } catch (err) {}
-    });
   }
 
   @override
@@ -95,7 +61,7 @@ class _UserPageState extends State<UserPage> with TickerProviderStateMixin {
         final filtersUtil = FiltersUtil(filters: filterController.state);
         final userIsBlocked = filtersUtil.userIsBlocked(widget.accountId);
         return Scaffold(
-          backgroundColor: backgroundColor,
+          backgroundColor: NEARColors.black,
           body: SafeArea(
             child: Container(
               color: Colors.white,
