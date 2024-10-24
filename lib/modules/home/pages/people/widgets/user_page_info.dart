@@ -192,11 +192,7 @@ class UserPageMainInfo extends StatelessWidget {
                               color: Colors.white,
                               border: Border.all(color: Colors.black, width: 1),
                             ),
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                              ),
-                              clipBehavior: Clip.antiAlias,
+                            child: ClipOval(
                               child: NearNetworkImage(
                                 imageUrl:
                                     user.generalAccountInfo.profileImageLink,
@@ -414,8 +410,7 @@ class UserPageMainInfo extends StatelessWidget {
                             padding: const EdgeInsets.only(left: 10),
                             child: CustomButton(
                               primary: true,
-                              onPressed: () {
-                              },
+                              onPressed: () {},
                               child: const Text(
                                 "Chat",
                                 style: TextStyle(

@@ -63,7 +63,6 @@ dependencies:
   mockito: 5.4.4
   near_wallet_selector:
     git: https://github.com/ArturLevchuk/near_wallet_selector.git
-  palette_generator: ^0.3.3+4
   photo_view: 0.15.0
   qr_code_scanner: 1.0.1
   qrcode_reader_web: 1.1.1
