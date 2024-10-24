@@ -10,6 +10,7 @@ import 'package:flutterchain/flutterchain_lib/models/chains/near/near_account_in
 import 'package:flutterchain/flutterchain_lib/services/chains/near_blockchain_service.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
+import 'package:near_social_mobile/modules/home/pages/chat/rooms_page.dart';
 import 'package:near_social_mobile/modules/home/pages/home_menu/widgets/home_menu_list_tile.dart';
 import 'package:near_social_mobile/modules/home/vms/notifications/notifications_controller.dart';
 import 'package:near_social_mobile/modules/home/vms/posts/posts_controller.dart';
@@ -238,6 +239,20 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                     HapticFeedback.lightImpact();
                     Modular.to.pushNamed(
                       ".${Routes.home.settingsPage}",
+                    );
+                  },
+                ),
+                SizedBox(height: 15.h),
+                HomeMenuListTile(
+                  title: "Chats",
+                  tile: const Icon(Icons.chat),
+                  onTap: () async {
+                    HapticFeedback.lightImpact();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (ctx) => RoomsPage(),
+                      ),
                     );
                   },
                 ),

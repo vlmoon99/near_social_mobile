@@ -13,6 +13,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:near_social_mobile/config/constants.dart';
 import 'package:near_social_mobile/config/theme.dart';
 import 'package:near_social_mobile/modules/home/apis/near_social.dart';
+import 'package:near_social_mobile/modules/home/pages/chat/chat_page.dart';
 import 'package:near_social_mobile/modules/home/pages/people/widgets/donation_dialog.dart';
 import 'package:near_social_mobile/modules/home/pages/people/widgets/more_actions_for_user_button.dart';
 import 'package:near_social_mobile/modules/home/pages/posts_page/widgets/raw_text_to_content_formatter.dart';
@@ -29,10 +30,11 @@ import 'package:url_launcher/url_launcher.dart';
 
 class UserPageMainInfo extends StatelessWidget {
   const UserPageMainInfo(
-      {super.key, required this.accountIdOfUser, required this.userIsBlocked});
+      {super.key, required this.accountIdOfUser, required this.userIsBlocked,});
 
   final String accountIdOfUser;
   final bool userIsBlocked;
+
   List<Widget> linkTreeList({required Map<String, dynamic> linkTree}) {
     final List<Widget> linkTreeList = linkTree.entries.map((pair) {
       if (pair.key == "twitter") {
@@ -417,16 +419,77 @@ class UserPageMainInfo extends StatelessWidget {
                             padding: const EdgeInsets.only(left: 10),
                             child: CustomButton(
                               primary: true,
-                              onPressed: ()async {
-                                // FirebaseFirestore.instance.collection('users').get({"lastName" :accountIdOfUser})
-                              // final res = (await FirebaseFirestore.instance
-                              //       .collection('users')
-                              //       .where('lastName',
-                              //           isEqualTo: accountIdOfUser)
-                              //       .get()).docs;
+                              onPressed: () async {
+                                try {
+                                  final userDoc = await FirebaseFirestore
+                                      .instance
+                                      .collection('users')
+                                      .doc(accountIdOfUser)
+                                      .get();
 
-                              //   types.User.fromJson();
-                              //   final room = await FirebaseChatCore.instance.createRoom(otherUser);
+                                  if (userDoc.exists) {
+                                    final userData = {
+                                      "id": userDoc.id,
+                                      "imageUrl": userDoc.data()!['imageUrl'],
+                                      "firstName": userDoc.data()!['firstName'],
+                                      "lastName": userDoc.data()!['lastName'],
+                                      "role": userDoc.data()!['role'],
+                                      "metadata": userDoc.data()!['metadata'],
+                                    };
+
+                                    final otherUser =
+                                        types.User.fromJson(userData);
+
+                                    final room =
+                                        await Modular.get<NearSocialApi>()
+                                            .createRoom(
+                                                Modular.get<AuthController>()
+                                                    .state
+                                                    .accountId,
+                                                otherUser);
+
+                                  final currentUserDocReq = await FirebaseFirestore
+                                      .instance
+                                      .collection('users')
+                                      .doc(accountIdOfUser)
+                                      .get();
+
+                                    final currentUserDoc = {
+                                      "id": currentUserDocReq.id,
+                                      "imageUrl": currentUserDocReq.data()!['imageUrl'],
+                                      "firstName": currentUserDocReq.data()!['firstName'],
+                                      "lastName": currentUserDocReq.data()!['lastName'],
+                                      "role": currentUserDocReq.data()!['role'],
+                                      "metadata": currentUserDocReq.data()!['metadata'],
+                                    };
+
+                                    final currentUser =
+                                        types.User.fromJson(currentUserDoc);
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (ctx) => ChatPage(
+                                          room: room,
+                                          currentUser: currentUser,
+                                        ),
+                                      ),
+                                    );
+
+                                    print(
+                                        'Chat room created successfully with user: $room');
+                                  } else {
+                                    print('No user found with the given ID');
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            "AccountId ${user.generalAccountInfo.accountId} not found isnide chat system , he must to use Near Social Mobile gateway for chating"),
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  print('Error creating room: $e');
+                                }
                               },
                               child: const Text(
                                 "Chat",
