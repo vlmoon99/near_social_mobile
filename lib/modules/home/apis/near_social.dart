@@ -32,15 +32,12 @@ import 'package:near_social_mobile/modules/home/apis/models/reposter_info.dart';
 import 'package:near_social_mobile/network/dio_interceptors/retry_on_connection_changed_interceptor.dart';
 import 'package:near_social_mobile/utils/is_web_image_avaliable.dart';
 
-
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 
 class NearSocialApi {
   final Dio _dio = Dio();
   final NearBlockChainService _nearBlockChainService;
-
-  
 
   NearSocialApi({required NearBlockChainService nearBlockChainService})
       : _nearBlockChainService = nearBlockChainService {
@@ -60,8 +57,8 @@ class NearSocialApi {
     ]);
   }
 
-  void sendMessage(dynamic partialMessage, String roomId,String currentUserId) async {
-
+  void sendMessage(
+      dynamic partialMessage, String roomId, String currentUserId) async {
     types.Message? message;
 
     if (partialMessage is types.PartialCustom) {
@@ -106,86 +103,162 @@ class NearSocialApi {
           .doc(roomId)
           .update({'updatedAt': FieldValue.serverTimestamp()});
     }
-
   }
 
   Future<types.Room> createRoom(
+    bool isSecure,
     String currentUserID,
     types.User otherUser, {
     Map<String, dynamic>? metadata,
   }) async {
-    final fu = FirebaseAuth.instance.currentUser!;
+    if (isSecure) {
+      final fu = FirebaseAuth.instance.currentUser!;
 
-    final userIds = [currentUserID, otherUser.id]..sort();
+      final userIds = [currentUserID, otherUser.id]..sort();
 
-    final roomQuery = await FirebaseFirestore.instance
-        .collection('rooms')
-        .where('type', isEqualTo: types.RoomType.direct.toShortString())
-        .where('userIds', isEqualTo: userIds)
-        .limit(1)
-        .get();
+      final roomQuery = await FirebaseFirestore.instance
+          .collection('rooms')
+          .where('type', isEqualTo: types.RoomType.direct.toShortString())
+          .where('userIds', isEqualTo: userIds)
+          .where('metadata.isSecure',
+              isEqualTo: true)
 
-    if (roomQuery.docs.isNotEmpty) {
-      final room = (await processRoomsQuery(
-        fu,
+          .limit(1)
+          .get();
+
+      if (roomQuery.docs.isNotEmpty) {
+        final room = (await processRoomsQuery(
+          fu,
+          FirebaseFirestore.instance,
+          roomQuery,
+          'users',
+        ))
+            .first;
+
+        return room;
+      }
+
+      final oldRoomQuery = await FirebaseFirestore.instance
+          .collection('rooms')
+          .where('type', isEqualTo: types.RoomType.direct.toShortString())
+          .where('userIds', isEqualTo: userIds.reversed.toList())
+          .where('metadata.isSecure', isEqualTo: true)
+          .limit(1)
+          .get();
+
+      if (oldRoomQuery.docs.isNotEmpty) {
+        log("oldRoomQuery.docs.isNotEmpty  ${oldRoomQuery.docs.isNotEmpty}");
+        final room = (await processRoomsQuery(
+          fu,
+          FirebaseFirestore.instance,
+          oldRoomQuery,
+          'users',
+        ));
+        log("room  ${room}");
+        return room.isNotEmpty
+            ? room.first
+            : types.Room(id: '', type: null, users: []);
+      }
+
+      final currentUser = await fetchUser(
         FirebaseFirestore.instance,
-        roomQuery,
+        currentUserID,
         'users',
-      ))
-          .first;
+      );
 
-      return room;
-    }
+      final users = [types.User.fromJson(currentUser), otherUser];
 
-    final oldRoomQuery = await FirebaseFirestore.instance
-        .collection('rooms')
-        .where('type', isEqualTo: types.RoomType.direct.toShortString())
-        .where('userIds', isEqualTo: userIds.reversed.toList())
-        .limit(1)
-        .get();
+      final room = await FirebaseFirestore.instance.collection('rooms').add({
+        'createdAt': FieldValue.serverTimestamp(),
+        'imageUrl': null,
+        'metadata': metadata,
+        'name': null,
+        'type': types.RoomType.direct.toShortString(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'userIds': userIds,
+        'userRoles': null,
+      });
 
-    if (oldRoomQuery.docs.isNotEmpty) {
-      log("oldRoomQuery.docs.isNotEmpty  ${oldRoomQuery.docs.isNotEmpty}");
-      final room = (await processRoomsQuery(
-        fu,
+      return types.Room(
+        id: room.id,
+        metadata: metadata,
+        type: types.RoomType.direct,
+        users: users,
+      );
+    } else {
+      final fu = FirebaseAuth.instance.currentUser!;
+
+      final userIds = [currentUserID, otherUser.id]..sort();
+
+      final roomQuery = await FirebaseFirestore.instance
+          .collection('rooms')
+          .where('type', isEqualTo: types.RoomType.direct.toShortString())
+          .where('userIds', isEqualTo: userIds)  
+          .limit(1)
+          .get();
+
+      if (roomQuery.docs.isNotEmpty) {
+        final room = (await processRoomsQuery(
+          fu,
+          FirebaseFirestore.instance,
+          roomQuery,
+          'users',
+        ))
+            .first;
+
+        return room;
+      }
+
+      final oldRoomQuery = await FirebaseFirestore.instance
+          .collection('rooms')
+          .where('type', isEqualTo: types.RoomType.direct.toShortString())
+          .where('userIds', isEqualTo: userIds.reversed.toList())
+          .limit(1)
+          .get();
+
+      if (oldRoomQuery.docs.isNotEmpty) {
+        log("oldRoomQuery.docs.isNotEmpty  ${oldRoomQuery.docs.isNotEmpty}");
+        final room = (await processRoomsQuery(
+          fu,
+          FirebaseFirestore.instance,
+          oldRoomQuery,
+          'users',
+        ));
+        log("room  ${room}");
+        return room.isNotEmpty
+            ? room.first
+            : types.Room(id: '', type: null, users: []);
+      }
+
+      final currentUser = await fetchUser(
         FirebaseFirestore.instance,
-        oldRoomQuery,
+        currentUserID,
         'users',
-      ));
-      log("room  ${room}");
-      return room.isNotEmpty ? room.first : types.Room(id: '', type: null, users: []);
+      );
+
+      final users = [types.User.fromJson(currentUser), otherUser];
+
+      final room = await FirebaseFirestore.instance.collection('rooms').add({
+        'createdAt': FieldValue.serverTimestamp(),
+        'imageUrl': null,
+        'metadata': metadata,
+        'name': null,
+        'type': types.RoomType.direct.toShortString(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'userIds': userIds,
+        'userRoles': null,
+      });
+
+      return types.Room(
+        id: room.id,
+        metadata: metadata,
+        type: types.RoomType.direct,
+        users: users,
+      );
     }
-
-    final currentUser = await fetchUser(
-      FirebaseFirestore.instance,
-      currentUserID,
-      'users',
-    );
-
-    final users = [types.User.fromJson(currentUser), otherUser];
-
-    final room = await FirebaseFirestore.instance
-        .collection('rooms')
-        .add({
-      'createdAt': FieldValue.serverTimestamp(),
-      'imageUrl': null,
-      'metadata': metadata,
-      'name': null,
-      'type': types.RoomType.direct.toShortString(),
-      'updatedAt': FieldValue.serverTimestamp(),
-      'userIds': userIds,
-      'userRoles': null,
-    });
-
-    return types.Room(
-      id: room.id,
-      metadata: metadata,
-      type: types.RoomType.direct,
-      users: users,
-    );
   }
 
-Future<List<types.Room>> processRoomsQuery(
+  Future<List<types.Room>> processRoomsQuery(
     User firebaseUser,
     FirebaseFirestore instance,
     QuerySnapshot<Map<String, dynamic>> query,
@@ -279,9 +352,7 @@ Future<List<types.Room>> processRoomsQuery(
     return types.Room.fromJson(data);
   }
 
-
-
-  Future<void> createUserInChat () async {
+  Future<void> createUserInChat() async {
     await FirebaseChatCore.instance.createUserInFirestore(
       types.User(
         firstName: 'John',
@@ -292,19 +363,13 @@ Future<List<types.Room>> processRoomsQuery(
     );
   }
 
-    Future<void> sendMessages(types.Message message,String roomId) async {
+  Future<void> sendMessages(types.Message message, String roomId) async {
+    FirebaseChatCore.instance.sendMessage(message, roomId);
+  }
 
-      FirebaseChatCore.instance.sendMessage(message, roomId);
-
-    }
-
-
-    Future<void> updateMessage(types.Message message, String roomId) async {
-    
-      FirebaseChatCore.instance.updateMessage(message, roomId);
-    
-    }
-
+  Future<void> updateMessage(types.Message message, String roomId) async {
+    FirebaseChatCore.instance.updateMessage(message, roomId);
+  }
 
   Future<List<Post>> getPosts({
     int? lastBlockHeightIndexOfPosts,

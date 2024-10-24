@@ -29,8 +29,11 @@ import 'package:near_social_mobile/shared_widgets/near_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UserPageMainInfo extends StatelessWidget {
-  const UserPageMainInfo(
-      {super.key, required this.accountIdOfUser, required this.userIsBlocked,});
+  const UserPageMainInfo({
+    super.key,
+    required this.accountIdOfUser,
+    required this.userIsBlocked,
+  });
 
   final String accountIdOfUser;
   final bool userIsBlocked;
@@ -443,24 +446,29 @@ class UserPageMainInfo extends StatelessWidget {
                                     final room =
                                         await Modular.get<NearSocialApi>()
                                             .createRoom(
+                                                false,
                                                 Modular.get<AuthController>()
                                                     .state
                                                     .accountId,
                                                 otherUser);
 
-                                  final currentUserDocReq = await FirebaseFirestore
-                                      .instance
-                                      .collection('users')
-                                      .doc(accountIdOfUser)
-                                      .get();
+                                    final currentUserDocReq =
+                                        await FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(accountIdOfUser)
+                                            .get();
 
                                     final currentUserDoc = {
                                       "id": currentUserDocReq.id,
-                                      "imageUrl": currentUserDocReq.data()!['imageUrl'],
-                                      "firstName": currentUserDocReq.data()!['firstName'],
-                                      "lastName": currentUserDocReq.data()!['lastName'],
+                                      "imageUrl":
+                                          currentUserDocReq.data()!['imageUrl'],
+                                      "firstName": currentUserDocReq
+                                          .data()!['firstName'],
+                                      "lastName":
+                                          currentUserDocReq.data()!['lastName'],
                                       "role": currentUserDocReq.data()!['role'],
-                                      "metadata": currentUserDocReq.data()!['metadata'],
+                                      "metadata":
+                                          currentUserDocReq.data()!['metadata'],
                                     };
 
                                     final currentUser =
@@ -470,6 +478,7 @@ class UserPageMainInfo extends StatelessWidget {
                                       context,
                                       MaterialPageRoute(
                                         builder: (ctx) => ChatPage(
+                                          isSecure: false,
                                           room: room,
                                           currentUser: currentUser,
                                         ),
